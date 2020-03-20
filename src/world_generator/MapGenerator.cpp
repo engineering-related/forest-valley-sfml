@@ -1,7 +1,7 @@
 #include "MapGenerator.h"
 #include <limits>
 
-MapGenerator::MapGenerator(int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
+MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
 {
 	if (mapDimensions.x < 1) mapDimensions.x = 1;
 	if (mapDimensions.y < 1) mapDimensions.y = 1;
@@ -36,12 +36,15 @@ void MapGenerator::initTerrainTypes()
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(55, 102, 196)));
 	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
-	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.55f, Color(85, 151, 24)));
-	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.6f, Color(105, 105, 105)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.7f, Color(93, 69, 64)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.9f, Color(76, 59, 58)));
-	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 0.95f, Color(255, 255, 255)));
-
+	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));
+	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.7f, Color(59, 49, 52)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.8f, Color(76, 59, 58)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.9f, Color(93, 69, 64)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_2, 1.f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_3, 1.5f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_4, 2.f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 2.5f, Color(255, 255, 255)));
+	
 	////HeightMap LOTR
 	//this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(147, 156, 112)));
 	//this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(153, 156, 112)));
@@ -61,6 +64,7 @@ void MapGenerator::initTerrainTypes()
 	//Fieldmap
 	this->wheatRegions.push_back(Terrain(TerrainType::WHEAT, 0.10f, Color(208, 176, 132)));
 	this->wheatRegions[0].setRange(&heightRegions[2].value, &heightRegions[3].value);
+
 }
 
 void MapGenerator::draw(RenderWindow * window)
@@ -89,7 +93,8 @@ void MapGenerator::updateTexture()
 			float currentHeight = pow(this->heightMap[x][y], this->elevation);
 			float forestValue = this->forsetMap[x][y];
 			float wheatValue = this->fieldMap[x][y];
-			//MapGenerator::addCircleMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y)/2);
+			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.25f, 4.f, true);
+
 			RectangleShape cell;
 			cell.setPosition(x, y);
 			cell.setOutlineThickness(0);
@@ -128,6 +133,21 @@ void MapGenerator::updateTexture()
 					break;
 				}
 			}
+
+			//Add border to the map
+			if (boundryValue > this->heightRegions[this->heightRegions.size() - 1].value)
+			{
+				boundryValue = this->heightRegions[this->heightRegions.size() - 1].value;
+			}
+			for (auto& heightRegion : this->heightRegions)
+			{
+				if (boundryValue >= this->heightRegions[4].value && boundryValue <= heightRegion.value)
+				{
+					cell.setFillColor(Color(heightRegion.color));
+					break;
+				}
+			}
+
 			this->texture.draw(cell);
 		}
 	}
@@ -135,22 +155,23 @@ void MapGenerator::updateTexture()
 	this->sprite.setTexture(this->texture.getTexture());
 }
 
-float MapGenerator::addSquareMask(const int &x, const int &y, float &noise, float island_size, bool inverse)
+float MapGenerator::addSquareMask(const int &x, const int &y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
 {
 	float distance_x = fabs(x - island_size * 0.5f);
 	float distance_y = fabs(y - island_size * 0.5f);
 	float distance = fmax(distance_x, distance_y); // square mask
 
-	float max_width = island_size * 0.5f - 10.0f;
+	float max_width = island_size * max_width_factor;
 	float delta = distance / max_width;
-	float gradient = delta * delta;
+	float gradient = pow(delta, gradientExp);
 
 	if(!inverse) noise *= fmax(0.0f, 1.f - gradient);
 	else noise *= fmax(0.0f, gradient);
+	//noise = fmin(1.0f, noise);
 	return noise;
 }
 
-float MapGenerator::addCircleMask(const int & x, const int & y, float & noise, float island_size)
+float MapGenerator::addCircleMask(const int & x, const int & y, float noise, float island_size, float gradientExp, bool inverse)
 {
 	float distance_x = fabs(x - island_size * 0.5f);
 	float distance_y = fabs(y - island_size * 0.5f);
@@ -160,7 +181,8 @@ float MapGenerator::addCircleMask(const int & x, const int & y, float & noise, f
 	float delta = distance / max_width;
 	float gradient = delta * delta;
 
-	noise *= fmax(0.0f, 1.0f - gradient);
+	if (!inverse) noise *= fmax(0.0f, 1.f - gradient);
+	else noise *= fmax(0.0f, gradient);
 	return noise;
 }
 
@@ -170,7 +192,19 @@ void MapGenerator::setDisplaySize(const Vector2f &size)
 	this->sprite.setScale(scale);
 }
 
-std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity, const sf::Vector2f& offset)
+unsigned int MapGenerator::generatePsuedoRandomSeed()
+{
+	Clock clock;
+	for (size_t i = 0; i < USHRT_MAX; i++)
+	{
+		float test = clock.getElapsedTime().asSeconds();
+	}
+	Int64 t = clock.getElapsedTime().asMicroseconds();
+	unsigned int seed = (time(NULL) * t) % INT_MAX;
+	return seed;
+}
+
+std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity, const sf::Vector2f& offset)
 {
 	std::vector<std::vector<float>> noiseMap(width, std::vector<float>(height, 0));
 
@@ -180,8 +214,8 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const int & seed,
 	std::vector<sf::Vector2f> octaveOffsets;
 	for (size_t i = 0; i < octaves; i++)
 	{
-		float offsetX = (rand() % (1000000 - (-1000000) + 1) - 1000000) + offset.x;
-		float offsetY = (rand() % (1000000 - (-1000000) + 1) - 1000000) + offset.y;
+		float offsetX = Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.x;
+		float offsetY = Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.y;
 		octaveOffsets.push_back(sf::Vector2f(offsetX, offsetY));
 	}
 

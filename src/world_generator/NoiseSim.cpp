@@ -42,20 +42,17 @@ int main()
 	//Init window
 	VideoMode mode = VideoMode(WIDTH, HEIGHT);
 	RenderWindow window(mode, "Map Generator", Style::Default);
-	window.setFramerateLimit(multiplier);
+	//window.setFramerateLimit(multiplier);
 
 	//Init font
 	Font font;
 	font.loadFromFile("Fonts/Prime-Regular.ttf");
 
 	//Init map
-	float isladSize = 0.1f;
-	// A value that gives a nice distribution for 1024px bitmap
-	const float scale_1024 = 0.0033f;
-	// Fit the scale value for our bitmap size
-	const float scale = (1024.0f / (float)isladSize) * scale_1024;
+	
+	unsigned int seed = MapGenerator::generatePsuedoRandomSeed();
 
-	MapGenerator map(time(NULL), Vector2i(100, 100), scale, 4, 0.5, 2, Vector2f(0, 0), 1);
+	MapGenerator map(seed, Vector2i(200, 200), 30, 4, 0.5, 2, Vector2f(0, 0), 1);
 	map.setDisplaySize(Vector2f(WIDTH, HEIGHT));
 
 	std::vector<Slider<float>> floatSliders;
@@ -116,7 +113,7 @@ int main()
 		window.clear();
 		map.draw(&window);
 		m.update(window, dt, multiplier);
-		map.update(dt, multiplier);
+		if(m.left) map.update(dt, multiplier);
 
 		if (!m.isResting || m.left)
 		{

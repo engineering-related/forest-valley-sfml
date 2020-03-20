@@ -10,8 +10,9 @@ private:
 
 public:
 	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND, 
-							GRASS_LIGHT, MINERALS, ROCK_LIGHT, 
-							ROCK_DARK, SNOW, FOREST_DEEP, FOREST_SHALLOW,
+							GRASS_LIGHT, MINERALS, ROCK_DARK, ROCK_LIGHT,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW, 
+							FOREST_DEEP, FOREST_SHALLOW,
 							WHEAT};
 
 	struct Terrain {
@@ -32,6 +33,7 @@ public:
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;
 	std::vector<Terrain> wheatRegions;
+	std::vector<Terrain> boundryRegions;
 
 	int seed;
 	Vector2i mapDimensions;
@@ -48,15 +50,16 @@ public:
 	RenderTexture texture;
 	Sprite sprite;
 
-	MapGenerator(int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
+	MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
 	~MapGenerator();
 
 	void draw(RenderWindow * window);
 	void update(const float &dt, const float &multiplier);
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);
-	static float addSquareMask(const int &x, const int &y, float &noise, float islad_size, bool inverse);
-	static float addCircleMask(const int &x, const int &y, float &noise, float islad_size);
-	static std::vector<std::vector<float>> generateNoiseMap(const int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity, const sf::Vector2f& offset);
+	static unsigned int generatePsuedoRandomSeed();
+	static float addSquareMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
+	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float gradientExp, bool inverse);
+	static std::vector<std::vector<float>> generateNoiseMap(const unsigned int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity, const sf::Vector2f& offset);
 };
 
