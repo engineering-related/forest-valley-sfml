@@ -45,5 +45,5 @@ CTestTestfile.cmake
 _deps
 
 # Viusal studio
-Debug/
-Release/
+**/Debug
+**/Release
