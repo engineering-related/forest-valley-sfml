@@ -404,5 +404,5 @@ MigrationBackup/
 .ionide/
 
 
-Debug.*
-Release.*
+Debug/
+Release/
