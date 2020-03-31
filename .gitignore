@@ -403,6 +403,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+forest-valley/.vs/forest-valley/v15
 
 Debug/
 Release/
