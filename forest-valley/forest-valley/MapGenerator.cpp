@@ -1,5 +1,4 @@
 #include "MapGenerator.h"
-#include <limits>
 
 MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
 {
@@ -192,7 +191,7 @@ void MapGenerator::setDisplaySize(const Vector2f &size)
 unsigned int MapGenerator::generatePsuedoRandomSeed()
 {
 	Clock clock;
-	for (size_t i = 0; i < USHRT_MAX; i++)
+	for (int i = 0; i < USHRT_MAX; i++)
 	{
 		float test = clock.getElapsedTime().asSeconds();
 	}
@@ -259,9 +258,9 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 		}
 	}
 	//Normalize noisemap
-	for (size_t y = 0; y < height; y++)
+	for (int y = 0; y < height; y++)
 	{
-		for (size_t x = 0; x < width; x++)
+		for (int x = 0; x < width; x++)
 		{
 			noiseMap[x][y] = PerlinNoise::invLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x][y]);
 		}

@@ -28,7 +28,6 @@ void updateEvents(RenderWindow& window, Event &event)
 
 int main()
 {
-
 	//Init random
 	srand(time(NULL));
 
@@ -73,7 +72,7 @@ int main()
 
 	//Color generation
 	float height = 400.f;
-	for (size_t i = 0; i < map.heightRegions.size(); i++)
+	for (int i = 0; i < map.heightRegions.size(); i++)
 	{
 		Slider<float> s(Vector2f(50.f, height), &map.heightRegions[i].value, Vector2f(0.f, 1.f), map.heightRegions[i].value, &font, std::to_string(i));
 		floatSliders.push_back(s);

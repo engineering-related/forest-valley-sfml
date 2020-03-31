@@ -16,6 +16,9 @@
 #include <string>
 #include <algorithm>
 #include <typeinfo>
+#include <stdlib.h>
+#include <limits>
+
 
 //SHOULD BE A NAMESPACE!
 struct Utils
