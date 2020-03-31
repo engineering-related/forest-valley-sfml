@@ -1,0 +1,31 @@
+﻿  NoiseSim.cpp
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(20): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(22): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(33): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(61): warning C4305: 'argument': truncation from 'int' to 'T'
+          with
+          [
+              T=float
+          ]
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(71): warning C4305: 'argument': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
+c:\users\vikto\github\forest-valley\forest-valley\forest-valley\slider.hpp(41): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=int
+          ]
+  c:\users\vikto\github\forest-valley\forest-valley\forest-valley\slider.hpp(22): note: while compiling class template member function 'Slider<int>::Slider(sf::Vector2f,T *,sf::Vector2f,T,sf::Font *,std::string)'
+          with
+          [
+              T=int
+          ]
+  c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(61): note: see reference to function template instantiation 'Slider<int>::Slider(sf::Vector2f,T *,sf::Vector2f,T,sf::Font *,std::string)' being compiled
+          with
+          [
+              T=int
+          ]
+  c:\users\vikto\github\forest-valley\forest-valley\forest-valley\noisesim.cpp(61): note: see reference to class template instantiation 'Slider<int>' being compiled
+  forest-valley.vcxproj -> C:\Users\vikto\GitHub\forest-valley\forest-valley\Debug\forest-valley.exe
