@@ -9,18 +9,18 @@ private:
 	void initTerrainTypes();
 
 public:
-	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND, 
+	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND, //Height
 							GRASS_LIGHT, MINERALS, ROCK_DARK, ROCK_LIGHT,
 							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW, 
-							FOREST_DEEP, FOREST_SHALLOW,
-							WHEAT};
+							FOREST_DEEP, FOREST_SHALLOW, //Forest
+							WHEAT}; //Wheat
 
 	struct Terrain {
 		TerrainType type;
 		float value;
 		Color color;
-		float* startRange;
-		float * endRange;
+		float* startRange = nullptr;
+		float * endRange = nullptr;
 		Terrain(TerrainType type, float value, Color color)
 		{
 			this->type = type;
@@ -33,7 +33,6 @@ public:
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;
 	std::vector<Terrain> wheatRegions;
-	std::vector<Terrain> boundryRegions;
 
 	int seed;
 	Vector2i mapDimensions;
@@ -59,7 +58,7 @@ public:
 	void setDisplaySize(const Vector2f &size);
 	static unsigned int generatePsuedoRandomSeed();
 	static float addSquareMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
-	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float gradientExp, bool inverse);
+	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
 	static std::vector<std::vector<float>> generateNoiseMap(const unsigned int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity, const sf::Vector2f& offset);
 };
 

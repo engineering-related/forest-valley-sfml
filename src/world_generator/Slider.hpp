@@ -11,7 +11,7 @@ private:
 	RectangleShape smallRect;
 	bool adjusting = false;
 	T *value;
-	float copyValue;
+	T copyValue;
 	T startValue;
 	Vector2f interval;
 	std::string name;
@@ -102,9 +102,9 @@ public:
 		}
 
 		//Value
-		*this->value = Utils::map(this->smallRectPos.x, this->bigRectPos.x, this->bigRectPos.x + this->rect.x - this->rect.y, this->interval.x, this->interval.y);
+		*this->value = static_cast<T>(Utils::map(this->smallRectPos.x, this->bigRectPos.x, this->bigRectPos.x + this->rect.x - this->rect.y, this->interval.x, this->interval.y));
 		
-		this->text.setString(Utils::round2D(*this->value));
+		this->text.setString(Utils::round2D(static_cast<float>(*this->value)));
 
 	}
 };

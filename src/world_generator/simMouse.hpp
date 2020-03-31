@@ -10,6 +10,7 @@ struct simMouse
 	bool left = false;
 	bool right = false;
 	bool push = false;
+	bool holding = false;
 	bool isResting = false;
 	float incer = 0;
 	float cap = 200;
@@ -37,7 +38,7 @@ struct simMouse
 			}
 		}
 	}
-		
+
 	template <typename T>
 	static bool rectColision(T obj, simMouse m)
 	{

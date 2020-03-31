@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <typeinfo>
 
+//SHOULD BE A NAMESPACE!
 struct Utils
 {
 	static float distance(sf::Vector2f p1, sf::Vector2f p2)
@@ -48,6 +49,16 @@ struct Utils
 		float outgoing =
 			start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 		return outgoing;
+	}
+	static float randFloatFromRange(float LO, float HI)
+	{
+		float r3 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+		return r3;
+	}
+	static void constrain(float &value, const float& minimum, const float &maximum)
+	{
+		if (value < minimum) value = minimum;
+		else if (value > maximum) value = maximum;
 	}
 };
 

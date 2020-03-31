@@ -17,11 +17,9 @@ void updateEvents(RenderWindow& window, Event &event)
 		if (event.type == sf::Event::MouseWheelScrolled)
 		{
 			if (event.mouseWheelScroll.delta > 0)
-				//Utils::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, window, (1.f / 1.05));
-				return;
+				Utils::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, window, (1.f / 1.05));
 			else if (event.mouseWheelScroll.delta < 0)
-				//Utils::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, window, 1.05);
-				return;
+				Utils::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, window, 1.05);
 		}
 	}
 	if (Keyboard::isKeyPressed(Keyboard::Escape))
@@ -82,9 +80,6 @@ int main()
 		height += 50;
 	}
 	
-
-	//Colors
-
 	simMouse m;
 	//Init simulation
 	while (window.isOpen())
@@ -94,26 +89,26 @@ int main()
 		updateEvents(window, event);
 		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
 		{
-			map.offset.x -= 0.1*dt*multiplier;
+			map.offset.x -= 0.1f*dt*multiplier;
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
 		{
-			map.offset.x += 0.1*dt*multiplier;
+			map.offset.x += 0.1f*dt*multiplier;
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
 		{
-			map.offset.y -= 0.1*dt*multiplier;
+			map.offset.y -= 0.1f*dt*multiplier;
 		}
 		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
 		{
-			map.offset.y += 0.1*dt*multiplier;
+			map.offset.y += 0.1f*dt*multiplier;
 		}
 
 		//Drawing
 		window.clear();
 		map.draw(&window);
 		m.update(window, dt, multiplier);
-		if(m.left) map.update(dt, multiplier);
+		map.update(dt, multiplier);
 
 		if (!m.isResting || m.left)
 		{

@@ -17,12 +17,8 @@ MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float nois
 	this->offset = offset;
 	this->elevation = elevation;
 
-	this->heightMap = MapGenerator::generateNoiseMap(this->seed, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-
 	this->initTerrainTypes();
-	this->updateTexture();
+	this->update(0.f, 0.f);
 }
 
 
@@ -40,10 +36,10 @@ void MapGenerator::initTerrainTypes()
 	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.7f, Color(59, 49, 52)));
 	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.8f, Color(76, 59, 58)));
 	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.9f, Color(93, 69, 64)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_2, 1.f, Color(110, 79, 70)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_3, 1.5f, Color(127, 89, 76)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_4, 2.f, Color(144, 99, 82)));
-	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 2.5f, Color(255, 255, 255)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_2, 1.0f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_3, 2.0f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_4, 4.0f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 6.0f, Color(255, 255, 255)));
 	
 	////HeightMap LOTR
 	//this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(147, 156, 112)));
@@ -57,13 +53,13 @@ void MapGenerator::initTerrainTypes()
 
 	//Forestmap
 	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.20f, Color(0, 40, 0)));
-	this->forestRegions[0].setRange(&heightRegions[2].value, &heightRegions[4].value);
-	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.50f, Color(0, 60, 0)));
-	this->forestRegions[1].setRange(&heightRegions[2].value, &heightRegions[3].value);
+	this->forestRegions[0].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::MINERALS)].value);
+	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.5f, Color(0, 60, 0)));
+	this->forestRegions[1].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::MINERALS)].value);
 
 	//Fieldmap
 	this->wheatRegions.push_back(Terrain(TerrainType::WHEAT, 0.10f, Color(208, 176, 132)));
-	this->wheatRegions[0].setRange(&heightRegions[2].value, &heightRegions[3].value);
+	this->wheatRegions[0].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::GRASS_LIGHT)].value);
 
 }
 
@@ -85,10 +81,9 @@ void MapGenerator::updateTexture()
 {
 	this->texture.clear();
 	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
-
-	for (size_t y = 0; y < this->mapDimensions.y; y++)
+	for (int y = 0; y < this->mapDimensions.y; y++)
 	{
-		for (size_t x = 0; x < this->mapDimensions.x; x++)
+		for (int x = 0; x < this->mapDimensions.x; x++)
 		{
 			float currentHeight = pow(this->heightMap[x][y], this->elevation);
 			float forestValue = this->forsetMap[x][y];
@@ -96,8 +91,8 @@ void MapGenerator::updateTexture()
 			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.25f, 4.f, true);
 
 			RectangleShape cell;
-			cell.setPosition(x, y);
-			cell.setOutlineThickness(0);
+			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
+			cell.setOutlineThickness(0.f);
 			cell.setSize(Vector2f(1.f, 1.f));
 
 			//Add diffent height
@@ -128,20 +123,23 @@ void MapGenerator::updateTexture()
 				if (wheatValue <= wheatRegion.value &&
 					currentHeight > *wheatRegion.startRange &&
 					currentHeight < *wheatRegion.endRange)
-				{									//GRASS_LIGHT
-					if(cell.getFillColor() == this->heightRegions[3].color) cell.setFillColor(Color(wheatRegion.color));
+				{									
+					if (cell.getFillColor() == this->heightRegions[static_cast<int>(TerrainType::GRASS_LIGHT)].color)
+					{
+						cell.setFillColor(Color(wheatRegion.color));
+					}
 					break;
 				}
 			}
 
 			//Add border to the map
-			if (boundryValue > this->heightRegions[this->heightRegions.size() - 1].value)
+			if (boundryValue > this->heightRegions[static_cast<int>(TerrainType::SNOW)].value)
 			{
-				boundryValue = this->heightRegions[this->heightRegions.size() - 1].value;
+				boundryValue = this->heightRegions[static_cast<int>(TerrainType::SNOW)].value;
 			}
 			for (auto& heightRegion : this->heightRegions)
 			{
-				if (boundryValue >= this->heightRegions[4].value && boundryValue <= heightRegion.value)
+				if (boundryValue >= this->heightRegions[static_cast<int>(TerrainType::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					cell.setFillColor(Color(heightRegion.color));
 					break;
@@ -167,19 +165,18 @@ float MapGenerator::addSquareMask(const int &x, const int &y, float noise, float
 
 	if(!inverse) noise *= fmax(0.0f, 1.f - gradient);
 	else noise *= fmax(0.0f, gradient);
-	//noise = fmin(1.0f, noise);
 	return noise;
 }
 
-float MapGenerator::addCircleMask(const int & x, const int & y, float noise, float island_size, float gradientExp, bool inverse)
+float MapGenerator::addCircleMask(const int & x, const int & y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
 {
 	float distance_x = fabs(x - island_size * 0.5f);
 	float distance_y = fabs(y - island_size * 0.5f);
 	float distance = sqrt(distance_x*distance_x + distance_y * distance_y); // circular mask
 
-	float max_width = island_size * 0.5f - 10.0f;
+	float max_width = island_size * max_width_factor;
 	float delta = distance / max_width;
-	float gradient = delta * delta;
+	float gradient = pow(delta, gradientExp);
 
 	if (!inverse) noise *= fmax(0.0f, 1.f - gradient);
 	else noise *= fmax(0.0f, gradient);
@@ -212,7 +209,7 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 	PerlinNoise pn(seed);
 
 	std::vector<sf::Vector2f> octaveOffsets;
-	for (size_t i = 0; i < octaves; i++)
+	for (int i = 0; i < octaves; i++)
 	{
 		float offsetX = Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.x;
 		float offsetY = Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.y;
@@ -227,23 +224,23 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 	float maxNoiseHeight = std::numeric_limits<float>::min();
 	float minNoiseHeight = std::numeric_limits<float>::max();
 
-	float halfWidth = width / 2;
-	float halfHeight = height / 2;
+	double halfWidth = static_cast<float>(width / 2.f);
+	double halfHeight = static_cast<float>(height / 2.f);
 
-	for (size_t y = 0; y < height; y++)
+	for (int y = 0; y < height; y++)
 	{
-		for (size_t x = 0; x < width; x++)
+		for (int x = 0; x < width; x++)
 		{
 			float amplitude = 1;
 			float frequency = 1;
 			float noiseHeight = 0;
 
-			for (size_t i = 0; i < octaves; i++)
+			for (int i = 0; i < octaves; i++)
 			{
 				float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].x;
 				float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].y;
 
-				float perlinValue = pn.noise(sampleX, sampleY) * 2 - 1;
+				float perlinValue = static_cast<float>(pn.noise(sampleX, sampleY) * 2 - 1);
 				noiseHeight += perlinValue * amplitude;
 				amplitude *= persistance;
 				frequency *= lacunarity;
