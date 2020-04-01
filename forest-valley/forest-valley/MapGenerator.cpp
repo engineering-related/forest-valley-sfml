@@ -1,4 +1,5 @@
 #include "MapGenerator.h"
+#include <iostream>
 
 MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
 {
