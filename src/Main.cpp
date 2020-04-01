@@ -1,5 +1,7 @@
 #include "Platform/Platform.hpp"
 #include "MapGenerator/MapGenerator.h"
+
+
 //CTRL + SHIFT + B TO BUILD AND RUN
 
 #define WIDTH 800

@@ -35,7 +35,8 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
-
+#include <iostream>
+#include <climits>
 
 // Additional C/C++ libs
 #include <atomic>

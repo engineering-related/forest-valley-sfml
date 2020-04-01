@@ -1,5 +1,7 @@
 #include "MapGenerator.h"
 
+
+
 MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
 {
 	if (mapDimensions.x < 1) mapDimensions.x = 1;
