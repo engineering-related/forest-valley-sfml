@@ -7,7 +7,12 @@ GAMENAME = forestvalley
 game: $(OBJS)
 	$(CXX) $(OBJS) -o $(GAMENAME) $(LDLIBS)
 
-$(OBJS): MapGenerator.h PerlinNoise.h Slider.hpp simMouse.hpp utils.hpp
+#$(OBJS): MapGenerator.h PerlinNoise.h Slider.hpp simMouse.hpp utils.hpp
+
+MapGenerator.o: MapGenerator.h utils.hpp
+NoiseSim.o: simMouse.hpp utils.hpp
+PerlinNoise.o: PerlinNoise.h utils.hpp
+
 
 clean: 
 	$(RM) $(GAMENAME) $(OBJS)
