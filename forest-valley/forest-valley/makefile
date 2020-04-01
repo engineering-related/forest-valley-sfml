@@ -10,9 +10,8 @@ game: $(OBJS)
 #$(OBJS): MapGenerator.h PerlinNoise.h Slider.hpp simMouse.hpp utils.hpp
 
 MapGenerator.o: MapGenerator.h utils.hpp
-NoiseSim.o: simMouse.hpp utils.hpp
-PerlinNoise.o: PerlinNoise.h utils.hpp
-
+NoiseSim.o: MapGenerator.h utils.hpp Slider.hpp simMouse.hpp
+PerlinNoise.o: PerlinNoise.h
 
 clean: 
 	$(RM) $(GAMENAME) $(OBJS)

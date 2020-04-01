@@ -18,7 +18,7 @@
 #include <typeinfo>
 #include <stdlib.h>
 #include <limits>
-
+#include<bits/stdc++.h>
 
 //SHOULD BE A NAMESPACE!
 struct Utils

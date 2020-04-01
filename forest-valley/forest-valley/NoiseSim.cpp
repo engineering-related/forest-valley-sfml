@@ -1,6 +1,8 @@
 #include "utils.hpp"
 #include "MapGenerator.h"
 #include "Slider.hpp"
+#include "simMouse.hpp"
+
 
 //https://www.redblobgames.com/maps/terrain-from-noise/
 
