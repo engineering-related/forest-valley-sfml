@@ -6,6 +6,11 @@
 	-UNCOMMENT MULITPLE LINES CTRL + K, CTRL + U
 */
 
+/*COMPLIER
+	-TO NOT TREAT WARNINGS AS ERRORS REMOVE "-Werror"
+	 IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
+*/
+
 int main()
 {
 
@@ -13,8 +18,8 @@ int main()
 	std::cout << "DEBUGGING" << std::endl;
 
 #endif
-	Game *game = new Game();
+	Game* game = new Game();
 	game->start();
-
+	delete game;
 	return 0;
 }

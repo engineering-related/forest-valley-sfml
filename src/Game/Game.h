@@ -25,13 +25,14 @@ private:
 	MapGenerator* map;
 	unsigned int seed;
 
+	void init();
 	void pollEvents();
 	void updateClock();
 	void printFPS();
 	void startLoop();
 
 public:
-	void init();
+
 	Game();
 	~Game();
 	void start();
