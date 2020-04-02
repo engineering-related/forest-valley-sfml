@@ -1,6 +1,7 @@
-#include "PerlinNoise.h"
 #ifndef MAP_GENERATOR
 #define MAP_GENERATOR
+
+#include "PerlinNoise.h"
 
 using namespace sf;
 
@@ -60,7 +61,7 @@ public:
 	static unsigned int generatePsuedoRandomSeed();
 	static float addSquareMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
 	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
-	static std::vector<std::vector<float>> generateNoiseMap(const unsigned int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity);
+	static std::vector<std::vector<float>> generateNoiseMap(const unsigned int& seed, const unsigned int& width, const unsigned int& height, float& scale, const int& octaves, const float& persistance, const float& lacunarity, const sf::Vector2f& offset);
 };
 
 #endif

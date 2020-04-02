@@ -1,7 +1,5 @@
 #include "MapGenerator.h"
 
-
-
 MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation)
 {
 	if (mapDimensions.x < 1) mapDimensions.x = 1;
@@ -71,9 +69,9 @@ void MapGenerator::draw(RenderWindow * window)
 
 void MapGenerator::update(/*const float & dt, const float & multiplier*/)
 {
-	this->heightMap = MapGenerator::generateNoiseMap(this->seed, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity);
-	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity);
-	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity);
+	this->heightMap = MapGenerator::generateNoiseMap(this->seed, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
+	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
+	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->updateTexture();
 }
 
@@ -203,7 +201,7 @@ unsigned int MapGenerator::generatePsuedoRandomSeed()
 	return seed;
 }
 
-std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned int & seed, const unsigned int & width, const unsigned int & height, float & scale, const int &octaves, const float &persistance, const float &lacunarity)
+std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned int& seed, const unsigned int& width, const unsigned int& height, float& scale, const int& octaves, const float& persistance, const float& lacunarity, const sf::Vector2f& offset)
 {
 	std::vector<std::vector<float>> noiseMap(width, std::vector<float>(height, 0));
 
@@ -213,8 +211,8 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 	std::vector<sf::Vector2f> octaveOffsets;
 	for (int i = 0; i < octaves; i++)
 	{
-		float offsetX = 0.f;//Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.x;
-		float offsetY = 0.f;//Utils::randFloatFromRange(-1000000.f, 1000000.f) + offset.y;
+		float offsetX = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + offset.x;
+		float offsetY = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + offset.y;
 		octaveOffsets.push_back(sf::Vector2f(offsetX, offsetY));
 	}
 

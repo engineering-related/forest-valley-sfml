@@ -71,9 +71,17 @@
 // Utils
 #include "Utility/FileSystem.hpp"
 #include "Utility/Types.hpp"
+#include "Utility/Functions.hpp"
 
 // Macros
 #define UNUSED(x) (void)(x)
 #define PI 3.14159265359
+
+//Game
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 800
+#define MULTIPLIER 60
+#define FRAMERATELIMIT 144
+#define CAP 30;
 
 #endif // PRECOMPILED_HEADER_HPP

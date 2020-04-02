@@ -10,11 +10,11 @@
 
 namespace util
 {
-#if __GNUC__ >= 8 || __clang_major__ >= 9
-namespace fs = std::filesystem;
-#else
-namespace fs = std::experimental::filesystem::v1;
-#endif
+	#if __GNUC__ >= 8 || __clang_major__ >= 9
+		namespace fs = std::filesystem;
+	#else
+		namespace fs = std::experimental::filesystem::v1;
+	#endif
 }
 
 #endif // UTIL_FILE_SYSTEM_HPP
