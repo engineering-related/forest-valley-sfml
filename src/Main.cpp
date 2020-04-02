@@ -1,8 +1,12 @@
 #include "Platform/Platform.hpp"
 #include "MapGenerator/MapGenerator.h"
+#include "Utility/UtilityFunctions.h"
 
-
-//CTRL + SHIFT + B TO BUILD AND RUN
+/*COMMANDS:
+	-CTRL + SHIFT + B TO BUILD AND RUN
+	-COMMENT MULTIPLE LINES CTRL + K, CTRL + C
+	-UNCOMMENT MULITPLE LINES CTRL + K, CTRL + U
+*/
 
 #define WIDTH 800
 #define HEIGHT 800
@@ -43,7 +47,8 @@ int main()
 
 	//Init clock
 	Clock clock;
-	//float dt = 0;
+	float dt = 0;
+	float FPS = 0;
 	//float multiplier = 144;
 
 	sf::RenderWindow window;
@@ -51,7 +56,7 @@ int main()
 	float screenScalingFactor = platform.getScreenScalingFactor(window.getSystemHandle());
 	// Use the screenScalingFactor
 	window.create(sf::VideoMode(WIDTH * screenScalingFactor, HEIGHT * screenScalingFactor), "Noise Simulation");
-	//platform.setIcon(window.getSystemHandle());
+	platform.setIcon(window.getSystemHandle());
 
 	unsigned int seed = MapGenerator::generatePsuedoRandomSeed();
 
@@ -62,7 +67,7 @@ int main()
 
 	while (window.isOpen())
 	{
-		//dt = clock.restart().asSeconds();
+		dt = clock.restart().asSeconds();
 		Event event;
 		while (window.pollEvent(event))
 		{
@@ -78,6 +83,8 @@ int main()
 					break;
 			}
 		}
+		FPS = 1/dt;
+		std::cout << FPS << std::endl;
 
 		window.clear();
 		map.draw(&window);
