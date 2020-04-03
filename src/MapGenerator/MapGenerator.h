@@ -54,7 +54,7 @@ public:
 	MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
 	~MapGenerator();
 
-	void draw(RenderWindow * window);
+	void draw(RenderTarget * window) const;
 	void update(/*const float &dt, const float &multiplier*/);
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);

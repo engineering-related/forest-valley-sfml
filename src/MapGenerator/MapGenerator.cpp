@@ -62,7 +62,7 @@ void MapGenerator::initTerrainTypes()
 
 }
 
-void MapGenerator::draw(RenderWindow * window)
+void MapGenerator::draw(RenderTarget* window) const
 {
 	window->draw(this->sprite);
 }

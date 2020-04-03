@@ -4,7 +4,7 @@
 //Includes
 #include "MapGenerator/MapGenerator.h"
 #include "Platform/Platform.hpp"
-#include "Entity/Object.h"
+#include "Entity/AllEntities.hpp"
 
 using namespace sf;
 

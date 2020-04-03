@@ -33,7 +33,7 @@ public:
 	//Modifiers
 
 	//Functions
-	virtual void draw(RenderWindow* window) const = 0;
+	virtual void draw(RenderTarget* window) const = 0;
 	virtual void update(const float& dt, const float& multiplier) = 0;
 	void flipTexture();
 	static std::vector<std::vector<IntRect>> getTextureRects(Texture* spriteSheet, const Vector2i& nrOfImgs);
