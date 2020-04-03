@@ -28,7 +28,7 @@ MapGenerator::~MapGenerator()
 void MapGenerator::initTerrainTypes()
 {
 	//HeightMap standard
-	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(50, 80, 170)));
+	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(55, 102, 196)));
 	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
 	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));

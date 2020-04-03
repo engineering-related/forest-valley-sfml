@@ -4,6 +4,7 @@
 //Includes
 #include "MapGenerator/MapGenerator.h"
 #include "Platform/Platform.hpp"
+#include "Entity/Object.h"
 
 using namespace sf;
 
@@ -22,6 +23,7 @@ private:
 	float cap;
 
 	//std::vector<Object*> entites;
+	//std::vector<std::vector<Tile*>> grid
 	MapGenerator* map;
 	unsigned int seed;
 
