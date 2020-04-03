@@ -3,6 +3,7 @@
 
 namespace util
 {
+	//template<typename T>
 	struct fn
 	{
 		static float distance2i(const sf::Vector2i& a, const sf::Vector2i& b)
@@ -61,6 +62,15 @@ namespace util
 			sf::Vector2f r2Size(r2.getGlobalBounds().width, r2.getGlobalBounds().height);
 
 			return (r1Pos.x < r2Pos.x + r2Size.x && r1Pos.x + r1Size.x > r2Pos.x && r1Pos.y < r2Pos.y + r2Size.y && r1Pos.y + r1Size.y > r2Pos.y);
+		}
+
+		template <class T>
+		static void deleteObjInVector(T* obj, std::vector<T*> &vector)
+		{
+			auto firstToRemove = std::stable_partition(vector.begin(), vector.end(), [obj](T*objPtr) { return objPtr!=obj; });
+			std::for_each(firstToRemove, vector.end(), [](T* objPtr) { delete objPtr; });
+			vector.erase(firstToRemove, vector.end());
+			return;
 		}
 	};
 }

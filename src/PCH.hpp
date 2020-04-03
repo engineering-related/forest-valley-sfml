@@ -72,6 +72,7 @@
 #include "Utility/FileSystem.hpp"
 #include "Utility/Types.hpp"
 #include "Utility/Functions.hpp"
+#include "Utility/Textures.hpp"
 
 // Macros
 #define UNUSED(x) (void)(x)
