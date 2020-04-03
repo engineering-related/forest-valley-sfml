@@ -5,40 +5,62 @@ namespace util
 {
 	struct txh
 	{
-		static std::vector<sf::Texture*> activeTextures;
-		static sf::Texture* playerBase,
-							items,
-							Building,
-							Cave,
-							Dirt,
-							Fancy,
-							Ground,
-							Ground2,
-							Nature,
-							Nature2,
-							Rock,
-							Stone;
-
-		static void loadTexture(sf::Texture* texture, std::string fileName)
+		//A vector of all the active textures
+		inline static std::vector<sf::Texture*> *const activeTextures = new std::vector<sf::Texture*>;
+		struct Data
 		{
-			if(texture != nullptr) return;
-			texture = new sf::Texture;
-			txh::activeTextures.push_back(texture);
-			texture->loadFromFile(fileName);
-		}
+			sf::Texture* texture;
+			std::string fileName;
+			bool loaded = false;
+			Data(std::string fileName)
+			{
+				this->fileName = fileName;
+			}
+			~Data(){ this->deleteTexture(); }
 
-		static void deleteTexture(sf::Texture* texture)
-		{
-			//The texture gets deleted and removed from the "activeTextures" vec
-			util::fn::deleteObjInVector(texture, txh::activeTextures);
-		}
+			void loadTexture()
+			{
+				if(this->loaded) return;
+				this->texture = new sf::Texture;
+				util::txh::activeTextures->push_back(this->texture);
+				this->texture->loadFromFile(this->fileName);
+				this->loaded = true;
+			}
 
+			void deleteTexture()
+			{
+				//The texture gets deleted and removed from the "activeTextures" vec
+				util::fn::deleteObjInVector(this->texture, *util::txh::activeTextures);
+				this->loaded = false;
+			}
+		};
+
+			//Define all static textures
+			///////////////////////////////////////////////////////////////////////////////////
+			inline static Data *const PlayerBase = new Data("PlayerBase.png"),
+									  *const Items = new Data("content/items/Items.png"),
+									  *const Building = new Data("Building.png"),
+									  *const Cave = new Data("Cave.png"),
+									  *const Dirt = new Data("Dirt.png"),
+									  *const Fancy = new Data("Fancy.png"),
+									  *const Ground = new Data("Ground.png"),
+									  *const Ground2 = new Data("Ground2.png"),
+									  *const Nature = new Data("Nature.png"),
+									  *const Nature2 = new Data("Nature2.png"),
+									  *const Rock = new Data("Rock.png"),
+									  *const Stone = new Data("Stone.png");
+		//////////////////////////////////////////////////////////////////////////////////
 		static void deleteAllTextures()
 		{
-			for (sf::Texture* texture : txh::activeTextures)
+			for (sf::Texture* texture : *util::txh::activeTextures)
 			{
 				delete texture;
 			}
+		}
+
+		static std::size_t getNrOfActiveTextures()
+		{
+			return util::txh::activeTextures->size();
 		}
 	};
 }
