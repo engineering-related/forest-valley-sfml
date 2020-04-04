@@ -1,49 +1,49 @@
 #include "Object.h"
 
-Object::Object(Vector2f pos, Texture* spriteSheet, Vector2i sheetSize, Vector2f scale)
+Object::Object(Vector2f pos, Texture* texture, Vector2f scale)
 {
 	this->sprite.setPosition(pos);
-	this->spriteSheet = spriteSheet;
-	this->textureRects = Object::getTextureRects(spriteSheet, sheetSize);
-	this->sprite.setTexture(*this->spriteSheet);
+	this->texture = texture;
+	this->sprite.setTexture(*this->texture);
 	this->sprite.setScale(scale);
 	this->init();
 }
 
 Object::~Object()
 {
+	delete this->spriteSheetComponent;
+	delete this->movementComponent;
+	delete this->textureRect;
 }
 
 void Object::init()
 {
 	this->zIndex = 0;
+	this->spriteSheetComponent = NULL;
 }
 
-void Object::flipTexture()
+void Object::createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos)
 {
-	for (size_t x = 0; x < textureRects.size(); x++)
-	{
-		for (size_t y = 0; y < textureRects[x].size(); y++)
-		{
-			this->textureRects[x][y].left += this->textureRects[x][y].width;
-			this->textureRects[x][y].width = -this->textureRects[x][y].width;
-		}
-	}
+	if (this->spriteSheetComponent != NULL)
+		delete this->spriteSheetComponent;
+	this->spriteSheetComponent = new SpriteSheetComponent(nrOfImgs, startPos, endPos);
 }
 
-std::vector<std::vector<IntRect>> Object::getTextureRects(Texture* spriteSheet, const Vector2i& nrOfImgs)
+void Object::createMovementComponent(const float maxVelocity, const float acceleration, const float deAcceleration)
 {
-	std::vector<std::vector<IntRect>> textureRects;
-	Vector2f inc(spriteSheet->getSize().x / nrOfImgs.x, spriteSheet->getSize().y / nrOfImgs.y);
-
-	for (unsigned int x = 0; x < spriteSheet->getSize().x; x += inc.x)
-	{
-		std::vector<IntRect> temp;
-		for (unsigned int y = 0; y < spriteSheet->getSize().y; y += inc.y)
-		{
-			temp.push_back(IntRect(Vector2i(x, y), Vector2i(inc.x, inc.y)));
-		}
-		textureRects.push_back(temp);
-	}
-	return textureRects;
+	if (this->movementComponent != NULL)
+		delete this->movementComponent;
+	this->movementComponent = new MovementComponent(this->sprite, maxVelocity, acceleration, deAcceleration);
 }
+
+void Object::flipTexture(IntRect& rect)
+{
+	rect.left += rect.width;
+	rect.width = -rect.width;
+}
+
+void Object::setTextureRect(Sprite &sprite, const IntRect& rect)
+{
+	sprite.setTextureRect(rect);
+}
+

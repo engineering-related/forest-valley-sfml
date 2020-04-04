@@ -5,7 +5,7 @@
 	"C_Cpp.preferredPathSeparator": "Forward Slash",
 	"C_Cpp.loggingLevel": "Warning",
 	"C_Cpp.workspaceParsingPriority": "highest",
-	"C_Cpp.enhancedColorization": "Disabled",
+	"C_Cpp.enhancedColorization": "Enabled",
 	"debug.toolBarLocation": "docked",
 	//"editor.fontFamily": "'Ubuntu Mono', 'Courier Prime Code', 'Courier', 'Courier New', Consolas, monospace",
 	"editor.tabSize": 4,

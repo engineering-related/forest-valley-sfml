@@ -3,7 +3,6 @@
 
 namespace util
 {
-	//template<typename T>
 	struct fn
 	{
 		static float distance2i(const sf::Vector2i& a, const sf::Vector2i& b)
@@ -75,4 +74,4 @@ namespace util
 	};
 }
 
-#endif
+#endif //UTIL_FUNCTIONS
