@@ -2,7 +2,7 @@
 #define GAME
 
 //Includes
-#include "MapGenerator/MapGenerator.h"
+#include "Map/Map.h"
 #include "Platform/Platform.hpp"
 #include "Entity/AllEntities.hpp"
 
@@ -22,12 +22,15 @@ private:
 	float framerateLimit;
 	float cap;
 
-	//std::vector<Object*> entites;
+	std::vector<Object*> entites;
 	//std::vector<std::vector<Tile*>> grid
-	MapGenerator* map;
+
 	unsigned int seed;
+	Map* map;
 
 	void init();
+	void initMap();
+	static void zoomViewAt(const sf::Vector2i& pixel, sf::RenderWindow& window, const float& zoom);
 	void pollEvents();
 	void updateClock();
 	void printFPS();

@@ -1,13 +1,24 @@
 #include "SpriteSheetComponent.h"
 
-SpriteSheetComponent::SpriteSheetComponent(const Vector2i& nrOfImgs, const Vector2i& startPos, const Vector2i& endPos)
+SpriteSheetComponent::SpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos)
 {
-	this->textureRects = SpriteSheetComponent::getTextureRects(nrOfImgs, startPos, endPos);
+	this->nrOfImgs = nrOfImgs;
+	this->textureRects = SpriteSheetComponent::createTextureRects(nrOfImgs, startPos, endPos);
 }
 
 SpriteSheetComponent::~SpriteSheetComponent()
 {
 
+}
+
+const Vector2i& SpriteSheetComponent::getNrOfImages() const
+{
+	return this->nrOfImgs;
+}
+
+const std::vector<std::vector<IntRect>>& SpriteSheetComponent::getTextureRects() const
+{
+	return this->textureRects;
 }
 
 void SpriteSheetComponent::flipTexture()
@@ -28,7 +39,7 @@ void SpriteSheetComponent::addTextureRect(IntRect rect, const int& x, const int&
 	this->textureRects[x][y] = rect;
 }
 
-std::vector<std::vector<IntRect>> SpriteSheetComponent::getTextureRects(const Vector2i& nrOfImgs, const Vector2i& startPos, const Vector2i& endPos)
+std::vector<std::vector<IntRect>> SpriteSheetComponent::createTextureRects(const Vector2i& nrOfImgs, const Vector2i& startPos, const Vector2i& endPos)
 {
 
 	std::vector<std::vector<IntRect>> textureRects;

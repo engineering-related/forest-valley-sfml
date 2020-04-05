@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Entity/AllEntities.hpp"
 
 Game::Game()
 {
@@ -20,7 +21,7 @@ void Game::init()
 	float screenScalingFactor = platform.getScreenScalingFactor(this->window->getSystemHandle());
 	VideoMode mode = VideoMode(WINDOW_WIDTH * screenScalingFactor, WINDOW_HEIGHT * screenScalingFactor);
 	//VideoMode desktopMode = VideoMode().getDesktopMode();
-	this->window->create(mode, "Forest Valley", Style::Default);
+	this->window->create(mode, "Forest Valley", Style::None);
 	srand(time(NULL));
 	platform.setIcon(this->window->getSystemHandle());
 	//window->setVerticalSyncEnabled(true);
@@ -32,10 +33,27 @@ void Game::init()
 	this->cap = CAP;
 	this->window->setFramerateLimit(this->framerateLimit);
 
-	//Testing Map (TEMP)
-	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(200, 200), 30, 4, 0.5, 2, Vector2f(0, 0), 1);
-	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+	//Init Map
+	this->initMap();
+
+	//Testing Obejcts
+}
+
+void Game::initMap()
+{
+	this->map = new Map;
+}
+
+void Game::zoomViewAt(const sf::Vector2i& pixel, sf::RenderWindow& window, const float& zoom)
+{
+	const sf::Vector2f beforeCoord { window.mapPixelToCoords(pixel) };
+	sf::View view { window.getView() };
+	view.zoom(zoom);
+	window.setView(view);
+	const sf::Vector2f afterCoord { window.mapPixelToCoords(pixel) };
+	const sf::Vector2f offsetCoords { beforeCoord - afterCoord };
+	view.move(offsetCoords);
+	window.setView(view);
 }
 
 void Game::pollEvents()
@@ -48,9 +66,9 @@ void Game::pollEvents()
 		if (event.type == sf::Event::MouseWheelScrolled)
 		{
 			if (event.mouseWheelScroll.delta > 0)
-				util::fn::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
+				Game::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
 			else if (event.mouseWheelScroll.delta < 0)
-				util::fn::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
+				Game::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
 		}
 	}
 	if (Keyboard::isKeyPressed(Keyboard::Escape))
@@ -75,6 +93,7 @@ void Game::printFPS()
 	std::cout << this->FPS << std::endl;
 }
 
+
 void Game::startLoop()
 {
 	while (this->window->isOpen())
@@ -86,8 +105,15 @@ void Game::startLoop()
 
 		//Draw
 		this->window->clear();
-		this->map->draw(window);
-		//this->map->update();
+
+		this->map->draw(this->window);
+
+		for(Object* object: this->entites)
+		{
+			object->draw(this->window);
+			object->update(this->dt, this->multiplier);
+		}
+
 		this->window->display();
 	}
 }

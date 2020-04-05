@@ -3,5 +3,6 @@
 
 //All defined entities goes here:
 #include "Object.h"
+#include "Tiles/Static/Ground/Ground.h"
 
 #endif

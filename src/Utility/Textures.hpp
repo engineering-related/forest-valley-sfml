@@ -9,12 +9,17 @@ namespace util
 		inline static std::vector<sf::Texture*> *const activeTextures = new std::vector<sf::Texture*>;
 		struct Data
 		{
+		private:
 			sf::Texture* texture;
 			std::string fileName;
+			sf::Vector2i nrOfSheetImages;
 			bool loaded = false;
-			Data(std::string fileName)
+
+		public:
+			Data(std::string fileName, sf::Vector2i nrOfSheetImages)
 			{
 				this->fileName = fileName;
+				this->nrOfSheetImages = nrOfSheetImages;
 			}
 			~Data(){ this->deleteTexture(); }
 
@@ -27,6 +32,27 @@ namespace util
 				this->loaded = true;
 			}
 
+			const bool& isLoaded() const
+			{
+				return this->loaded;
+			}
+
+			sf::Texture* getTexture()
+			{
+				if (!this->loaded)
+				{
+					this->texture = new sf::Texture;
+					util::txh::activeTextures->push_back(this->texture);
+					this->texture->loadFromFile(this->fileName);
+					this->loaded = true;
+				}
+				return this->texture;
+			}
+			const sf::Vector2i& getNrOfSheetImages() const
+			{
+				return this->nrOfSheetImages;
+			}
+
 			void deleteTexture()
 			{
 				//The texture gets deleted and removed from the "activeTextures" vec
@@ -35,20 +61,20 @@ namespace util
 			}
 		};
 
-			//Define all static textures
-			///////////////////////////////////////////////////////////////////////////////////
-			inline static Data *const PlayerBase = new Data("PlayerBase.png"),
-									  *const Items = new Data("content/items/Items.png"),
-									  *const Building = new Data("Building.png"),
-									  *const Cave = new Data("Cave.png"),
-									  *const Dirt = new Data("Dirt.png"),
-									  *const Fancy = new Data("Fancy.png"),
-									  *const Ground = new Data("Ground.png"),
-									  *const Ground2 = new Data("Ground2.png"),
-									  *const Nature = new Data("Nature.png"),
-									  *const Nature2 = new Data("Nature2.png"),
-									  *const Rock = new Data("Rock.png"),
-									  *const Stone = new Data("Stone.png");
+		//Define all static textures
+		///////////////////////////////////////////////////////////////////////////////////
+		inline static Data *const PlayerBase = new Data("PlayerBase.png", sf::Vector2i(8, 3)),
+								  *const Items = new Data("content/items/Items.png", sf::Vector2i(8, 1)),
+								  // *const Building = new Data("Building.png" /*, sf::Vector2i(?, ?)*/),
+									  //*const Cave = new Data("Cave.png" /*, sf::Vector2i(?, ?)*/),
+									  //*const Dirt = new Data("Dirt.png"),
+									  //*const Fancy = new Data("Fancy.png"),
+									  *const Ground = new Data("content/terrain/Ground.png", sf::Vector2i(480/32, 768/32));
+									  //*const Ground2 = new Data("Ground2.png");
+										// *const Nature = new Data("Nature.png"),
+										//*const Nature2 = new Data("Nature2.png"),
+										// *const Rock = new Data("Rock.png"),
+										// *const Stone = new Data("Stone.png");
 		//////////////////////////////////////////////////////////////////////////////////
 		static void deleteAllTextures()
 		{

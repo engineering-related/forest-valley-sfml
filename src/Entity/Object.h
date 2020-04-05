@@ -9,13 +9,12 @@ using namespace sf;
 class Object
 {
 private:
-	virtual void init();
+	void init();
 
 protected:
 	//Data
 	Sprite sprite;
 	Texture* texture;
-	IntRect* textureRect;
 	int zIndex;
 
 	struct GridPos
@@ -31,7 +30,7 @@ protected:
 
 public:
 	//Constructors
-	Object(Vector2f pos, Texture* texture, Vector2f scale);
+	Object(Vector2f pos, Texture* texture);
 	virtual ~Object();
 
 	//Components
@@ -41,12 +40,12 @@ public:
 	//Accesors
 
 	//Modifiers
+	void flipTextureRect();
 
 	//Functions
 	virtual void draw(RenderTarget* window) const = 0;
 	virtual void update(const float& dt, const float& multiplier) = 0;
-	static void flipTexture(IntRect& rect);
-	static void setTextureRect(Sprite &sprite, const IntRect& rect);
+
 };
 
 #endif //GAME_OBJECT

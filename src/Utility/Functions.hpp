@@ -1,6 +1,8 @@
 #ifndef UTIL_FUNCTIONS
 #define UTIL_FUNCTIONS
 
+#define ENUM_TO_STR(ENUM) std::string(#ENUM)
+
 namespace util
 {
 	struct fn
@@ -14,17 +16,6 @@ namespace util
 			return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 		}
 
-		static void zoomViewAt(const sf::Vector2i &pixel, sf::RenderWindow& window, const float &zoom)
-		{
-			const sf::Vector2f beforeCoord { window.mapPixelToCoords(pixel) };
-			sf::View view { window.getView() };
-			view.zoom(zoom);
-			window.setView(view);
-			const sf::Vector2f afterCoord { window.mapPixelToCoords(pixel) };
-			const sf::Vector2f offsetCoords { beforeCoord - afterCoord };
-			view.move(offsetCoords);
-			window.setView(view);
-		}
 		static std::string round2D(float f)
 		{
 			std::string s(16, '\0');

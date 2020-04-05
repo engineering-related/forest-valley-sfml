@@ -23,10 +23,14 @@ MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float nois
 
 MapGenerator::~MapGenerator()
 {
+
 }
 
 void MapGenerator::initTerrainTypes()
 {
+	//Init terrainVec
+	this->terrainVec = std::vector<std::vector<TerrainType>>(this->mapDimensions.x, std::vector<TerrainType>(this->mapDimensions.y, TerrainType::WATER_DEEP));
+
 	//HeightMap standard
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(55, 102, 196)));
@@ -87,7 +91,7 @@ void MapGenerator::updateTexture()
 			float currentHeight = pow(this->heightMap[x][y], this->elevation);
 			float forestValue = this->forsetMap[x][y];
 			float wheatValue = this->fieldMap[x][y];
-			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.25f, 4.f, true);
+			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 4.f, true);
 
 			RectangleShape cell;
 			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
@@ -99,7 +103,9 @@ void MapGenerator::updateTexture()
 			{
 				if (currentHeight <= heightRegion.value)
 				{
+
 					cell.setFillColor(Color(heightRegion.color));
+					this->terrainVec[x][y] = heightRegion.type;
 					break;
 				}
 			}
@@ -112,6 +118,7 @@ void MapGenerator::updateTexture()
 					currentHeight < *forestRegion.endRange)
 				{
 					cell.setFillColor(Color(forestRegion.color));
+					this->terrainVec[x][y] = forestRegion.type;
 					break;
 				}
 			}
@@ -126,6 +133,7 @@ void MapGenerator::updateTexture()
 					if (cell.getFillColor() == this->heightRegions[static_cast<int>(TerrainType::GRASS_LIGHT)].color)
 					{
 						cell.setFillColor(Color(wheatRegion.color));
+						this->terrainVec[x][y] = wheatRegion.type;
 					}
 					break;
 				}
@@ -141,6 +149,7 @@ void MapGenerator::updateTexture()
 				if (boundryValue >= this->heightRegions[static_cast<int>(TerrainType::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					cell.setFillColor(Color(heightRegion.color));
+					this->terrainVec[x][y] = heightRegion.type;
 					break;
 				}
 			}

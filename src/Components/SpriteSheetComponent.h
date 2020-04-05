@@ -6,19 +6,23 @@ using namespace sf;
 class SpriteSheetComponent
 {
 private:
+	Vector2i nrOfImgs;
 	std::vector<std::vector<IntRect>> textureRects;
+
 
 public:
 	//Constructors
-	SpriteSheetComponent(const Vector2i& nrOfImgs, const Vector2i& startPos, const Vector2i& endPos);
+	SpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos);
 	~SpriteSheetComponent();
 
 	//Accessors
+	const Vector2i& getNrOfImages() const;
+	const std::vector<std::vector<IntRect>>& getTextureRects() const;
 
 	//Functions
 	void flipTexture();
 	void addTextureRect(IntRect rect, const int&x, const int& y);
-	static std::vector<std::vector<IntRect>> getTextureRects(const Vector2i& nrOfImgs, const Vector2i &startPos, const Vector2i &endPos);
+	static std::vector<std::vector<IntRect>> createTextureRects(const Vector2i& nrOfImgs, const Vector2i &startPos, const Vector2i &endPos);
 
 };
 

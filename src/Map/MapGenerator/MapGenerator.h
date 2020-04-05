@@ -32,6 +32,8 @@ public:
 		inline void setRange(float * start, float * end) { this->startRange = start, this->endRange = end; }
 	};
 
+	std::vector<std::vector<TerrainType>> terrainVec;
+
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;
 	std::vector<Terrain> wheatRegions;
@@ -58,6 +60,7 @@ public:
 	void update(/*const float &dt, const float &multiplier*/);
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);
+
 	static unsigned int generatePsuedoRandomSeed();
 	static float addSquareMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
 	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
