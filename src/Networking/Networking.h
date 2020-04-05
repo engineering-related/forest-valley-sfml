@@ -3,3 +3,12 @@
 #include "TCP.h"
 #include "UDP.h"
 
+class Networking
+{
+private:
+	/* data */
+public:
+	Networking(/* args */);
+	~Networking();
+};
+
