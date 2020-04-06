@@ -24,6 +24,7 @@ void Map::initMapGenerator()
 	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 60, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/6, WINDOW_WIDTH/6));
 	this->map->setConstDraw(true);
+	this->grid = std::vector<std::vector<StaticTile*>>(this->map->mapDimensions.x, std::vector<StaticTile*>(this->map->mapDimensions.y, nullptr));
 }
 
 void Map::updateTexture()
@@ -34,7 +35,7 @@ void Map::updateTexture()
 	this->renderTexture.create(textureSize.x, textureSize.y);
 	for(size_t x = 0; x < this->map->terrainVec.size(); x++)
 	{
-		for (size_t y = 0; y < this->map->terrainVec.size(); y++)
+		for (size_t y = 0; y < this->map->terrainVec[x].size(); y++)
 		{
 			Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
 			Vector2i* type;
@@ -68,8 +69,9 @@ void Map::updateTexture()
 					type = &Ground::STONE->OMM;
 					break;
 			}
-			Ground currentGround(pos, *type);
-			currentGround.draw(&renderTexture);
+			Ground *currentGround = new Ground(pos, *type);
+			this->grid[x][y] = currentGround;
+			currentGround->draw(&renderTexture);
 		}
 	}
 	this->renderTexture.display();

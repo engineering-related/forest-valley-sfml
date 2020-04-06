@@ -13,6 +13,7 @@ Object::~Object()
 {
 	delete this->spriteSheetComponent;
 	delete this->movementComponent;
+	delete this->animationComponent;
 }
 
 void Object::init()
@@ -20,6 +21,7 @@ void Object::init()
 	this->zIndex = 0;
 	this->spriteSheetComponent = nullptr;
 	this->movementComponent = nullptr;
+	this->animationComponent = nullptr;
 }
 
 void Object::createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos)
@@ -34,6 +36,13 @@ void Object::createMovementComponent(const float maxVelocity, const float accele
 	if (this->movementComponent != nullptr)
 		delete this->movementComponent;
 	this->movementComponent = new MovementComponent(this->sprite, maxVelocity, acceleration, deAcceleration);
+}
+
+void Object::createAnimationComponent(AnimationComponent::Animation* startAnim)
+{
+	if (this->animationComponent != nullptr)
+		delete this->animationComponent;
+	this->animationComponent = new AnimationComponent(this->sprite, startAnim);
 }
 
 void Object::flipTextureRect()

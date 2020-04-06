@@ -16,7 +16,8 @@ private:
 
 	RenderTexture renderTexture;
 	Sprite sprite;
-	std::vector<std::vector<Tile*>> grid;
+	//All dynamic tiles goes in the main vector since they have to be updated
+	std::vector<std::vector<StaticTile*>> grid;
 
 public:
 	Map();

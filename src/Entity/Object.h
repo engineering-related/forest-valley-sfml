@@ -3,6 +3,7 @@
 
 #include "Components/SpriteSheetComponent.h"
 #include "Components/MovementComponent.h"
+#include "Components/AnimationComponent.h"
 
 using namespace sf;
 
@@ -27,6 +28,7 @@ protected:
 	//Components
 	SpriteSheetComponent* spriteSheetComponent;
 	MovementComponent* movementComponent;
+	AnimationComponent* animationComponent;
 
 public:
 	//Constructors
@@ -36,6 +38,7 @@ public:
 	//Components
 	void createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos);
 	void createMovementComponent(const float maxVelocity, const float acceleration, const float deAcceleration);
+	void createAnimationComponent(AnimationComponent::Animation* startAnim);
 
 	//Accesors
 
@@ -45,7 +48,6 @@ public:
 	//Functions
 	virtual void draw(RenderTarget* window) const = 0;
 	virtual void update(const float& dt, const float& multiplier) = 0;
-
 };
 
 #endif //GAME_OBJECT
