@@ -16,6 +16,7 @@ private:
 
 	RenderTexture renderTexture;
 	Sprite sprite;
+	std::vector<std::vector<Tile*>> grid;
 
 public:
 	Map();

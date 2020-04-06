@@ -8,6 +8,9 @@ using namespace sf;
 class MapGenerator
 {
 private:
+	bool constDraw;
+	Vector2f constDrawPos;
+	Vector2f constDrawScale;
 	void initTerrainTypes();
 
 public:
@@ -56,8 +59,10 @@ public:
 	MapGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
 	~MapGenerator();
 
-	void draw(RenderTarget * window) const;
+	void draw(RenderTarget * window);
 	void update(/*const float &dt, const float &multiplier*/);
+	//Set the map to a constant pos/scale when drawn
+	void setConstDraw(const bool& state);
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);
 

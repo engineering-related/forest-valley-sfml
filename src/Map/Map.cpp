@@ -21,8 +21,9 @@ void Map::init()
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 50, 5, 0.5, 2, Vector2f(0, 0), 1);
-	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 60, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/6, WINDOW_WIDTH/6));
+	this->map->setConstDraw(true);
 }
 
 void Map::updateTexture()
@@ -79,4 +80,5 @@ void Map::updateTexture()
 void Map::draw(RenderTarget* window)
 {
 	window->draw(this->sprite);
+	this->map->draw(window);
 }

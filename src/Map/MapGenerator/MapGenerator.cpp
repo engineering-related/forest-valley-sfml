@@ -15,6 +15,7 @@ MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float nois
 	this->lacunarity = lacunarity;
 	this->offset = offset;
 	this->elevation = elevation;
+	this->constDraw = false;
 
 	this->initTerrainTypes();
 	this->update();
@@ -66,8 +67,11 @@ void MapGenerator::initTerrainTypes()
 
 }
 
-void MapGenerator::draw(RenderTarget* window) const
+void MapGenerator::draw(RenderTarget* window)
 {
+	if(this->constDraw)
+		util::fn::mapSpriteToWindowCoords(window, &this->sprite, this->constDrawPos, this->constDrawScale);
+
 	window->draw(this->sprite);
 }
 
@@ -79,6 +83,10 @@ void MapGenerator::update(/*const float & dt, const float & multiplier*/)
 	this->updateTexture();
 }
 
+void MapGenerator::setConstDraw(const bool& state)
+{
+	this->constDraw = state;
+}
 
 void MapGenerator::updateTexture()
 {
@@ -159,6 +167,8 @@ void MapGenerator::updateTexture()
 	}
 	this->texture.display();
 	this->sprite.setTexture(this->texture.getTexture());
+	this->constDrawPos = this->sprite.getPosition();
+	this->constDrawScale = this->sprite.getScale();
 }
 
 float MapGenerator::addSquareMask(const int &x, const int &y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
@@ -194,6 +204,7 @@ float MapGenerator::addCircleMask(const int & x, const int & y, float noise, flo
 void MapGenerator::setDisplaySize(const Vector2f &size)
 {
 	 Vector2f scale = Vector2f(size.x/this->texture.getSize().x, size.y/this->texture.getSize().y);
+	this->constDrawScale = scale;
 	this->sprite.setScale(scale);
 }
 

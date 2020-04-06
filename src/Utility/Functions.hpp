@@ -54,6 +54,14 @@ namespace util
 			return (r1Pos.x < r2Pos.x + r2Size.x && r1Pos.x + r1Size.x > r2Pos.x && r1Pos.y < r2Pos.y + r2Size.y && r1Pos.y + r1Size.y > r2Pos.y);
 		}
 
+		static void mapSpriteToWindowCoords(sf::RenderTarget* window, sf::Sprite* sprite, const sf::Vector2f& constPos, const sf::Vector2f& constSize)
+		{
+			//Sprite
+			sprite->setPosition(sf::Vector2f(window->mapPixelToCoords(sf::Vector2i(constPos))));
+			sprite->setScale(constSize.x / window->getDefaultView().getSize().x * window->getView().getSize().x,
+				constSize.y / window->getDefaultView().getSize().y * window->getView().getSize().y);
+		}
+
 		template <class T>
 		static void deleteObjInVector(T* obj, std::vector<T*> &vector)
 		{
