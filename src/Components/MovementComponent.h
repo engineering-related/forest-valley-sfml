@@ -13,20 +13,8 @@ private:
 	float acc;
 	float deAcc;
 
+
 public:
-	struct Movement
-	{
-		float maxVel = 200.f;
-
-		bool NOW = false;
-		bool UP = false;
-		bool LEFT = false;
-		bool DOWN = false;
-		bool RIGHT = false;
-
-		void reset();
-	}; Movement movement;
-
 	MovementComponent(Sprite &sprite, float maxVelocity, float acc, float deAcc);
 	virtual ~MovementComponent();
 
@@ -35,9 +23,11 @@ public:
 	const Vector2f& getPrevPos() const;
 
 	//Modifiers
+	//set "deAcc" based on the friction of tile under moving object
 	inline void setDeAcc(const float &deAcc) {this->deAcc = deAcc; }
 
 	//Functions
+	float getAngle();
 	void move(const float dir_x, const float dir_y, const float& dt, const float& multiplier);
 	void update(const float& dt, const float &multiplier);
 	const Vector2f getClampedMagVel();

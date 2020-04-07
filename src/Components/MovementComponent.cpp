@@ -27,8 +27,9 @@ const Vector2f & MovementComponent::getPrevPos() const
 	return this->prevPos;
 }
 
-void MovementComponent::move(const float dir_x, const float dir_y, const float& dt, const float &multiplier)
+void MovementComponent::move(const float dir_x, const float dir_y, const float& dt, const float& multiplier)
 {
+	//Movement
 	this->vel.x += this->acc * dir_x * dt * multiplier;
 	this->vel.y += this->acc * dir_y * dt * multiplier;
 }

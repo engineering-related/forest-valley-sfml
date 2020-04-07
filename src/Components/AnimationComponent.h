@@ -17,6 +17,7 @@ public:
 	{
 		std::vector<IntRect*> rectArray;
 		float cap;
+		Animation(){}
 		Animation(float cap)
 		{
 			this->cap = cap;

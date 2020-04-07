@@ -29,6 +29,7 @@ protected:
 	SpriteSheetComponent* spriteSheetComponent;
 	MovementComponent* movementComponent;
 	AnimationComponent* animationComponent;
+	//HitboxComponent = this->sprite.getTextureRect();
 
 public:
 	//Constructors
