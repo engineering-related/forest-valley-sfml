@@ -2,7 +2,7 @@
 #define ALL_ENTITES
 
 //All defined entities goes here:
-#include "Object.h"
+#include "Creature/Humans/Player.h"
 #include "Tiles/Static/Ground/Ground.h"
 
 #endif

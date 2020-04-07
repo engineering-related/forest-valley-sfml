@@ -21,7 +21,7 @@ void Game::init()
 	float screenScalingFactor = platform.getScreenScalingFactor(this->window->getSystemHandle());
 	VideoMode mode = VideoMode(WINDOW_WIDTH * screenScalingFactor, WINDOW_HEIGHT * screenScalingFactor);
 	//VideoMode desktopMode = VideoMode().getDesktopMode();
-	this->window->create(mode, "Forest Valley", Style::None);
+	this->window->create(mode, "Forest Valley", Style::Default);
 	srand(time(NULL));
 	platform.setIcon(this->window->getSystemHandle());
 	//window->setVerticalSyncEnabled(true);
@@ -37,6 +37,7 @@ void Game::init()
 	this->initMap();
 
 	//Testing Obejcts
+	this->entites.push_back(new Player(Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)));
 }
 
 void Game::initMap()
@@ -96,6 +97,7 @@ void Game::printFPS()
 
 void Game::startLoop()
 {
+
 	while (this->window->isOpen())
 	{
 		//Events
@@ -110,8 +112,8 @@ void Game::startLoop()
 
 		for(Object* object: this->entites)
 		{
-			object->draw(this->window);
 			object->update(this->dt, this->multiplier);
+			object->draw(this->window);
 		}
 
 		this->window->display();

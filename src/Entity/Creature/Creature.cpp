@@ -1,12 +1,10 @@
 #include "Creature.h"
 
 Creature::Creature(Vector2f pos, util::txh::Data* textureData, Vector2i startSheetPos, Vector2i endSheetPos,
-	AnimationComponent::Animation* startAnim,
 	float maxVelocity, float acceleration, float deAcceleration) :
 	Object(pos, textureData->getTexture())
 {
 	this->createSpriteSheetComponent(textureData->getNrOfSheetImages(), startSheetPos, endSheetPos);
-	this->createAnimationComponent(startAnim);
 	this->createMovementComponent(maxVelocity, acceleration, deAcceleration);
 }
 
@@ -62,9 +60,9 @@ void Creature::down(const float& dt, const float& multiplier)
 
 void Creature::right(const float& dt, const float& multiplier)
 {
-	this->move.direction = Movement::Direction::L;
+	this->move.direction = Movement::Direction::R;
 	this->move.NOW = true, this->move.RIGHT = true;
-	this->animationComponent->setAnimation(&this->walking.down);
+	this->animationComponent->setAnimation(&this->walking.right);
 	this->movementComponent->move(1.f, 0.f, dt, multiplier);
 }
 
@@ -73,10 +71,15 @@ void Creature::checkTextureFlip()
 	if(this->move.direction == Movement::Direction::L || this->move.direction == Movement::Direction::R)
 	{
 		if (this->move.direction == Movement::Direction::L && this->move.prevDirection != this->move.direction)
+		{
 			this->spriteSheetComponent->flipTexture();
+			this->move.prevDirection = this->move.direction;
+		}
 		else if (this->move.direction == Movement::Direction::R && this->move.prevDirection != this->move.direction)
+		{
 			this->spriteSheetComponent->flipTexture();
-		this->move.prevDirection = this->move.direction;
+			this->move.prevDirection = this->move.direction;
+		}
 	}
 }
 
@@ -104,13 +107,13 @@ void Creature::draw(RenderTarget* window) const
 void Creature::update(const float& dt, const float& multiplier)
 {
 	//Facing direction
-	this->checkTextureFlip();
+	//this->checkTextureFlip();
 	this->updateAngle();
 	//Animation
 	this->animationComponent->updateFrames(dt, multiplier);
 	if (!this->move.NOW) this->none();
-	this->move.reset();
 	Object::update(dt, multiplier);
+	this->move.reset();
 }
 
 void Creature::Movement::reset()

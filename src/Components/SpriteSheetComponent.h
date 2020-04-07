@@ -17,7 +17,8 @@ public:
 
 	//Accessors
 	const Vector2i& getNrOfImages() const;
-	const std::vector<std::vector<IntRect>>& getTextureRects() const;
+	//Modifiable values
+	std::vector<std::vector<IntRect>>& getTextureRects();
 
 	//Functions
 	void flipTexture();

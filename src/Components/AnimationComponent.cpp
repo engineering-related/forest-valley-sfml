@@ -5,6 +5,7 @@ AnimationComponent::AnimationComponent(Sprite& sprite, Animation* startAnim)
 	this->spritePtr = &sprite;
 	this->currentAnim = startAnim;
 	this->incer = rand() % int(this->currentAnim->cap) + 1;
+	this->index = 0;
 }
 
 AnimationComponent::~AnimationComponent()
@@ -16,19 +17,11 @@ void AnimationComponent::setAnimation(Animation* anim)
 	this->currentAnim = anim;
 }
 
-int AnimationComponent::findIndex(const IntRect* currentFrame)
+void AnimationComponent::setIndex(const unsigned int& index)
 {
-	//only works for sheets with one row, not very efficient fix later!!!
-	for (size_t x = 0; x < this->textureRects.size(); x++)
-	{
-		for (size_t y = 0; y < this->textureRects[x].size(); y++)
-		{
-			if (currentFrame == &this->textureRects[x][y])
-				return x;
-		}
-	}
-	return -1;
+	this->index = index;
 }
+
 
 void AnimationComponent::updateFrames(const float& dt, const float& multiplier)
 {
@@ -39,7 +32,6 @@ void AnimationComponent::updateFrames(const float& dt, const float& multiplier)
 		if (this->index >= this->currentAnim->rectArray.size() || this->previousAnim != currentAnim)
 			this->index = 0;
 		this->spritePtr->setTextureRect(*this->currentAnim->rectArray[this->index]);
-		//this->animIndex = this->findIndex(this->currentAnim->rectArray[this->index]);
 		this->index++;
 	}
 	this->previousAnim = this->currentAnim;

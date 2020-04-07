@@ -63,18 +63,18 @@ namespace util
 
 		//Define all static textures
 		///////////////////////////////////////////////////////////////////////////////////
-		inline static Data *const PlayerBase = new Data("PlayerBase.png", sf::Vector2i(8, 3)),
+		inline static Data *const PlayerBase = new Data("content/characters/PlayerPoke.png", sf::Vector2i(4, 4)),
 								  *const Items = new Data("content/items/Items.png", sf::Vector2i(8, 1)),
 								  // *const Building = new Data("Building.png" /*, sf::Vector2i(?, ?)*/),
 									  //*const Cave = new Data("Cave.png" /*, sf::Vector2i(?, ?)*/),
 									  //*const Dirt = new Data("Dirt.png"),
 									  //*const Fancy = new Data("Fancy.png"),
-									  *const Ground = new Data("content/terrain/Ground.png", sf::Vector2i(480/32, 768/32));
-									  //*const Ground2 = new Data("Ground2.png");
-										// *const Nature = new Data("Nature.png"),
-										//*const Nature2 = new Data("Nature2.png"),
-										// *const Rock = new Data("Rock.png"),
-										// *const Stone = new Data("Stone.png");
+									  *const Ground = new Data("content/terrain/Ground.png", sf::Vector2i(480 / 32, 768 / 32));
+		//*const Ground2 = new Data("Ground2.png");
+		// *const Nature = new Data("Nature.png"),
+		//*const Nature2 = new Data("Nature2.png"),
+		// *const Rock = new Data("Rock.png"),
+		// *const Stone = new Data("Stone.png");
 		//////////////////////////////////////////////////////////////////////////////////
 		static void deleteAllTextures()
 		{

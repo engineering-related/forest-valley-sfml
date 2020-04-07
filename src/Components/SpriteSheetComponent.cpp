@@ -16,10 +16,11 @@ const Vector2i& SpriteSheetComponent::getNrOfImages() const
 	return this->nrOfImgs;
 }
 
-const std::vector<std::vector<IntRect>>& SpriteSheetComponent::getTextureRects() const
+std::vector<std::vector<IntRect>>& SpriteSheetComponent::getTextureRects()
 {
 	return this->textureRects;
 }
+
 
 void SpriteSheetComponent::flipTexture()
 {
@@ -45,10 +46,10 @@ std::vector<std::vector<IntRect>> SpriteSheetComponent::createTextureRects(const
 	std::vector<std::vector<IntRect>> textureRects;
 	Vector2f inc((endPos.x - startPos.x) / nrOfImgs.x, (endPos.y - startPos.y) / nrOfImgs.y);
 
-	for (int x = startPos.x; x < endPos.x; x += inc.x)
+	for (float x = startPos.x; x < endPos.x; x += inc.x)
 	{
 		std::vector<IntRect> temp;
-		for (int y = startPos.y; y < endPos.y; y += inc.y)
+		for (float y = startPos.y; y < endPos.y; y += inc.y)
 		{
 			temp.push_back(IntRect(Vector2i(x, y), Vector2i(inc.x, inc.y)));
 		}

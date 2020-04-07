@@ -23,7 +23,6 @@ private:
 	float cap;
 
 	std::vector<Object*> entites;
-	//std::vector<std::vector<Tile*>> grid
 
 	unsigned int seed;
 	Map* map;

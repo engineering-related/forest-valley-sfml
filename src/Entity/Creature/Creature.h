@@ -67,13 +67,7 @@ protected:
 		Direction prevDirection;
 	}; Movement move;
 
-	//Movement functions
 	float angle;
-	void none();
-	void up(const float& dt, const float& multiplier);
-	void left(const float& dt, const float& multiplier);
-	void down(const float& dt, const float& multiplier);
-	void right(const float& dt, const float& multiplier);
 	//Check if the direction has changed when moving horizontally
 	void checkTextureFlip();
 	//Update the viewing angle
@@ -82,11 +76,17 @@ protected:
 public:
 	//Constructors
 	Creature(Vector2f pos, util::txh::Data* textureData, Vector2i startSheetPos, Vector2i endSheetPos,
-		     AnimationComponent::Animation* startAnim,
 			 float maxVelocity, float acceleration, float deAcceleration);
 	~Creature();
 
 	//Functions
+	//Movement functions
+	void none();
+	void up(const float& dt, const float& multiplier);
+	void left(const float& dt, const float& multiplier);
+	void down(const float& dt, const float& multiplier);
+	void right(const float& dt, const float& multiplier);
+
 	virtual void draw(RenderTarget* window) const;
 	virtual void update(const float& dt, const float& multiplier);
 };

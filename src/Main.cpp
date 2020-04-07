@@ -11,13 +11,17 @@
 	 IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
 */
 
+//Some animals?
+//https://opengameart.org/content/lpc-wolf-animation
+//https://opengameart.org/content/lpc-style-farm-animals
+//https://opengameart.org/content/lpc-birds
+//https://opengameart.org/content/bunny-rabbit-lpc-style-for-pixelfarm
+//https://opengameart.org/content/lpc-goat
+//https://opengameart.org/content/deer
+
+
 int main()
 {
-
-#if defined(_DEBUG)
-	std::cout << "DEBUGGING" << std::endl;
-
-#endif
 	Game* game = new Game();
 	game->start();
 	delete game;

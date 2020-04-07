@@ -9,8 +9,6 @@ private:
 	Sprite* spritePtr;
 	float incer;
 	unsigned int index;
-	unsigned int animIndex;
-	std::vector<std::vector<IntRect>> textureRects;
 
 public:
 	struct Animation
@@ -30,6 +28,7 @@ private:
 
 public:
 	void setAnimation(Animation* anim);
+	void setIndex(const unsigned int &index);
 	int findIndex(const IntRect* currentFrame);
 	void updateFrames(const float& dt, const float& multiplier);
 	void update(const float& dt, const float& multiplier);
