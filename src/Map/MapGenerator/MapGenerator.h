@@ -14,11 +14,11 @@ private:
 	void initTerrainTypes();
 
 public:
-	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND, //Height
-							GRASS_LIGHT, MINERALS, ROCK_DARK, ROCK_LIGHT,
-							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW,
-							FOREST_DEEP, FOREST_SHALLOW, //Forest
-							WHEAT}; //Wheat
+	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND,
+							GRASS_LIGHT, WHEAT, FOREST_SHALLOW, FOREST_DEEP,
+							MINERALS, ROCK_DARK, ROCK_LIGHT,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW
+							};
 
 	struct Terrain {
 		TerrainType type;
