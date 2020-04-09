@@ -31,6 +31,7 @@ void MapGenerator::initTerrainTypes()
 {
 	//Init terrainVec
 	this->terrainVec = std::vector<std::vector<TerrainType>>(this->mapDimensions.x, std::vector<TerrainType>(this->mapDimensions.y, TerrainType::WATER_DEEP));
+	this->terrainVec2xScale = std::vector<std::vector<TerrainType>>(2*this->mapDimensions.x, std::vector<TerrainType>(2*this->mapDimensions.y, TerrainType::WATER_DEEP));
 
 	//HeightMap standard
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
@@ -81,9 +82,7 @@ void MapGenerator::update(/*const float & dt, const float & multiplier*/)
 	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->setTerrainTypes();
-	this->removeSingles();
-	this->removeSingles();
-	this->removeSingles();
+	//this->removeSingles();
 	this->updateTexture();
 }
 
@@ -109,6 +108,13 @@ void MapGenerator::setTerrainTypes()
 				if (currentHeight <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
+					for (int row = 0; row <= 1; row++)
+					{
+						for (int col = 0; col <= 1; col++)
+						{
+							this->terrainVec2xScale[2 * x + row][2 * y + col] = heightRegion.type;
+						}
+					}
 					break;
 				}
 			}
@@ -119,6 +125,13 @@ void MapGenerator::setTerrainTypes()
 				if (forestValue <= forestRegion.value && currentHeight > *forestRegion.startRange && currentHeight < *forestRegion.endRange)
 				{
 					this->terrainVec[x][y] = forestRegion.type;
+					for (int row = 0; row <= 1; row++)
+					{
+						for (int col = 0; col <= 1; col++)
+						{
+							this->terrainVec2xScale[2 * x + row][2 * y + col] = forestRegion.type;
+						}
+					}
 					break;
 				}
 			}
@@ -131,6 +144,13 @@ void MapGenerator::setTerrainTypes()
 					if (this->terrainVec[x][y] == TerrainType::GRASS_LIGHT)
 					{
 						this->terrainVec[x][y] = wheatRegion.type;
+						for (int row = 0; row <= 1; row++)
+						{
+							for (int col = 0; col <= 1; col++)
+							{
+								this->terrainVec2xScale[2 * x + row][2 * y + col] = wheatRegion.type;
+							}
+						}
 					}
 					break;
 				}
@@ -146,6 +166,13 @@ void MapGenerator::setTerrainTypes()
 				if (boundryValue >= this->heightRegions[static_cast<int>(TerrainType::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
+					for (int row = 0; row <= 1; row++)
+					{
+						for (int col = 0; col <= 1; col++)
+						{
+							this->terrainVec2xScale[2 * x + row][2 * y + col] = heightRegion.type;
+						}
+					}
 					break;
 				}
 			}
@@ -153,11 +180,12 @@ void MapGenerator::setTerrainTypes()
 	}
 }
 
+///////////////DONT LOOK, SEVERE AUTISM!!///////////
 std::vector<MapGenerator::TerrainType> MapGenerator::getNeighbours(const int& x, const int& y)
 {
 	std::vector<TerrainType> neighbours;
-	TerrainType *mid = &this->terrainVec[x][y],
-				*top = &this->terrainVec[x][y-1],
+	//TODO: Refactor with for loop
+	TerrainType *top = &this->terrainVec[x][y-1],
 				*left = &this->terrainVec[x-1][y],
 				*right = &this->terrainVec[x+1][y],
 				*bottom = &this->terrainVec[x][y+1],
@@ -167,7 +195,6 @@ std::vector<MapGenerator::TerrainType> MapGenerator::getNeighbours(const int& x,
 				*bl = &this->terrainVec[x-1][y+1],
 				*br = &this->terrainVec[x+1][y+1];
 
-	//neighbours.push_back(*mid);
 	neighbours.push_back(*top);
 	neighbours.push_back(*left);
 	neighbours.push_back(*right);
@@ -186,38 +213,51 @@ void MapGenerator::checkRemoveSingle(const int& x, const int& y, std::vector<std
 	else if ( x == 0 || y == 0 || x == this->mapDimensions.x - 1 || y == this->mapDimensions.y - 1) return; // dont check outer cells
 
 	TerrainType *current = &this->terrainVec[x][y], //Middle cell
-				*top = &this->terrainVec[x][y-1],
-				*left = &this->terrainVec[x-1][y],
-				*right = &this->terrainVec[x+1][y],
-				*bottom = &this->terrainVec[x][y+1];
+		*top = &this->terrainVec[x][y - 1],
+				*left = &this->terrainVec[x - 1][y],
+				*right = &this->terrainVec[x + 1][y],
+				*bottom = &this->terrainVec[x][y + 1],
+
+				*tl = &this->terrainVec[x - 1][y - 1],
+				*tr = &this->terrainVec[x + 1][y - 1],
+				*bl = &this->terrainVec[x - 1][y + 1],
+				*br = &this->terrainVec[x + 1][y + 1];
+
+	/*							   xx
+    Check for the specific type:   xxx   (with any rotation)
+									xx
+								*/
 
 	if ((*top == *current || *bottom == *current) &&
-	    (*left == *current || *right == *current)) return; //No singles found
+	(*left == *current || *right == *current) &&
+	((*tl == *current || *br == *current) || (*tr == *current || *bl == *current))) return; //No singles found
 	else
 	{
 		std::vector<TerrainType> neighbours = this->getNeighbours(x, y);
 		unsigned int count = 0;
 		while (!((*top == *current || *bottom == *current) &&
-			   (*left == *current || *right == *current)))
+			   (*left == *current || *right == *current) &&
+			   ((*tl == *current || *br == *current) || (*tr == *current || *bl == *current))))
 		{
+			//If none of the sourrounding cells is viable, change to most common type of the neighbours
+			//Change the adjecent cells to that type aswell
 			if(count > neighbours.size() - 1) {
 				*current = util::fn::most_common(neighbours.begin(), neighbours.end());
+				*top = *current;
+				*right = *current;
+				*left = *current;
+				*bottom = *current;
 				break;
 			};
 			*current = neighbours[count];
 			count++;
 		}
 		changedStates[x][y] = true;
-		//Check the other cells as well
+		//Do the same for the adjecent cells
 		checkRemoveSingle(x, y - 1, changedStates, false);
 		checkRemoveSingle(x - 1, y, changedStates, false);
 		checkRemoveSingle(x + 1, y, changedStates, false);
 		checkRemoveSingle(x, y + 1, changedStates, false);
-
-		//checkRemoveSingle(x - 1, y - 1, changedStates, false);
-		//checkRemoveSingle(x + 1, y - 1, changedStates, false);
-		//checkRemoveSingle(x - 1, y + 1, changedStates, false);
-		//checkRemoveSingle(x + 1, y + 1, changedStates, false);
 	}
 }
 
@@ -233,21 +273,26 @@ void MapGenerator::removeSingles()
 			c->changed = true
 			-do the same check for the neighbours
 	*/
-	std::vector<std::vector<bool>> changedStates = std::vector<std::vector<bool>>(this->mapDimensions.x, std::vector<bool>(this->mapDimensions.y, false));
-	for (int y = 0; y < this->mapDimensions.y; y++)
+	//Needs to be run 4 times to ensure all 4 sides after shifting
+	for (int i = 0; i < 4; i++)
 	{
-		for (int x = 0; x < this->mapDimensions.x; x++)
+		std::vector<std::vector<bool>> changedStates = std::vector<std::vector<bool>>(this->mapDimensions.x, std::vector<bool>(this->mapDimensions.y, false));
+		for (int y = 0; y < this->mapDimensions.y; y++)
 		{
-			//Possibly recursive function, does the same for sourrounding cells if a single is found
-			this->checkRemoveSingle(x, y, changedStates, true);
+			for (int x = 0; x < this->mapDimensions.x; x++)
+			{
+				//Recursive function, does the same for sourrounding cells if a single is found
+				this->checkRemoveSingle(x, y, changedStates, true);
+			}
 		}
 	}
 }
+////////////////////////////////////////////////////////
 
 void MapGenerator::updateTexture()
 {
 	this->texture.clear();
-	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
+	this->texture.create(this->terrainVec.size(), this->terrainVec[0].size());
 
 	RectangleShape cell;
 	cell.setOutlineThickness(0.f);
@@ -260,7 +305,7 @@ void MapGenerator::updateTexture()
 			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
 			for (auto& heightRegion : this->heightRegions)
 			{
-				if(this->terrainVec[x][y] == heightRegion.type)
+				if (this->terrainVec[x][y] == heightRegion.type)
 					cell.setFillColor(heightRegion.color);
 			}
 			for (auto& forestRegion : this->forestRegions)

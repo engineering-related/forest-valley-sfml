@@ -36,6 +36,7 @@ public:
 	};
 
 	std::vector<std::vector<TerrainType>> terrainVec;
+	std::vector<std::vector<TerrainType>> terrainVec2xScale;
 
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;

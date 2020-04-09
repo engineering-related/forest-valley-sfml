@@ -28,25 +28,25 @@ void Map::init()
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 60, 5, 0.5, 2, Vector2f(0, 0), 1);
-	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/6, WINDOW_WIDTH/6));
+	this->map = new MapGenerator(this->seed, Vector2i(250, 250), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
-	this->grid = std::vector<std::vector<Tile*>>(this->map->mapDimensions.x, std::vector<Tile*>(this->map->mapDimensions.y, nullptr));
+	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec2xScale.size(), std::vector<Tile*>(this->map->terrainVec2xScale[0].size(), nullptr));
 }
 
 void Map::updateTexture()
 {
 	//TEMP, want to devide into chunks, each having their own  and multithread
 	this->renderTexture.clear();
-	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec.size());
+	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec2xScale.size(), TILE_SIZE.y * this->map->terrainVec2xScale.size());
 	this->renderTexture.create(textureSize.x, textureSize.y);
-	for(size_t x = 0; x < this->map->terrainVec.size(); x++)
+	for (size_t x = 0; x < this->map->terrainVec2xScale.size(); x++)
 	{
-		for (size_t y = 0; y < this->map->terrainVec[x].size(); y++)
+		for (size_t y = 0; y < this->map->terrainVec2xScale[x].size(); y++)
 		{
 			Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
 			Vector2i* type;
-			switch (this->map->terrainVec[x][y])
+			switch (this->map->terrainVec2xScale[x][y])
 			{
 				case MapGenerator::TerrainType::GRASS_LIGHT:
 					type = &Ground::GRASS_FLAT->OMM;
