@@ -16,8 +16,11 @@ private:
 
 	RenderTexture renderTexture;
 	Sprite sprite;
-	//All dynamic tiles goes in the main vector since they have to be updated
-	std::vector<std::vector<StaticTile*>> grid;
+
+	std::vector<std::vector<Tile*>> grid;
+	//std::vector<std::vector<DynamicTile*> dynamicTiles;
+	//Dynamic tiles goes on three different textures depending on their frame
+	//One of the three textures are drawn on top of the main texture
 
 public:
 	Map();

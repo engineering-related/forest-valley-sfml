@@ -80,6 +80,10 @@ void MapGenerator::update(/*const float & dt, const float & multiplier*/)
 	this->heightMap = MapGenerator::generateNoiseMap(this->seed, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
+	this->setTerrainTypes();
+	this->removeSingles();
+	this->removeSingles();
+	this->removeSingles();
 	this->updateTexture();
 }
 
@@ -88,10 +92,8 @@ void MapGenerator::setConstDraw(const bool& state)
 	this->constDraw = state;
 }
 
-void MapGenerator::updateTexture()
+void MapGenerator::setTerrainTypes()
 {
-	this->texture.clear();
-	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
 	for (int y = 0; y < this->mapDimensions.y; y++)
 	{
 		for (int x = 0; x < this->mapDimensions.x; x++)
@@ -101,18 +103,11 @@ void MapGenerator::updateTexture()
 			float wheatValue = this->fieldMap[x][y];
 			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 4.f, true);
 
-			RectangleShape cell;
-			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
-			cell.setOutlineThickness(0.f);
-			cell.setSize(Vector2f(1.f, 1.f));
-
 			//Add diffent height
 			for (auto& heightRegion : this->heightRegions)
 			{
 				if (currentHeight <= heightRegion.value)
 				{
-
-					cell.setFillColor(Color(heightRegion.color));
 					this->terrainVec[x][y] = heightRegion.type;
 					break;
 				}
@@ -121,11 +116,8 @@ void MapGenerator::updateTexture()
 			//Add forset to the map
 			for (auto& forestRegion : this->forestRegions)
 			{
-				if (forestValue <= forestRegion.value &&
-					currentHeight > *forestRegion.startRange &&
-					currentHeight < *forestRegion.endRange)
+				if (forestValue <= forestRegion.value && currentHeight > *forestRegion.startRange && currentHeight < *forestRegion.endRange)
 				{
-					cell.setFillColor(Color(forestRegion.color));
 					this->terrainVec[x][y] = forestRegion.type;
 					break;
 				}
@@ -134,13 +126,10 @@ void MapGenerator::updateTexture()
 			//Add wheat to the map
 			for (auto& wheatRegion : this->wheatRegions)
 			{
-				if (wheatValue <= wheatRegion.value &&
-					currentHeight > *wheatRegion.startRange &&
-					currentHeight < *wheatRegion.endRange)
+				if (wheatValue <= wheatRegion.value && currentHeight > *wheatRegion.startRange && currentHeight < *wheatRegion.endRange)
 				{
-					if (cell.getFillColor() == this->heightRegions[static_cast<int>(TerrainType::GRASS_LIGHT)].color)
+					if (this->terrainVec[x][y] == TerrainType::GRASS_LIGHT)
 					{
-						cell.setFillColor(Color(wheatRegion.color));
 						this->terrainVec[x][y] = wheatRegion.type;
 					}
 					break;
@@ -156,12 +145,134 @@ void MapGenerator::updateTexture()
 			{
 				if (boundryValue >= this->heightRegions[static_cast<int>(TerrainType::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
-					cell.setFillColor(Color(heightRegion.color));
 					this->terrainVec[x][y] = heightRegion.type;
 					break;
 				}
 			}
+		}
+	}
+}
 
+std::vector<MapGenerator::TerrainType> MapGenerator::getNeighbours(const int& x, const int& y)
+{
+	std::vector<TerrainType> neighbours;
+	TerrainType *mid = &this->terrainVec[x][y],
+				*top = &this->terrainVec[x][y-1],
+				*left = &this->terrainVec[x-1][y],
+				*right = &this->terrainVec[x+1][y],
+				*bottom = &this->terrainVec[x][y+1],
+
+				*tl = &this->terrainVec[x-1][y-1],
+				*tr = &this->terrainVec[x+1][y-1],
+				*bl = &this->terrainVec[x-1][y+1],
+				*br = &this->terrainVec[x+1][y+1];
+
+	//neighbours.push_back(*mid);
+	neighbours.push_back(*top);
+	neighbours.push_back(*left);
+	neighbours.push_back(*right);
+	neighbours.push_back(*bottom);
+
+	neighbours.push_back(*tl);
+	neighbours.push_back(*tr);
+	neighbours.push_back(*bl);
+	neighbours.push_back(*br);
+	return neighbours;
+}
+
+void MapGenerator::checkRemoveSingle(const int& x, const int& y, std::vector<std::vector<bool>>& changedStates, const bool& root)
+{
+	if(!root && changedStates[x][y]) return;
+	else if ( x == 0 || y == 0 || x == this->mapDimensions.x - 1 || y == this->mapDimensions.y - 1) return; // dont check outer cells
+
+	TerrainType *current = &this->terrainVec[x][y], //Middle cell
+				*top = &this->terrainVec[x][y-1],
+				*left = &this->terrainVec[x-1][y],
+				*right = &this->terrainVec[x+1][y],
+				*bottom = &this->terrainVec[x][y+1];
+
+	if ((*top == *current || *bottom == *current) &&
+	    (*left == *current || *right == *current)) return; //No singles found
+	else
+	{
+		std::vector<TerrainType> neighbours = this->getNeighbours(x, y);
+		unsigned int count = 0;
+		while (!((*top == *current || *bottom == *current) &&
+			   (*left == *current || *right == *current)))
+		{
+			if(count > neighbours.size() - 1) {
+				*current = util::fn::most_common(neighbours.begin(), neighbours.end());
+				break;
+			};
+			*current = neighbours[count];
+			count++;
+		}
+		changedStates[x][y] = true;
+		//Check the other cells as well
+		checkRemoveSingle(x, y - 1, changedStates, false);
+		checkRemoveSingle(x - 1, y, changedStates, false);
+		checkRemoveSingle(x + 1, y, changedStates, false);
+		checkRemoveSingle(x, y + 1, changedStates, false);
+
+		//checkRemoveSingle(x - 1, y - 1, changedStates, false);
+		//checkRemoveSingle(x + 1, y - 1, changedStates, false);
+		//checkRemoveSingle(x - 1, y + 1, changedStates, false);
+		//checkRemoveSingle(x + 1, y + 1, changedStates, false);
+	}
+}
+
+void MapGenerator::removeSingles()
+{
+	/*Algorithm:
+	c->changed = false
+	-for cell c in cells:
+		if(c->changed) continue
+		-check the 4 sourronding cells (neighbours) if they are they same type
+		-if not:
+			change c
+			c->changed = true
+			-do the same check for the neighbours
+	*/
+	std::vector<std::vector<bool>> changedStates = std::vector<std::vector<bool>>(this->mapDimensions.x, std::vector<bool>(this->mapDimensions.y, false));
+	for (int y = 0; y < this->mapDimensions.y; y++)
+	{
+		for (int x = 0; x < this->mapDimensions.x; x++)
+		{
+			//Possibly recursive function, does the same for sourrounding cells if a single is found
+			this->checkRemoveSingle(x, y, changedStates, true);
+		}
+	}
+}
+
+void MapGenerator::updateTexture()
+{
+	this->texture.clear();
+	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
+
+	RectangleShape cell;
+	cell.setOutlineThickness(0.f);
+	cell.setSize(Vector2f(1.f, 1.f));
+
+	for (int y = 0; y < this->mapDimensions.y; y++)
+	{
+		for (int x = 0; x < this->mapDimensions.x; x++)
+		{
+			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
+			for (auto& heightRegion : this->heightRegions)
+			{
+				if(this->terrainVec[x][y] == heightRegion.type)
+					cell.setFillColor(heightRegion.color);
+			}
+			for (auto& forestRegion : this->forestRegions)
+			{
+				if (this->terrainVec[x][y] == forestRegion.type)
+					cell.setFillColor(forestRegion.color);
+			}
+			for (auto& wheatRegion : this->wheatRegions)
+			{
+				if (this->terrainVec[x][y] == wheatRegion.type)
+					cell.setFillColor(wheatRegion.color);
+			}
 			this->texture.draw(cell);
 		}
 	}
@@ -171,7 +282,7 @@ void MapGenerator::updateTexture()
 	this->constDrawScale = this->sprite.getScale();
 }
 
-float MapGenerator::addSquareMask(const int &x, const int &y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
+float MapGenerator::addSquareMask(const int& x, const int& y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
 {
 	float distance_x = fabs(x - island_size * 0.5f);
 	float distance_y = fabs(y - island_size * 0.5f);
@@ -181,29 +292,33 @@ float MapGenerator::addSquareMask(const int &x, const int &y, float noise, float
 	float delta = distance / max_width;
 	float gradient = pow(delta, gradientExp);
 
-	if(!inverse) noise *= fmax(0.0f, 1.f - gradient);
-	else noise *= fmax(0.0f, gradient);
+	if (!inverse)
+		noise *= fmax(0.0f, 1.f - gradient);
+	else
+		noise *= fmax(0.0f, gradient);
 	return noise;
 }
 
-float MapGenerator::addCircleMask(const int & x, const int & y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
+float MapGenerator::addCircleMask(const int& x, const int& y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
 {
 	float distance_x = fabs(x - island_size * 0.5f);
 	float distance_y = fabs(y - island_size * 0.5f);
-	float distance = sqrt(distance_x*distance_x + distance_y * distance_y); // circular mask
+	float distance = sqrt(distance_x * distance_x + distance_y * distance_y); // circular mask
 
 	float max_width = island_size * max_width_factor;
 	float delta = distance / max_width;
 	float gradient = pow(delta, gradientExp);
 
-	if (!inverse) noise *= fmax(0.0f, 1.f - gradient);
-	else noise *= fmax(0.0f, gradient);
+	if (!inverse)
+		noise *= fmax(0.0f, 1.f - gradient);
+	else
+		noise *= fmax(0.0f, gradient);
 	return noise;
 }
 
-void MapGenerator::setDisplaySize(const Vector2f &size)
+void MapGenerator::setDisplaySize(const Vector2f& size)
 {
-	 Vector2f scale = Vector2f(size.x/this->texture.getSize().x, size.y/this->texture.getSize().y);
+	Vector2f scale = Vector2f(size.x / this->texture.getSize().x, size.y / this->texture.getSize().y);
 	this->constDrawScale = scale;
 	this->sprite.setScale(scale);
 }
@@ -264,7 +379,6 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 				noiseHeight += perlinValue * amplitude;
 				amplitude *= persistance;
 				frequency *= lacunarity;
-
 			}
 
 			if (noiseHeight > maxNoiseHeight)

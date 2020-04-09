@@ -115,7 +115,6 @@ void Game::startLoop()
 			object->update(this->dt, this->multiplier);
 			object->draw(this->window);
 		}
-
 		this->window->display();
 	}
 }

@@ -90,13 +90,13 @@ void Creature::updateAngle()
 	if (this->move.RIGHT && this->move.UP) this->angle = halfQarter;
 	else if (this->move.RIGHT && this->move.DOWN) this->angle = -halfQarter;
 	else if (this->move.UP && !this->move.LEFT) this->angle = 2 * halfQarter;
-	else if (this->move.direction && !this->move.DOWN) this->angle = 0;
+	else if (this->move.direction == Movement::Direction::R && !this->move.DOWN) this->angle = 0;
 
 	//LEFT AND DOWN
 	else if (this->move.LEFT && this->move.UP) this->angle = 3 * halfQarter;
 	else if (this->move.LEFT && this->move.DOWN) this->angle = 5 * halfQarter;
 	else if (this->move.DOWN) this->angle = 6 * halfQarter;
-	else if (!this->move.direction) this->angle = 4 * halfQarter;
+	else if (this->move.direction == Movement::Direction::L) this->angle = 4 * halfQarter;
 }
 
 void Creature::draw(RenderTarget* window) const

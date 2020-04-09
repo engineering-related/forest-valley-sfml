@@ -63,6 +63,10 @@ public:
 	void update(/*const float &dt, const float &multiplier*/);
 	//Set the map to a constant pos/scale when drawn
 	void setConstDraw(const bool& state);
+	void setTerrainTypes();
+	std::vector<TerrainType> getNeighbours(const int& x, const int& y);
+	void checkRemoveSingle(const int& x, const int& y, std::vector<std::vector<bool>>& changedStates, const bool&root);
+	void removeSingles();
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);
 

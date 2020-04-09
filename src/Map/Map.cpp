@@ -10,6 +10,13 @@ Map::Map(/* args */)
 Map::~Map()
 {
 	delete this->map;
+	for(size_t x = 0; x < this->grid.size(); x++)
+	{
+		for(size_t y = 0; y < this->grid[x].size(); y++)
+		{
+			delete this->grid[x][y];
+		}
+	}
 }
 
 void Map::init()
@@ -24,12 +31,12 @@ void Map::initMapGenerator()
 	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 60, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/6, WINDOW_WIDTH/6));
 	this->map->setConstDraw(true);
-	this->grid = std::vector<std::vector<StaticTile*>>(this->map->mapDimensions.x, std::vector<StaticTile*>(this->map->mapDimensions.y, nullptr));
+	this->grid = std::vector<std::vector<Tile*>>(this->map->mapDimensions.x, std::vector<Tile*>(this->map->mapDimensions.y, nullptr));
 }
 
 void Map::updateTexture()
 {
-	//TEMP
+	//TEMP, want to devide into chunks, each having their own  and multithread
 	this->renderTexture.clear();
 	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec.size());
 	this->renderTexture.create(textureSize.x, textureSize.y);
@@ -83,4 +90,9 @@ void Map::draw(RenderTarget* window)
 {
 	window->draw(this->sprite);
 	this->map->draw(window);
+}
+
+void Map::update(const float& dt, const float& multiplier)
+{
+
 }
