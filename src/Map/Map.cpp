@@ -34,6 +34,63 @@ void Map::initMapGenerator()
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec2xScale.size(), std::vector<Tile*>(this->map->terrainVec2xScale[0].size(), nullptr));
 }
 
+Vector2i* Map::calcGroundType(Ground::Parts* const parts, const size_t& x, const size_t& y)
+{
+	Vector2i *part;
+	MapGenerator::TerrainType *current = &this->map->terrainVec2xScale[x][y],
+							  *tl = &this->map->terrainVec2xScale[x-1][y-1],
+							  *tm = &this->map->terrainVec2xScale[x][y-1],
+							  *tr = &this->map->terrainVec2xScale[x+1][y-1],
+
+							  *ml = &this->map->terrainVec2xScale[x-1][y],
+							  *mr = &this->map->terrainVec2xScale[x+1][y],
+
+							  *bl = &this->map->terrainVec2xScale[x-1][y-1],
+							  *bm = &this->map->terrainVec2xScale[x][y-1],
+							  *br = &this->map->terrainVec2xScale[x+1][y-1];
+
+	if()
+
+	return part;
+}
+
+Vector2i* Map::assignType(const size_t& x, const size_t& y)
+{
+	Vector2i* type;
+	switch (this->map->terrainVec2xScale[x][y])
+	{
+		case MapGenerator::TerrainType::GRASS_LIGHT:
+
+			type = this->calcGroundType(Ground::GRASS_FLAT, x, y);
+			break;
+		case MapGenerator::TerrainType::FOREST_SHALLOW:
+			type = &Ground::GRASS_FOREST->OMM;
+			break;
+		case MapGenerator::TerrainType::FOREST_DEEP:
+			type = &Ground::GRASS_FOREST->OMM;
+			break;
+		case MapGenerator::TerrainType::SAND:
+			type = &Ground::SAND->OMM;
+			break;
+		case MapGenerator::TerrainType::WATER_DEEP:
+			type = &Ground::WATER->OMM;
+			break;
+		case MapGenerator::TerrainType::WATER_SHALLOW:
+			type = &Ground::WATER->OMM;
+			break;
+		case MapGenerator::TerrainType::WHEAT:
+			type = &Ground::FIELD->OMM;
+			break;
+		case MapGenerator::TerrainType::MINERALS:
+			type = &Ground::GRAVEL->OMM;
+			break;
+		default:
+			type = &Ground::STONE->OMM;
+			break;
+	}
+	return type;
+}
+
 void Map::updateTexture()
 {
 	//TEMP, want to devide into chunks, each having their own  and multithread
@@ -45,38 +102,8 @@ void Map::updateTexture()
 		for (size_t y = 0; y < this->map->terrainVec2xScale[x].size(); y++)
 		{
 			Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
-			Vector2i* type;
-			switch (this->map->terrainVec2xScale[x][y])
-			{
-				case MapGenerator::TerrainType::GRASS_LIGHT:
-					type = &Ground::GRASS_FLAT->OMM;
-					break;
-				case MapGenerator::TerrainType::FOREST_SHALLOW:
-					type = &Ground::GRASS_FOREST->OMM;
-					break;
-				case MapGenerator::TerrainType::FOREST_DEEP:
-					type = &Ground::GRASS_FOREST->OMM;
-					break;
-				case MapGenerator::TerrainType::SAND:
-					type = &Ground::SAND->OMM;
-					break;
-				case MapGenerator::TerrainType::WATER_DEEP:
-					type = &Ground::WATER->OMM;
-					break;
-				case MapGenerator::TerrainType::WATER_SHALLOW:
-					type = &Ground::WATER->OMM;
-					break;
-				case MapGenerator::TerrainType::WHEAT:
-					type = &Ground::FIELD->OMM;
-					break;
-				case MapGenerator::TerrainType::MINERALS:
-					type = &Ground::GRAVEL->OMM;
-					break;
-				default:
-					type = &Ground::STONE->OMM;
-					break;
-			}
-			Ground *currentGround = new Ground(pos, *type);
+
+			Ground* currentGround = new Ground(pos, *this->assignType(x, y));
 			this->grid[x][y] = currentGround;
 			currentGround->draw(&renderTexture);
 		}

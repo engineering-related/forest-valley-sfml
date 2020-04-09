@@ -27,6 +27,9 @@ public:
 	~Map();
 
 	//Functions
+	//TODO: CHANGE Ground::Parts TO Tile::Parts so it can be used for others
+	Vector2i* calcGroundType(Ground::Parts* const parts, const size_t& x, const size_t& y);
+	Vector2i* assignType(const size_t& x, const size_t& y);
 	void updateTexture();
 	void draw(RenderTarget* window);
 	void update(const float& dt, const float& multiplier);
