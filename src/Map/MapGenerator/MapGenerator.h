@@ -13,16 +13,20 @@ private:
 	Vector2f constDrawScale;
 	void initTerrainTypes();
 
-public:
-	enum class TerrainType {WATER_DEEP, WATER_SHALLOW, SAND,
-							GRASS_LIGHT,
+public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
+	enum class TerrainType {SAND,
+							GRASS_LIGHT, WHEAT, FOREST_SHALLOW, FOREST_DEEP,
 							MINERALS, ROCK_DARK, ROCK_LIGHT,
 							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW,
-							FOREST_DEEP,
-							FOREST_SHALLOW,
-							WHEAT,
+							WATER_DEEP, WATER_SHALLOW,
 							};
-
+							//THE TERRAIN TYPES IN HEIGHT ORDER
+		 enum class TOrder {WATER_DEEP, WATER_SHALLOW, SAND,
+							GRASS_LIGHT, MINERALS, ROCK_DARK, ROCK_LIGHT,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW,
+							FOREST_SHALLOW, FOREST_DEEP,
+							WHEAT
+							};
 	struct Terrain {
 		TerrainType type;
 		float value;

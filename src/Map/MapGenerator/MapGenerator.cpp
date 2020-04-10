@@ -34,7 +34,7 @@ void MapGenerator::initTerrainTypes()
 	this->terrainVec2xScale = std::vector<std::vector<TerrainType>>(2*this->mapDimensions.x, std::vector<TerrainType>(2*this->mapDimensions.y, TerrainType::WATER_DEEP));
 
 	//HeightMap standard
-	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
+	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.2f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(55, 102, 196)));
 	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
 	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));
@@ -58,14 +58,13 @@ void MapGenerator::initTerrainTypes()
 
 	//Forestmap
 	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.20f, Color(0, 40, 0)));
-	this->forestRegions[0].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::MINERALS)].value);
+	this->forestRegions[0].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);
 	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.5f, Color(0, 60, 0)));
-	this->forestRegions[1].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::MINERALS)].value);
+	this->forestRegions[1].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);
 
 	//Fieldmap
 	this->wheatRegions.push_back(Terrain(TerrainType::WHEAT, 0.10f, Color(208, 176, 132)));
-	this->wheatRegions[0].setRange(&heightRegions[static_cast<int>(TerrainType::SAND)].value, &heightRegions[static_cast<int>(TerrainType::GRASS_LIGHT)].value);
-
+	this->wheatRegions[0].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::GRASS_LIGHT)].value);
 }
 
 void MapGenerator::draw(RenderTarget* window)
@@ -157,13 +156,13 @@ void MapGenerator::setTerrainTypes()
 			}
 
 			//Add border to the map
-			if (boundryValue > this->heightRegions[static_cast<int>(TerrainType::SNOW)].value)
+			if (boundryValue > this->heightRegions[static_cast<int>(TOrder::SNOW)].value)
 			{
-				boundryValue = this->heightRegions[static_cast<int>(TerrainType::SNOW)].value;
+				boundryValue = this->heightRegions[static_cast<int>(TOrder::SNOW)].value;
 			}
 			for (auto& heightRegion : this->heightRegions)
 			{
-				if (boundryValue >= this->heightRegions[static_cast<int>(TerrainType::MINERALS)].value && boundryValue <= heightRegion.value)
+				if (boundryValue >= this->heightRegions[static_cast<int>(TOrder::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
 					for (int row = 0; row <= 1; row++)
