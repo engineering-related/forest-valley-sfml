@@ -55,7 +55,6 @@ Vector2i* Map::calcGroundType(Ground::Parts* const parts, const size_t& x, const
 							  *br = &this->map->terrainVec2xScale[x + 1][y + 1];
 
 
-
 	std::vector<int> binary = std::vector<int>(8, 0);
 
 	//OUTER:
@@ -74,7 +73,7 @@ Vector2i* Map::calcGroundType(Ground::Parts* const parts, const size_t& x, const
 	int sum = std::accumulate(binary.begin(), binary.end(), 0);
 	if(sum == 0)
 	{
-			//INNER:
+		//INNER:
 		if (*current != *tl)
 		{
 			binary[4] = 16;
@@ -93,55 +92,55 @@ Vector2i* Map::calcGroundType(Ground::Parts* const parts, const size_t& x, const
 
 	sum = std::accumulate(binary.begin(), binary.end(), 0);
 
-	//std::cout << sum << std::endl;
-	switch(sum)
-	{
-		case 0:
-			part = &parts->OMM;
-			break;
-		case 1:
-			part = &parts->OTM;
+	if (sum == 0){
+		part = &parts->OMM;
+	}else {
 
-			break;
-		case 3:
-			part = &parts->OTR;
-			break;
-		case 2:
-			part = &parts->OMR;
-			break;
-		case 6:
-			part = &parts->OBR;
-			break;
-		case 4:
-			part = &parts->OBM;
-			break;
-		case 12:
-			part = &parts->OBL;
-			break;
-		case 8:
-			part = &parts->OML;
-			break;
-		case 9:
-			part = &parts->OTL;
-			break;
-		case 16:
-			part = &parts->IMR;
-			break;
-		case 32:
-			part = &parts->IML;
-			break;
-		case 64:
-			part = &parts->ITL;
-			break;
-		case 128:
-			part = &parts->ITR;
-			break;
+		switch(sum)
+		{
+			case 1:
+				part = &parts->OTM;
 
-		default:
-			part = &parts->OMM;
-			break;
+				break;
+			case 3:
+				part = &parts->OTR;
+				break;
+			case 2:
+				part = &parts->OMR;
+				break;
+			case 6:
+				part = &parts->OBR;
+				break;
+			case 4:
+				part = &parts->OBM;
+				break;
+			case 12:
+				part = &parts->OBL;
+				break;
+			case 8:
+				part = &parts->OML;
+				break;
+			case 9:
+				part = &parts->OTL;
+				break;
+			case 16:
+				part = &parts->IMR;
+				break;
+			case 32:
+				part = &parts->IML;
+				break;
+			case 64:
+				part = &parts->ITL;
+				break;
+			case 128:
+				part = &parts->ITR;
+				break;
+
+			default:
+				part = &parts->OMM;
+				break;
+		}
 	}
-
 	return part;
 }
 
