@@ -31,179 +31,300 @@ void Map::initMapGenerator()
 	this->map = new MapGenerator(this->seed, Vector2i(250, 250), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
-	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec2xScale.size(), std::vector<Tile*>(this->map->terrainVec2xScale[0].size(), nullptr));
+	this->drawVector = this->map->terrainVec;
+	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
 }
 
-Vector2i* Map::calcGroundType(Ground::Parts* const parts, const size_t& x, const size_t& y)
+std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y)
 {
-	Vector2i *part;
-	if(x == 0 || y == 0 || x == this->map->terrainVec2xScale.size() - 1 || y == this->map->terrainVec2xScale[0].size() - 1)
+	std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> returnInfo = std::vector<std::vector<std::pair<Vector2i*, Vector2i>>>(3, std::vector<std::pair<Vector2i*, Vector2i>>(3));
+
+	returnInfo[0][0] = std::make_pair(&parts->OMM, Vector2i(x - 1, y - 1)); //tl
+	returnInfo[1][0] = std::make_pair(&parts->OMM, Vector2i(x, y - 1));	   //tm
+	returnInfo[2][0] = std::make_pair(&parts->OMM, Vector2i(x + 1, y - 1)); //tr
+
+	returnInfo[0][1] = std::make_pair(&parts->OMM, Vector2i(x - 1, y)); //ml
+	returnInfo[1][1] = std::make_pair(&parts->OMM, Vector2i(x, y));	   //Current
+	returnInfo[2][1] = std::make_pair(&parts->OMM, Vector2i(x + 1, y)); //mr
+
+	returnInfo[0][2] = std::make_pair(&parts->OMM, Vector2i(x - 1, y + 1)); // bl
+	returnInfo[1][2] = std::make_pair(&parts->OMM, Vector2i(x, y + 1));	   //bm
+	returnInfo[2][2] = std::make_pair(&parts->OMM, Vector2i(x + 1, y + 1)); //br
+
+	/*
+	for(int row = -1; row <= 1; row++)
 	{
-		part = &parts->OMM;
-		return part;
-	}
-	MapGenerator::TerrainType *current = &this->map->terrainVec2xScale[x][y],
-							  *tl = &this->map->terrainVec2xScale[x - 1][y - 1],
-							  *tm = &this->map->terrainVec2xScale[x][y - 1],
-							  *tr = &this->map->terrainVec2xScale[x + 1][y - 1],
+		for (int col = -1; col <= 1; col++)
+		{
+			drawVector[x + row][y + col] = this->map->terrainVec[x][y];
+		}
+	}*/
 
-							  *ml = &this->map->terrainVec2xScale[x - 1][y],
-							  *mr = &this->map->terrainVec2xScale[x + 1][y],
-
-							  *bl = &this->map->terrainVec2xScale[x - 1][y + 1],
-							  *bm = &this->map->terrainVec2xScale[x][y + 1],
-							  *br = &this->map->terrainVec2xScale[x + 1][y + 1];
-
-
-	std::vector<int> binary = std::vector<int>(8, 0);
-
-	//OUTER:
-	if(*current != *tm){
-		binary[0] = 1;
-	}
-	if (*current != *mr) {
-		binary[1] = 2;
-	}
-	if (*current != *bm) {
-		binary[2] = 4;
-	}
-	if (*current != *ml) {
-		binary[3] = 8;
-	}
-	int sum = std::accumulate(binary.begin(), binary.end(), 0);
-	if(sum == 0)
+	for(size_t row = 0; row < returnInfo.size(); row++)
 	{
-		//INNER:
-		if (*current != *tl)
+		for(size_t col = 0; col < returnInfo[row].size(); col++)
 		{
-			binary[4] = 16;
-		}
-		if (*current != *tr)
-		{
-			binary[5] = 32;
-		}
-		if (*current != *br) {
-			binary[6] = 64;
-		}
-		if (*current != *bl) {
-			binary[7] = 128;
+			Vector2i pos = std::get<1>(returnInfo[row][col]);
+			MapGenerator::TerrainType *current = &drawVector[pos.x][pos.y],
+									  *tl = &drawVector[pos.x - 1][pos.y - 1],
+									  *tm = &drawVector[pos.x][pos.y - 1],
+									  *tr = &drawVector[pos.x + 1][pos.y - 1],
+
+									  *ml = &drawVector[pos.x - 1][pos.y],
+									  *mr = &drawVector[pos.x + 1][pos.y],
+
+									  *bl = &drawVector[pos.x - 1][pos.y + 1],
+									  *bm = &drawVector[pos.x][pos.y + 1],
+									  *br = &drawVector[pos.x + 1][pos.y + 1];
+
+			std::vector<int> binary = std::vector<int>(8, 0);
+
+			//OUTER:
+			if (*current != *tm)
+			{
+				binary[0] = 1;
+			}
+			if (*current != *mr)
+			{
+				binary[1] = 2;
+			}
+			if (*current != *bm)
+			{
+				binary[2] = 4;
+			}
+			if (*current != *ml)
+			{
+				binary[3] = 8;
+			}
+			int sum = std::accumulate(binary.begin(), binary.end(), 0);
+			if (sum == 0)
+			{
+				//INNER:
+				if (*current != *tl)
+				{
+					binary[4] = 16;
+				}
+				if (*current != *tr)
+				{
+					binary[5] = 32;
+				}
+				if (*current != *br)
+				{
+					binary[6] = 64;
+				}
+				if (*current != *bl)
+				{
+					binary[7] = 128;
+				}
+			}
+
+			sum = std::accumulate(binary.begin(), binary.end(), 0);
+
+			if (sum == 0)
+			{
+				std::get<0>(returnInfo[row][col]) = &parts->OMM;
+			}
+			else
+			{
+				switch (sum)
+				{
+					case 1:
+						std::get<0>(returnInfo[row][col]) = &parts->OTM;
+						break;
+					case 3:
+						std::get<0>(returnInfo[row][col]) = &parts->OTR;
+						break;
+					case 2:
+						std::get<0>(returnInfo[row][col]) = &parts->OMR;
+						break;
+					case 6:
+						std::get<0>(returnInfo[row][col]) = &parts->OBR;
+						break;
+					case 4:
+						std::get<0>(returnInfo[row][col]) = &parts->OBM;
+						break;
+					case 12:
+						std::get<0>(returnInfo[row][col]) = &parts->OBL;
+						break;
+					case 8:
+						std::get<0>(returnInfo[row][col]) = &parts->OML;
+						break;
+					case 9:
+						std::get<0>(returnInfo[row][col]) = &parts->OTL;
+						break;
+					case 16:
+						std::get<0>(returnInfo[row][col]) = &parts->IMR;
+						break;
+					case 32:
+						std::get<0>(returnInfo[row][col]) = &parts->IML;
+						break;
+					case 64:
+						std::get<0>(returnInfo[row][col]) = &parts->ITL;
+						break;
+					case 128:
+						std::get<0>(returnInfo[row][col]) = &parts->ITR;
+						break;
+					default:
+						break;
+				}
+			}
 		}
 	}
-
-	sum = std::accumulate(binary.begin(), binary.end(), 0);
-
-	if (sum == 0){
-		part = &parts->OMM;
-	}else {
-
-		switch(sum)
-		{
-			case 1:
-				part = &parts->OTM;
-
-				break;
-			case 3:
-				part = &parts->OTR;
-				break;
-			case 2:
-				part = &parts->OMR;
-				break;
-			case 6:
-				part = &parts->OBR;
-				break;
-			case 4:
-				part = &parts->OBM;
-				break;
-			case 12:
-				part = &parts->OBL;
-				break;
-			case 8:
-				part = &parts->OML;
-				break;
-			case 9:
-				part = &parts->OTL;
-				break;
-			case 16:
-				part = &parts->IMR;
-				break;
-			case 32:
-				part = &parts->IML;
-				break;
-			case 64:
-				part = &parts->ITL;
-				break;
-			case 128:
-				part = &parts->ITR;
-				break;
-
-			default:
-				part = &parts->OMM;
-				break;
-		}
-	}
-	return part;
+	return returnInfo;
 }
 
-Vector2i* Map::assignType(const size_t& x, const size_t& y)
+std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y)
 {
-	Vector2i* type;
-	switch (this->map->terrainVec2xScale[x][y])
+	Tile* tileType;
+	Tile::Parts* type;
+	Vector2f pos(TILE_SIZE.x*x, TILE_SIZE.y*y);
+
+	switch (this->map->terrainVec[x][y])
 	{
 		case MapGenerator::TerrainType::GRASS_LIGHT:
-
-			type = this->calcGroundType(Ground::GRASS_FLAT, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::GRASS_FLAT;
 			break;
 		case MapGenerator::TerrainType::FOREST_SHALLOW:
-			type = this->calcGroundType(Ground::GRASS_FOREST, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::GRASS_FOREST;
 			break;
 		case MapGenerator::TerrainType::FOREST_DEEP:
-			type = this->calcGroundType(Ground::GRASS_FOREST, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::GRASS_FOREST;
 			break;
 		case MapGenerator::TerrainType::SAND:
-			type = this->calcGroundType(Ground::SAND, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::SAND;
 			break;
 		case MapGenerator::TerrainType::WATER_DEEP:
-			type = this->calcGroundType(Ground::WATER, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::WATER;
 			break;
 		case MapGenerator::TerrainType::WATER_SHALLOW:
-			type = this->calcGroundType(Ground::WATER, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::WATER;
 			break;
 		case MapGenerator::TerrainType::WHEAT:
-			type = this->calcGroundType(Ground::FIELD, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::FIELD;
 			break;
 		case MapGenerator::TerrainType::MINERALS:
-			type = this->calcGroundType(Ground::GRAVEL, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::GRAVEL;
 			break;
 		default:
-			type = this->calcGroundType(Ground::STONE, x, y);
+			tileType = new Ground(pos, Vector2i(0, 0));
+			type = Ground::STONE;
 			break;
 	}
-	return type;
+	std::pair<Tile*, Tile::Parts*> returnPair;
+	returnPair = std::make_pair(tileType, type);
+	return returnPair;
 }
 
 void Map::updateTexture()
 {
-	//TEMP, want to devide into chunks, each having their own  and multithread
-	this->renderTexture.clear();
-	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec2xScale.size(), TILE_SIZE.y * this->map->terrainVec2xScale.size());
-	this->renderTexture.create(textureSize.x, textureSize.y);
-	for (size_t x = 0; x < this->map->terrainVec2xScale.size(); x++)
-	{
-		for (size_t y = 0; y < this->map->terrainVec2xScale[x].size(); y++)
-		{
-			Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
+	/*DRAWING ALGORITHM:
+	1.for every groud type in 2D vector:
+		save the 2d vector position and terraintype
+		push into a 1D vector of tuples
 
-			Ground* currentGround = new Ground(pos, *this->assignType(x, y));
-			this->grid[x][y] = currentGround;
-			currentGround->draw(&renderTexture);
+
+	2.sort the 1D vector by drawing order, low->high
+
+	3.for each cell in 1D vector:
+		make a Tile* with the drawing information, use dummy type in constructor i.e OMM
+			for all the 3x3 cells with self in middle:
+				determine which type it will become
+				if not drawn:
+					draw the type and draw it with the correct type
+		save Tile* to the grid
+
+
+	*/
+
+	//Init rendertexture
+	this->renderTexture.clear();
+	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
+	this->renderTexture.create(textureSize.x, textureSize.y);
+
+	//The container for the drawing information stored in a tuple
+	std::vector<std::pair<int, Vector2i>> grid1D;
+
+	//2D-Vector with the info if a cell has been draw
+	//std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
+
+	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	{
+		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
+		{
+			//Store building information from every type in the 2D-vector and store it in the 1D-vector
+			std::pair<int, Vector2i> drawingInformation;
+			int layer = static_cast<int>(this->map->terrainVec[x][y]);
+			drawingInformation = std::make_pair(layer, Vector2i(x, y));
+			grid1D.push_back(drawingInformation);
 		}
 	}
+
+	//Sort the 1D-vector by the first tuple value, drawing order, lowest->higest
+	std::sort(grid1D.begin(), grid1D.end(), [](auto& left, auto& right) {
+		return left.first < right.first;
+	});
+
+	int currentHeight = -1;
+	for(auto& tuple : grid1D)
+	{
+	if (std::get<0>(tuple) > currentHeight)
+		{
+			std::cout << currentHeight << std::endl;
+			currentHeight = std::get<0>(tuple);
+			for (auto& container : grid1D)
+			{
+				int loopHeight = std::get<0>(container);
+				Vector2i currentGridPos = std::get<1>(container);
+				if(loopHeight < currentHeight+1)
+				{
+					for(int row = -1; row <= 1; row++)
+					{
+						for(int col = -1; col <= 1; col++)
+						{
+							// sets all train arund one cell to it self
+							this->drawVector[currentGridPos.x + row][currentGridPos.y + col] = this->map->terrainVec[currentGridPos.x][currentGridPos.y];
+						}
+					}
+				}
+				else break;
+			}
+		}
+		std::pair<Tile*, Tile::Parts*> cellInfo = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y);
+		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = this->getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y);
+
+		//Save the pointer to the Tile obj to the grid
+		this->grid[std::get<1>(tuple).x][std::get<1>(tuple).y] = std::get<0>(cellInfo);
+
+		//Loop through each neighbour and draw the Tile with the correct type at the neighbour pos
+		Vector2f drawPos(0.f, 0.f);
+		for(size_t x = 0; x < neighBoursInfo.size(); x++)
+		{
+			for (size_t y = 0; y < neighBoursInfo[x].size(); y++)
+			{
+				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
+				drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
+				std::get<0>(cellInfo)->setPosition(drawPos);
+				std::get<0>(cellInfo)->changeType(*std::get<0>(neighBoursInfo[x][y]));
+				std::get<0>(cellInfo)->draw(&renderTexture);
+				renderTexture.display();
+			}
+		}
+	}
+	//Set the texture to the sprite
 	this->renderTexture.display();
 	this->sprite.setTexture(this->renderTexture.getTexture());
-	this->sprite.setPosition(Vector2f(-textureSize.x/2, -textureSize.y/2));
+	this->sprite.setPosition(Vector2f(-textureSize.x / 2, -textureSize.y / 2));
 }
 
-void Map::draw(RenderTarget* window)
+void Map::draw(RenderTarget * window)
 {
 	window->draw(this->sprite);
 	this->map->draw(window);
@@ -211,5 +332,4 @@ void Map::draw(RenderTarget* window)
 
 void Map::update(const float& dt, const float& multiplier)
 {
-
 }

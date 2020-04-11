@@ -31,7 +31,6 @@ void MapGenerator::initTerrainTypes()
 {
 	//Init terrainVec
 	this->terrainVec = std::vector<std::vector<TerrainType>>(this->mapDimensions.x, std::vector<TerrainType>(this->mapDimensions.y, TerrainType::WATER_DEEP));
-	this->terrainVec2xScale = std::vector<std::vector<TerrainType>>(2*this->mapDimensions.x, std::vector<TerrainType>(2*this->mapDimensions.y, TerrainType::WATER_DEEP));
 
 	//HeightMap standard
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.2f, Color(50, 80, 170)));
@@ -107,13 +106,6 @@ void MapGenerator::setTerrainTypes()
 				if (currentHeight <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
-					for (int row = 0; row <= 1; row++)
-					{
-						for (int col = 0; col <= 1; col++)
-						{
-							this->terrainVec2xScale[2 * x + row][2 * y + col] = heightRegion.type;
-						}
-					}
 					break;
 				}
 			}
@@ -124,13 +116,6 @@ void MapGenerator::setTerrainTypes()
 				if (forestValue <= forestRegion.value && currentHeight > *forestRegion.startRange && currentHeight < *forestRegion.endRange)
 				{
 					this->terrainVec[x][y] = forestRegion.type;
-					for (int row = 0; row <= 1; row++)
-					{
-						for (int col = 0; col <= 1; col++)
-						{
-							this->terrainVec2xScale[2 * x + row][2 * y + col] = forestRegion.type;
-						}
-					}
 					break;
 				}
 			}
@@ -143,13 +128,6 @@ void MapGenerator::setTerrainTypes()
 					if (this->terrainVec[x][y] == TerrainType::GRASS_LIGHT)
 					{
 						this->terrainVec[x][y] = wheatRegion.type;
-						for (int row = 0; row <= 1; row++)
-						{
-							for (int col = 0; col <= 1; col++)
-							{
-								this->terrainVec2xScale[2 * x + row][2 * y + col] = wheatRegion.type;
-							}
-						}
 					}
 					break;
 				}
@@ -165,13 +143,6 @@ void MapGenerator::setTerrainTypes()
 				if (boundryValue >= this->heightRegions[static_cast<int>(TOrder::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
-					for (int row = 0; row <= 1; row++)
-					{
-						for (int col = 0; col <= 1; col++)
-						{
-							this->terrainVec2xScale[2 * x + row][2 * y + col] = heightRegion.type;
-						}
-					}
 					break;
 				}
 			}

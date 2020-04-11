@@ -18,6 +18,8 @@ private:
 	Sprite sprite;
 
 	std::vector<std::vector<Tile*>> grid;
+	std::vector<std::vector<MapGenerator::TerrainType>> drawVector;
+
 	//std::vector<std::vector<DynamicTile*> dynamicTiles;
 	//Dynamic tiles goes on three different textures depending on their frame
 	//One of the three textures are drawn on top of the main texture
@@ -28,8 +30,8 @@ public:
 
 	//Functions
 	//TODO: CHANGE Ground::Parts TO Tile::Parts so it can be used for others
-	Vector2i* calcGroundType(Ground::Parts* const parts, const size_t& x, const size_t& y);
-	Vector2i* assignType(const size_t& x, const size_t& y);
+	std::pair<Tile*, Tile::Parts*> getCellInfo(const size_t& x, const size_t& y);
+	std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y);
 	void updateTexture();
 	void draw(RenderTarget* window);
 	void update(const float& dt, const float& multiplier);

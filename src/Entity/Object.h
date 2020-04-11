@@ -45,6 +45,7 @@ public:
 
 	//Modifiers
 	void flipTextureRect();
+	inline void setPosition(const Vector2f& pos){this->sprite.setPosition(pos); }
 
 	//Functions
 	virtual void draw(RenderTarget* window) const = 0;

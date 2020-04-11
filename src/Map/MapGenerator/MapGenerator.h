@@ -15,10 +15,10 @@ private:
 
 public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	enum class TerrainType {SAND,
-							GRASS_LIGHT, WHEAT, FOREST_SHALLOW, FOREST_DEEP,
-							MINERALS, ROCK_DARK, ROCK_LIGHT,
-							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW,
+							GRASS_LIGHT, FOREST_SHALLOW, FOREST_DEEP, WHEAT,
 							WATER_DEEP, WATER_SHALLOW,
+							MINERALS, ROCK_DARK, ROCK_LIGHT,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW
 							};
 							//THE TERRAIN TYPES IN HEIGHT ORDER
 		 enum class TOrder {WATER_DEEP, WATER_SHALLOW, SAND,
@@ -43,7 +43,6 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	};
 
 	std::vector<std::vector<TerrainType>> terrainVec;
-	std::vector<std::vector<TerrainType>> terrainVec2xScale;
 
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;
