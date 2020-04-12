@@ -17,3 +17,8 @@ void HitboxComponent::draw(RenderTarget* window) const
 	hitboxRect.setSize(Vector2f(this->hitbox.width, this->hitbox.height));
 	window->draw(hitboxRect);
 }
+
+void HitboxComponent::update(const float& dt, const float& multiplier)
+{
+	this->hitbox = this->spritePtr->getTextureRect();
+}

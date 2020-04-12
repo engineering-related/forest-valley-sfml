@@ -1,9 +1,8 @@
 #include "Map.h"
 
-
-Map::Map(/* args */)
+Map::Map(std::vector<Object*>* entites)
 {
-
+	this->entitesPtr = entites;
 	this->init();
 }
 
@@ -22,21 +21,14 @@ Map::~Map()
 void Map::init()
 {
 	this->initMapGenerator();
-	this->initNature(this->seed);
-	this->buildNature();
+	this->buildNature(this->seed);
 	this->updateTexture();
 
-}
-
-void Map::initNature(unsigned int seed)
-{
-	//this->natureMap =  MapGenerator::generateNoiseMap(this->seed + 3, this->map->mapDimensions.x, this->map->mapDimensions.y, this->map->noiseScale, this->map->octaves, this->map->persistance, this->map->lacunarity, this->map->offset);
 }
 
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->seed = 0;
 	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
@@ -224,9 +216,9 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 	return returnPair;
 }
 
-void Map::buildNature()
+void Map::buildNature(unsigned int seed)
 {
-	srand(this->seed);
+	srand(seed);
 	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
 	{
 		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
@@ -301,8 +293,18 @@ void Map::buildNature()
 					}
 					break;
 				default:
-
 					break;
+			}
+		}
+	}
+	//Push into the main game object vector
+	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	{
+		for (size_t y = 3; y < this->map->terrainVec[x].size() - 3; y++)
+		{
+			if (this->interactableGrid[x][y] != nullptr)
+			{
+				this->entitesPtr->push_back(this->interactableGrid[x][y]);
 			}
 		}
 	}
@@ -313,8 +315,8 @@ void Map::updateTexture()
 {
 	//Init rendertexture
 	this->renderTexture.clear();
-	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
-	this->renderTexture.create(textureSize.x, textureSize.y);
+	this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
+	this->renderTexture.create(this->textureSize.x, this->textureSize.y);
 
 	//The container for the drawing information stored in a tuple
 	std::vector<std::pair<int, Vector2i>> grid1D;
@@ -392,40 +394,17 @@ void Map::updateTexture()
 		}
 	}
 
-	std::vector<Nature*> interactableGrid1D;
-	//Push into the 1D grid
-	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
-	{
-		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
-		{
-			if(this->interactableGrid[x][y] != nullptr)
-			{
-				interactableGrid1D.push_back(this->interactableGrid[x][y]);
-			}
-		}
-	}
-	//Sort the 1D grid
-	//Sort based on Z-index
-	std::sort(interactableGrid1D.begin(), interactableGrid1D.end(), [](const Nature* obj1, const Nature* obj2) {
-		return obj1->getZIndex() < obj2->getZIndex();
-	});
-
-	for(Nature* natureObj: interactableGrid1D)
-	{
-		natureObj->draw(&renderTexture);
-	}
 	//Set the texture to the sprite
 	this->renderTexture.display();
 	this->sprite.setTexture(this->renderTexture.getTexture());
-	this->sprite.setPosition(Vector2f(-textureSize.x / 2, -textureSize.y / 2));
 }
 
 void Map::draw(RenderTarget * window)
 {
 	window->draw(this->sprite);
-	this->map->draw(window);
 }
 
 void Map::update(const float& dt, const float& multiplier)
 {
+
 }

@@ -11,7 +11,6 @@ MovementComponent::MovementComponent(Sprite &sprite, float maxVelocity, float ac
 	this->prevPos = this->spritePtr->getPosition();
 }
 
-
 MovementComponent::~MovementComponent()
 {
 
@@ -24,7 +23,7 @@ const Vector2f & MovementComponent::getVel() const
 
 const Vector2f & MovementComponent::getPrevPos() const
 {
-	return this->prevPos;
+	if(this->spritePtr) return this->prevPos;
 }
 
 void MovementComponent::move(const float dir_x, const float dir_y, const float& dt, const float& multiplier)
@@ -75,14 +74,21 @@ void MovementComponent::update(const float & dt, const float & multiplier)
 		if (this->vel.y < -this->maxVel)
 			this->vel.y = -this->maxVel;
 	}
-
-	this->prevPos = this->spritePtr->getPosition();
-	this->spritePtr->move(this->getClampedMagVel()*dt);
 }
 
-const Vector2f MovementComponent::getClampedMagVel()
+void MovementComponent::updateSprite(const float& dt, const float &multiplier)
 {
-	float rotation = atan2(this->vel.y, this->vel.x);
-	Vector2f clampMagnitudeVel(abs(this->vel.x)*cos(rotation), abs(this->vel.y)*sin(rotation));
+	if (this->spritePtr)
+	{
+		this->update(dt, multiplier);
+		this->prevPos = this->spritePtr->getPosition();
+		this->spritePtr->move(this->getClampedMagVel(this->vel) * dt);
+	}
+}
+
+Vector2f MovementComponent::getClampedMagVel(const Vector2f &vel)
+{
+	float rotation = atan2(vel.y, vel.x);
+	Vector2f clampMagnitudeVel(abs(vel.x)*cos(rotation), abs(vel.y)*sin(rotation));
 	return clampMagnitudeVel;
 }

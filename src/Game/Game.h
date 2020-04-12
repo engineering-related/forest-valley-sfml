@@ -2,6 +2,7 @@
 #define GAME
 
 //Includes
+#include "Camera/Camera.h"
 #include "Map/Map.h"
 #include "Platform/Platform.hpp"
 #include "Entity/AllEntities.hpp"
@@ -12,6 +13,7 @@ class Game
 {
 private:
 	RenderWindow* window;
+	Camera* camera;
 	Clock clock;
 	Font* font;
 
@@ -22,6 +24,7 @@ private:
 	float framerateLimit;
 	float cap;
 
+	Player* player;
 	std::vector<Object*> entites;
 
 	unsigned int seed;
@@ -29,7 +32,6 @@ private:
 
 	void init();
 	void initMap();
-	static void zoomViewAt(const sf::Vector2i& pixel, sf::RenderWindow& window, const float& zoom);
 	void pollEvents();
 	void updateClock();
 	void printFPS();

@@ -54,6 +54,24 @@ void Object::createHitboxComponent()
 	this->hitboxComponent = new HitboxComponent(this->sprite);
 }
 
+const Vector2f Object::getCenterPosition() const
+{
+	if(this->hitboxComponent)
+	{
+		Vector2f centerPosition;
+		centerPosition.x = this->sprite.getPosition().x + this->hitboxComponent->getHitbox().width / 2;
+		centerPosition.y = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height / 2;
+		return centerPosition;
+	}
+}
+const IntRect& Object::getHitbox()
+{
+	if (!this->hitboxComponent)
+		this->createHitboxComponent();
+	return this->hitboxComponent->getHitbox();
+}
+
+
 void Object::flipTextureRect()
 {
 	IntRect rect = this->sprite.getTextureRect();
@@ -82,9 +100,15 @@ void Object::draw(RenderTarget* window) const
 
 void Object::update(const float& dt, const float& multiplier)
 {
-	if(this->movementComponent) this->movementComponent->update(dt, multiplier);
-	if(this->hitboxComponent)
+	if(this->movementComponent) this->movementComponent->updateSprite(dt, multiplier);
+	//Creates a hitboxcomponent if the sprite has a texture rect
+	if (!this->hitboxComponent)
+	{
+			this->createHitboxComponent();
+	}
+	else
 	{
 		this->setWorldGridPos();
+		this->hitboxComponent->update(dt, multiplier);
 	}
 }

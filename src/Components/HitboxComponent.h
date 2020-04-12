@@ -15,8 +15,9 @@ public:
 	~HitboxComponent();
 
 	//Accessor
-	inline const IntRect getHitbox(){return this->hitbox; }
+	inline const IntRect &getHitbox() const{return this->hitbox; }
 	void draw(RenderTarget* window) const;
+	void update(const float& dt, const float& multiplier);
 };
 
 #endif

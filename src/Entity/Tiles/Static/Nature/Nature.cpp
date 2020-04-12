@@ -7,8 +7,6 @@ Nature::Nature(Vector2f pos, IntRect type) :
 	this->createSpriteSheetComponent(util::txh::Nature->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
 	this->tileSize = Vector2i((type.left + type.width/TILE_SIZE.x), (type.top + type.height/TILE_SIZE.y));
 	this->sprite.setTextureRect(type);
-	this->createHitboxComponent();
-	this->setWorldGridPos();
 }
 
 Nature::~Nature()

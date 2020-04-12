@@ -48,12 +48,5 @@ void Player::draw(RenderTarget* window) const
 
 void Player::update(const float& dt, const float& multiplier)
 {
-	//Change input later to game file!
-	//Input
-	if (Keyboard::isKeyPressed(Keyboard::W) && !Keyboard::isKeyPressed(Keyboard::S)) this->up(dt, multiplier);
-	if (Keyboard::isKeyPressed(Keyboard::S) && !Keyboard::isKeyPressed(Keyboard::W)) this->down(dt, multiplier);
-	if (Keyboard::isKeyPressed(Keyboard::A) && !Keyboard::isKeyPressed(Keyboard::D)) this->left(dt, multiplier);
-	if (Keyboard::isKeyPressed(Keyboard::D) && !Keyboard::isKeyPressed(Keyboard::A)) this->right(dt, multiplier);
-
 	this->Creature::update(dt, multiplier);
 }

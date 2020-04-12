@@ -11,6 +11,7 @@ Game::~Game()
 	delete this->window;
 	delete this->font;
 	delete this->map;
+	delete this->camera;
 }
 
 void Game::init()
@@ -28,34 +29,29 @@ void Game::init()
 
 	//Init Clock
 	this->incer = 0.f;
+	this->dt = 0.f;
 	this->multiplier = MULTIPLIER;
 	this->framerateLimit = FRAMERATELIMIT;
 	this->cap = CAP;
-	this->window->setFramerateLimit(this->framerateLimit);
+	this->window->setFramerateLimit(144);
 
 	//Init Map
 	this->initMap();
 
 	//Testing Obejcts
-	this->entites.push_back(new Player(Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)));
+	this->player = new Player(Vector2f(this->map->textureSize.x/2, this->map->textureSize.y/2));
+	this->entites.push_back(this->player);
+
+	//Init camera
+	this->camera = new Camera(this->window);
+	this->camera->setView(Vector2f(this->map->textureSize.x / 2, this->map->textureSize.y / 2), this->window);
 }
 
 void Game::initMap()
 {
-	this->map = new Map;
+	this->map = new Map(&this->entites);
 }
 
-void Game::zoomViewAt(const sf::Vector2i& pixel, sf::RenderWindow& window, const float& zoom)
-{
-	const sf::Vector2f beforeCoord { window.mapPixelToCoords(pixel) };
-	sf::View view { window.getView() };
-	view.zoom(zoom);
-	window.setView(view);
-	const sf::Vector2f afterCoord { window.mapPixelToCoords(pixel) };
-	const sf::Vector2f offsetCoords { beforeCoord - afterCoord };
-	view.move(offsetCoords);
-	window.setView(view);
-}
 
 void Game::pollEvents()
 {
@@ -67,13 +63,30 @@ void Game::pollEvents()
 		if (event.type == sf::Event::MouseWheelScrolled)
 		{
 			if (event.mouseWheelScroll.delta > 0)
-				Game::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
+				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
 			else if (event.mouseWheelScroll.delta < 0)
-				Game::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
+				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
 		}
 	}
 	if (Keyboard::isKeyPressed(Keyboard::Escape))
 		this->window->close();
+
+	if (Keyboard::isKeyPressed(Keyboard::W) && !Keyboard::isKeyPressed(Keyboard::S))
+	{
+		this->player->up(this->dt, this->multiplier);
+	}
+	if (Keyboard::isKeyPressed(Keyboard::S) && !Keyboard::isKeyPressed(Keyboard::W))
+	{
+		this->player->down(this->dt, this->multiplier);
+	}
+	if (Keyboard::isKeyPressed(Keyboard::A) && !Keyboard::isKeyPressed(Keyboard::D))
+	{
+		this->player->left(this->dt, this->multiplier);
+	}
+	if (Keyboard::isKeyPressed(Keyboard::D) && !Keyboard::isKeyPressed(Keyboard::A))
+	{
+		this->player->right(this->dt, this->multiplier);
+	}
 }
 
 void Game::updateClock()
@@ -104,18 +117,32 @@ void Game::startLoop()
 		this->pollEvents();
 		//Game clock
 		this->updateClock();
-
 		//Draw
 		this->window->clear();
 
 		this->map->draw(this->window);
 
+		//Sort the Objects based on zIndex
+		std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool
+		 {
+			 if(obj1->getZIndex() == obj2->getZIndex())
+			 {
+				return obj1->getCenterPosition().x < obj2->getCenterPosition().x;
+			 }
+			else return obj1->getZIndex() < obj2->getZIndex();
+		});
+
+		//Update and draw Objects
 		for(Object* object: this->entites)
 		{
 			object->update(this->dt, this->multiplier);
 			object->draw(this->window);
 		}
+		this->map->map->draw(window);
+		this->camera->updateView(this->player->getCenterPosition(), this->window, this->dt, this->multiplier);
+
 		this->window->display();
+		//Update view
 	}
 }
 

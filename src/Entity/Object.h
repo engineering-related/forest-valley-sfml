@@ -46,6 +46,9 @@ public:
 
 	//Accesors
 	inline const int&getZIndex()const{return this->zIndex; }
+	const Vector2f getCenterPosition() const;
+	const IntRect& getHitbox();
+
 	//Modifiers
 	void flipTextureRect();
 	inline void setPosition(const Vector2f& pos){this->sprite.setPosition(pos); }
