@@ -14,6 +14,7 @@ Object::~Object()
 	delete this->spriteSheetComponent;
 	delete this->movementComponent;
 	delete this->animationComponent;
+	delete this->hitboxComponent;
 }
 
 void Object::init()
@@ -22,6 +23,7 @@ void Object::init()
 	this->spriteSheetComponent = nullptr;
 	this->movementComponent = nullptr;
 	this->animationComponent = nullptr;
+	this->hitboxComponent = nullptr;
 }
 
 void Object::createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos)
@@ -45,6 +47,13 @@ void Object::createAnimationComponent(AnimationComponent::Animation* startAnim)
 	this->animationComponent = new AnimationComponent(this->sprite, startAnim);
 }
 
+void Object::createHitboxComponent()
+{
+	if (this->hitboxComponent != nullptr)
+		delete this->hitboxComponent;
+	this->hitboxComponent = new HitboxComponent(this->sprite);
+}
+
 void Object::flipTextureRect()
 {
 	IntRect rect = this->sprite.getTextureRect();
@@ -53,13 +62,29 @@ void Object::flipTextureRect()
 	this->sprite.setTextureRect(rect);
 }
 
+void Object::setWorldGridPos()
+{
+	this->gridPos.topLeft.x = floor(this->sprite.getPosition().x / TILE_SIZE.x);
+	this->gridPos.topLeft.y = floor(this->sprite.getPosition().y / TILE_SIZE.y);
+	this->gridPos.bottomRight.x = floor((this->sprite.getPosition().x + this->hitboxComponent->getHitbox().width) / TILE_SIZE.x);
+	this->gridPos.bottomRight.y = floor((this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height) / TILE_SIZE.y);
+	this->zIndex = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height;
+}
 
 void Object::draw(RenderTarget* window) const
 {
+	if(this->hitboxComponent)
+	{
+		//this->hitboxComponent->draw(window);
+	}
 	window->draw(this->sprite);
 }
 
 void Object::update(const float& dt, const float& multiplier)
 {
 	if(this->movementComponent) this->movementComponent->update(dt, multiplier);
+	if(this->hitboxComponent)
+	{
+		this->setWorldGridPos();
+	}
 }

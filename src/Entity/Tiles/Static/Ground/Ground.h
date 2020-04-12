@@ -25,15 +25,16 @@ public:
 	//Get the correct type of a given ground
 	static Parts* getParts(const Vector2i& gridPos);
 
-	inline static Parts* const GRASS_FOREST = getParts(Vector2i(0, 0));
-	inline static Parts* const GRASS_FLAT = getParts(Vector2i(0, 3));
-	inline static Parts* const SAND = getParts(Vector2i(1, 4));
-	inline static Parts* const GRAVEL = getParts(Vector2i(2, 4));
-	inline static Parts* const FIELD = getParts(Vector2i(2, 3));
+	inline static Parts* const GRASS_FOREST = Ground::getParts(Vector2i(0, 0));
+	inline static Parts* const GRASS_FLAT = Ground::getParts(Vector2i(0, 3));
+	inline static Parts* const SAND = Ground::getParts(Vector2i(1, 4));
+	inline static Parts* const GRAVEL = Ground::getParts(Vector2i(2, 4));
+	inline static Parts* const FIELD = Ground::getParts(Vector2i(2, 3));
+	inline static Parts* const MINERAL = Ground::getParts(Vector2i(1, 3));
 
 	//Temp
-	inline static Parts* const STONE = getParts(Vector2i(0, 4));
-	inline static Parts* const WATER = getParts(Vector2i(0, 1));
+	inline static Parts* const STONE = Ground::getParts(Vector2i(0, 4));
+	inline static Parts* const WATER = Ground::getParts(Vector2i(0, 1));
 };
 
 

@@ -38,12 +38,35 @@ void MapGenerator::initTerrainTypes()
 	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
 	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));
 	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.7f, Color(59, 49, 52)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.8f, Color(76, 59, 58)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.9f, Color(93, 69, 64)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_2, 1.0f, Color(110, 79, 70)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_3, 2.0f, Color(127, 89, 76)));
-	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_4, 4.0f, Color(144, 99, 82)));
-	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 6.0f, Color(255, 255, 255)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.75f, Color(76, 59, 58)));
+	//Rock light
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.8f, Color(93, 69, 64)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_2, 0.85f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_3, 0.90f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_4, 0.95f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_5, 1.0f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_6, 1.05f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_7, 1.1f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_8, 1.15f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_9, 1.20f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_10, 1.25f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_11, 1.30f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_12, 1.35f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_13, 1.40f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_14, 1.45f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_15, 1.50f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_16, 1.55f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_17, 1.60f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_18, 1.65f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_19, 1.70f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_20, 1.75f, Color(144, 99, 82)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_21, 1.80f, Color(110, 79, 70)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_22, 1.85f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_23, 1.90f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_24, 1.95f, Color(127, 89, 76)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT_25, 2.0f, Color(127, 89, 76)));
+
+	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 2.05f, Color(255, 255, 255)));
 
 	////HeightMap LOTR
 	//this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(147, 156, 112)));
@@ -80,7 +103,6 @@ void MapGenerator::update(/*const float & dt, const float & multiplier*/)
 	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
 	this->setTerrainTypes();
-	//this->removeSingles();
 	this->updateTexture();
 }
 
@@ -98,7 +120,7 @@ void MapGenerator::setTerrainTypes()
 			float currentHeight = pow(this->heightMap[x][y], this->elevation);
 			float forestValue = this->forsetMap[x][y];
 			float wheatValue = this->fieldMap[x][y];
-			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 4.f, true);
+			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 3.f, true);
 
 			//Add diffent height
 			for (auto& heightRegion : this->heightRegions)
@@ -140,6 +162,7 @@ void MapGenerator::setTerrainTypes()
 			}
 			for (auto& heightRegion : this->heightRegions)
 			{
+																										//REMOVE THIS TO MAKE ISLAND
 				if (boundryValue >= this->heightRegions[static_cast<int>(TOrder::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
 					this->terrainVec[x][y] = heightRegion.type;
@@ -149,115 +172,6 @@ void MapGenerator::setTerrainTypes()
 		}
 	}
 }
-
-///////////////DONT LOOK, SEVERE AUTISM!!///////////
-std::vector<MapGenerator::TerrainType> MapGenerator::getNeighbours(const int& x, const int& y)
-{
-	std::vector<TerrainType> neighbours;
-	//TODO: Refactor with for loop
-	TerrainType *top = &this->terrainVec[x][y-1],
-				*left = &this->terrainVec[x-1][y],
-				*right = &this->terrainVec[x+1][y],
-				*bottom = &this->terrainVec[x][y+1],
-
-				*tl = &this->terrainVec[x-1][y-1],
-				*tr = &this->terrainVec[x+1][y-1],
-				*bl = &this->terrainVec[x-1][y+1],
-				*br = &this->terrainVec[x+1][y+1];
-
-	neighbours.push_back(*top);
-	neighbours.push_back(*left);
-	neighbours.push_back(*right);
-	neighbours.push_back(*bottom);
-
-	neighbours.push_back(*tl);
-	neighbours.push_back(*tr);
-	neighbours.push_back(*bl);
-	neighbours.push_back(*br);
-	return neighbours;
-}
-
-void MapGenerator::checkRemoveSingle(const int& x, const int& y, std::vector<std::vector<bool>>& changedStates, const bool& root)
-{
-	if(!root && changedStates[x][y]) return;
-	else if ( x == 0 || y == 0 || x == this->mapDimensions.x - 1 || y == this->mapDimensions.y - 1) return; // dont check outer cells
-
-	TerrainType *current = &this->terrainVec[x][y], //Middle cell
-		*top = &this->terrainVec[x][y - 1],
-				*left = &this->terrainVec[x - 1][y],
-				*right = &this->terrainVec[x + 1][y],
-				*bottom = &this->terrainVec[x][y + 1],
-
-				*tl = &this->terrainVec[x - 1][y - 1],
-				*tr = &this->terrainVec[x + 1][y - 1],
-				*bl = &this->terrainVec[x - 1][y + 1],
-				*br = &this->terrainVec[x + 1][y + 1];
-
-	/*							   xx
-    Check for the specific type:   xxx   (with any rotation)
-									xx
-								*/
-
-	if ((*top == *current || *bottom == *current) &&
-	(*left == *current || *right == *current) &&
-	((*tl == *current || *br == *current) || (*tr == *current || *bl == *current))) return; //No singles found
-	else
-	{
-		std::vector<TerrainType> neighbours = this->getNeighbours(x, y);
-		unsigned int count = 0;
-		while (!((*top == *current || *bottom == *current) &&
-			   (*left == *current || *right == *current) &&
-			   ((*tl == *current || *br == *current) || (*tr == *current || *bl == *current))))
-		{
-			//If none of the sourrounding cells is viable, change to most common type of the neighbours
-			//Change the adjecent cells to that type aswell
-			if(count > neighbours.size() - 1) {
-				*current = util::fn::most_common(neighbours.begin(), neighbours.end());
-				*top = *current;
-				*right = *current;
-				*left = *current;
-				*bottom = *current;
-				break;
-			};
-			*current = neighbours[count];
-			count++;
-		}
-		changedStates[x][y] = true;
-		//Do the same for the adjecent cells
-		checkRemoveSingle(x, y - 1, changedStates, false);
-		checkRemoveSingle(x - 1, y, changedStates, false);
-		checkRemoveSingle(x + 1, y, changedStates, false);
-		checkRemoveSingle(x, y + 1, changedStates, false);
-	}
-}
-
-void MapGenerator::removeSingles()
-{
-	/*Algorithm:
-	c->changed = false
-	-for cell c in cells:
-		if(c->changed) continue
-		-check the 4 sourronding cells (neighbours) if they are they same type
-		-if not:
-			change c
-			c->changed = true
-			-do the same check for the neighbours
-	*/
-	//Needs to be run 4 times to ensure all 4 sides after shifting
-	for (int i = 0; i < 4; i++)
-	{
-		std::vector<std::vector<bool>> changedStates = std::vector<std::vector<bool>>(this->mapDimensions.x, std::vector<bool>(this->mapDimensions.y, false));
-		for (int y = 0; y < this->mapDimensions.y; y++)
-		{
-			for (int x = 0; x < this->mapDimensions.x; x++)
-			{
-				//Recursive function, does the same for sourrounding cells if a single is found
-				this->checkRemoveSingle(x, y, changedStates, true);
-			}
-		}
-	}
-}
-////////////////////////////////////////////////////////
 
 void MapGenerator::updateTexture()
 {

@@ -22,17 +22,27 @@ Map::~Map()
 void Map::init()
 {
 	this->initMapGenerator();
+	this->initNature(this->seed);
+	this->buildNature();
 	this->updateTexture();
+
+}
+
+void Map::initNature(unsigned int seed)
+{
+	//this->natureMap =  MapGenerator::generateNoiseMap(this->seed + 3, this->map->mapDimensions.x, this->map->mapDimensions.y, this->map->noiseScale, this->map->octaves, this->map->persistance, this->map->lacunarity, this->map->offset);
 }
 
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(250, 250), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->seed = 0;
+	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
+	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
 }
 
 std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y)
@@ -50,15 +60,6 @@ std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(
 	returnInfo[0][2] = std::make_pair(&parts->OMM, Vector2i(x - 1, y + 1)); // bl
 	returnInfo[1][2] = std::make_pair(&parts->OMM, Vector2i(x, y + 1));	   //bm
 	returnInfo[2][2] = std::make_pair(&parts->OMM, Vector2i(x + 1, y + 1)); //br
-
-	/*
-	for(int row = -1; row <= 1; row++)
-	{
-		for (int col = -1; col <= 1; col++)
-		{
-			drawVector[x + row][y + col] = this->map->terrainVec[x][y];
-		}
-	}*/
 
 	for(size_t row = 0; row < returnInfo.size(); row++)
 	{
@@ -211,11 +212,11 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 			break;
 		case MapGenerator::TerrainType::MINERALS:
 			tileType = new Ground(pos, Vector2i(0, 0));
-			type = Ground::GRAVEL;
+			type = Ground::MINERAL;
 			break;
 		default:
-			tileType = new Ground(pos, Vector2i(0, 0));
-			type = Ground::STONE;
+			tileType = new Mountain(pos, Vector2i(0, 0));
+			type = Mountain::ROCK;
 			break;
 	}
 	std::pair<Tile*, Tile::Parts*> returnPair;
@@ -223,27 +224,93 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 	return returnPair;
 }
 
+void Map::buildNature()
+{
+	srand(this->seed);
+	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	{
+		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
+		{
+			Vector2f pos(x*TILE_SIZE.x, y*TILE_SIZE.y);
+			double r = ((double)rand() / (RAND_MAX));
+
+			//Nature vectors
+			std::vector<IntRect*> BIG_TREES = { Nature::TREE_ROUND, Nature::TREE_FLUFFY, Nature::TREE_SLIM };
+			std::vector<IntRect*> GROWING_TREES = { Nature::TREE_SEED, Nature::TREE_SAPLING };
+			std::vector<IntRect*> STUMP_TREES = { Nature::TREE_STUMP_SLIM, Nature::TREE_STUMP, Nature::TREE_LOG };
+			std::vector<IntRect*> BIG_STONES = { Nature::STONE_ROUND, Nature::STONE_EGG, Nature::STONE_BIG };
+			std::vector<IntRect*> SMALL_STONES = { Nature::STONE_SMALL_EGG, Nature::STONE_SMALL, Nature::STONE_SMALL_ROUND };
+			std::vector<IntRect*> SMALL_FLOWERS = { Nature::FLOWER_ONE, Nature::FLOWER_TWO, Nature::FLOWER_THREE };
+			std::vector<IntRect*> BIG_FLOWERS = { Nature::FLOWER_BIG, Nature::FLOWER_WEED};
+
+			switch (this->map->terrainVec[x][y])
+			{
+				case MapGenerator::TerrainType::GRASS_LIGHT:
+					if(r < 0.01)
+					{
+						this->interactableGrid[x][y] = new Nature(pos, *Nature::TREE_ROUND);
+					} else if(r < 0.015)
+					{
+						this->interactableGrid[x][y] = new Nature(pos, *Nature::STONE_SMALL);
+					}
+					break;
+				case MapGenerator::TerrainType::FOREST_SHALLOW:
+					if(r < 0.2)
+					{
+						std::vector<IntRect*> ALL_TREES = std::vector<IntRect*>();
+						for(int i = 0; i < 10; i++)
+						{
+							ALL_TREES.insert(ALL_TREES.end(), BIG_TREES.begin(), BIG_TREES.end());
+						}
+						ALL_TREES.insert(ALL_TREES.end(), GROWING_TREES.begin(), GROWING_TREES.end());
+						ALL_TREES.insert(ALL_TREES.end(), STUMP_TREES.begin(), STUMP_TREES.end());
+
+						int index = rand() % ALL_TREES.size();
+
+						this->interactableGrid[x][y] = new Nature(pos, *ALL_TREES[index]);
+					}
+					break;
+				case MapGenerator::TerrainType::FOREST_DEEP:
+					if(r < 0.6)
+					{
+						int index = rand() % BIG_TREES.size();
+						this->interactableGrid[x][y] = new Nature(pos, *BIG_TREES[index]);
+					}
+					break;
+				case MapGenerator::TerrainType::SAND:
+
+					break;
+				case MapGenerator::TerrainType::WATER_DEEP:
+
+					break;
+				case MapGenerator::TerrainType::WATER_SHALLOW:
+
+					break;
+				case MapGenerator::TerrainType::WHEAT:
+
+					break;
+				case MapGenerator::TerrainType::MINERALS:
+				if(r < 0.1)
+					{
+						std::vector<IntRect*> ALL_STONES = std::vector <IntRect*>();
+						ALL_STONES.insert(ALL_STONES.end(), SMALL_STONES.begin(), SMALL_STONES.end());
+						ALL_STONES.insert(ALL_STONES.end(), BIG_STONES.begin(), BIG_STONES.end());
+						int index = rand() % ALL_STONES.size();
+
+						this->interactableGrid[x][y] = new Nature(pos, *ALL_STONES[index]);
+					}
+					break;
+				default:
+
+					break;
+			}
+		}
+	}
+	srand(time(NULL));
+}
+
 void Map::updateTexture()
 {
-	/*DRAWING ALGORITHM:
-	1.for every groud type in 2D vector:
-		save the 2d vector position and terraintype
-		push into a 1D vector of tuples
-
-
-	2.sort the 1D vector by drawing order, low->high
-
-	3.for each cell in 1D vector:
-		make a Tile* with the drawing information, use dummy type in constructor i.e OMM
-			for all the 3x3 cells with self in middle:
-				determine which type it will become
-				if not drawn:
-					draw the type and draw it with the correct type
-		save Tile* to the grid
-
-
-	*/
-
 	//Init rendertexture
 	this->renderTexture.clear();
 	Vector2i textureSize(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
@@ -253,7 +320,7 @@ void Map::updateTexture()
 	std::vector<std::pair<int, Vector2i>> grid1D;
 
 	//2D-Vector with the info if a cell has been draw
-	//std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
+	std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
 
 	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
 	{
@@ -275,7 +342,7 @@ void Map::updateTexture()
 	int currentHeight = -1;
 	for(auto& tuple : grid1D)
 	{
-	if (std::get<0>(tuple) > currentHeight)
+		if (std::get<0>(tuple) > currentHeight)
 		{
 			std::cout << currentHeight << std::endl;
 			currentHeight = std::get<0>(tuple);
@@ -296,7 +363,10 @@ void Map::updateTexture()
 				}
 				else break;
 			}
+			gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
+
 		}
+
 		std::pair<Tile*, Tile::Parts*> cellInfo = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y);
 		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = this->getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y);
 
@@ -310,13 +380,39 @@ void Map::updateTexture()
 			for (size_t y = 0; y < neighBoursInfo[x].size(); y++)
 			{
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
-				drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
-				std::get<0>(cellInfo)->setPosition(drawPos);
-				std::get<0>(cellInfo)->changeType(*std::get<0>(neighBoursInfo[x][y]));
-				std::get<0>(cellInfo)->draw(&renderTexture);
-				renderTexture.display();
+				if(!gridDrawn[gridPos.x][gridPos.y])
+				{
+					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
+					std::get<0>(cellInfo)->setPosition(drawPos);
+					std::get<0>(cellInfo)->changeType(*std::get<0>(neighBoursInfo[x][y]));
+					std::get<0>(cellInfo)->draw(&renderTexture);
+					gridDrawn[gridPos.x][gridPos.y] = true;
+				}
 			}
 		}
+	}
+
+	std::vector<Nature*> interactableGrid1D;
+	//Push into the 1D grid
+	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	{
+		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
+		{
+			if(this->interactableGrid[x][y] != nullptr)
+			{
+				interactableGrid1D.push_back(this->interactableGrid[x][y]);
+			}
+		}
+	}
+	//Sort the 1D grid
+	//Sort based on Z-index
+	std::sort(interactableGrid1D.begin(), interactableGrid1D.end(), [](const Nature* obj1, const Nature* obj2) {
+		return obj1->getZIndex() < obj2->getZIndex();
+	});
+
+	for(Nature* natureObj: interactableGrid1D)
+	{
+		natureObj->draw(&renderTexture);
 	}
 	//Set the texture to the sprite
 	this->renderTexture.display();

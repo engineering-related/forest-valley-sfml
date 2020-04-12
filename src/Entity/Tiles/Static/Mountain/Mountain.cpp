@@ -1,19 +1,19 @@
-#include "Ground.h"
+#include "Mountain.h"
 
-Ground::Ground(Vector2f pos, Vector2i type) :
-	StaticTile(pos, util::txh::Ground->getTexture(), false, true)
+Mountain::Mountain(Vector2f pos, Vector2i type) :
+	StaticTile(pos, util::txh::Rock->getTexture(), true, false)
 {
 	this->type = type;
-	this->createSpriteSheetComponent(util::txh::Ground->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
+	this->createSpriteSheetComponent(util::txh::Rock->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
 	this->sprite.setTextureRect(this->spriteSheetComponent->getTextureRects()[type.x][type.y]);
 }
 
-Ground::~Ground()
+Mountain::~Mountain()
 {
 
 }
 
-Tile::Parts* Ground::getParts(const Vector2i& gridPos)
+Tile::Parts* Mountain::getParts(const Vector2i& gridPos)
 {
 	Parts* part = new Parts;
 	Vector2i startPos(gridPos.x * 5, gridPos.y * 3);
@@ -40,13 +40,12 @@ Tile::Parts* Ground::getParts(const Vector2i& gridPos)
 	return part;
 }
 
-void Ground::draw(RenderTarget* window) const
+void Mountain::draw(RenderTarget* window) const
 {
 	StaticTile::draw(window);
 }
 
-void Ground::update(const float& dt, const float& multiplier)
+void Mountain::update(const float& dt, const float& multiplier)
 {
 	StaticTile::update(dt, multiplier);
-
 }

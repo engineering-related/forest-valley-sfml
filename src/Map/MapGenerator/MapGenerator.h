@@ -14,16 +14,29 @@ private:
 	void initTerrainTypes();
 
 public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
-	enum class TerrainType {SAND,
+	enum class TerrainType {SAND, MINERALS,
 							GRASS_LIGHT, FOREST_SHALLOW, FOREST_DEEP, WHEAT,
 							WATER_DEEP, WATER_SHALLOW,
-							MINERALS, ROCK_DARK, ROCK_LIGHT,
-							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW
+							ROCK_DARK, ROCK_LIGHT,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, ROCK_LIGHT_5,
+							ROCK_LIGHT_6, ROCK_LIGHT_7, ROCK_LIGHT_8, ROCK_LIGHT_9,
+							ROCK_LIGHT_10, ROCK_LIGHT_11, ROCK_LIGHT_12, ROCK_LIGHT_13,
+							ROCK_LIGHT_14, ROCK_LIGHT_15, ROCK_LIGHT_16, ROCK_LIGHT_17,
+							ROCK_LIGHT_18, ROCK_LIGHT_19, ROCK_LIGHT_20, ROCK_LIGHT_21,
+							ROCK_LIGHT_22, ROCK_LIGHT_23, ROCK_LIGHT_24, ROCK_LIGHT_25,
+							SNOW
 							};
+
 							//THE TERRAIN TYPES IN HEIGHT ORDER
 		 enum class TOrder {WATER_DEEP, WATER_SHALLOW, SAND,
 							GRASS_LIGHT, MINERALS, ROCK_DARK, ROCK_LIGHT,
-							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, SNOW,
+							ROCK_LIGHT_2, ROCK_LIGHT_3, ROCK_LIGHT_4, ROCK_LIGHT_5,
+							ROCK_LIGHT_6, ROCK_LIGHT_7, ROCK_LIGHT_8, ROCK_LIGHT_9,
+							ROCK_LIGHT_10, ROCK_LIGHT_11, ROCK_LIGHT_12, ROCK_LIGHT_13,
+							ROCK_LIGHT_14, ROCK_LIGHT_15, ROCK_LIGHT_16, ROCK_LIGHT_17,
+							ROCK_LIGHT_18, ROCK_LIGHT_19, ROCK_LIGHT_20, ROCK_LIGHT_21,
+							ROCK_LIGHT_22, ROCK_LIGHT_23, ROCK_LIGHT_24, ROCK_LIGHT_25,
+							SNOW,
 							FOREST_SHALLOW, FOREST_DEEP,
 							WHEAT
 							};
@@ -71,9 +84,6 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	//Set the map to a constant pos/scale when drawn
 	void setConstDraw(const bool& state);
 	void setTerrainTypes();
-	std::vector<TerrainType> getNeighbours(const int& x, const int& y);
-	void checkRemoveSingle(const int& x, const int& y, std::vector<std::vector<bool>>& changedStates, const bool&root);
-	void removeSingles();
 	void updateTexture();
 	void setDisplaySize(const Vector2f &size);
 

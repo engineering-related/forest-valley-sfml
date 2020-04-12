@@ -4,6 +4,7 @@
 #include "Components/SpriteSheetComponent.h"
 #include "Components/MovementComponent.h"
 #include "Components/AnimationComponent.h"
+#include "Components/HitboxComponent.h"
 
 using namespace sf;
 
@@ -24,12 +25,13 @@ protected:
 		Vector2i bottomRight; //Bottom right pos of hitbox
 	};
 	GridPos gridPos;
+	void setWorldGridPos();
 
 	//Components
 	SpriteSheetComponent* spriteSheetComponent;
 	MovementComponent* movementComponent;
 	AnimationComponent* animationComponent;
-	//HitboxComponent = this->sprite.getTextureRect();
+	HitboxComponent* hitboxComponent;
 
 public:
 	//Constructors
@@ -40,9 +42,10 @@ public:
 	void createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos);
 	void createMovementComponent(const float maxVelocity, const float acceleration, const float deAcceleration);
 	void createAnimationComponent(AnimationComponent::Animation* startAnim);
+	void createHitboxComponent();
 
 	//Accesors
-
+	inline const int&getZIndex()const{return this->zIndex; }
 	//Modifiers
 	void flipTextureRect();
 	inline void setPosition(const Vector2f& pos){this->sprite.setPosition(pos); }
