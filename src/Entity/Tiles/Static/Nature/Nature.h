@@ -22,7 +22,7 @@ public:
 
 	//Static variables
 	inline static IntRect* const TREE_ROUND = new IntRect(0, 0, 2*TILE_SIZE.x, 2*TILE_SIZE.y);
-	inline static IntRect* const TREE_FLUFFY = new IntRect(6 * TILE_SIZE.x, 0, 2*TILE_SIZE.x, 2*TILE_SIZE.y);
+	inline static IntRect* const TREE_FLUFFY = new IntRect(6 * TILE_SIZE.x+1, 0, 2*TILE_SIZE.x-2, 2*TILE_SIZE.y);
 	inline static IntRect* const TREE_SLIM = new IntRect(5 * TILE_SIZE.x, 0, TILE_SIZE.x, 2*TILE_SIZE.y);
 
 	inline static IntRect* const TREE_SEED = new IntRect(2 * TILE_SIZE.x, 0, TILE_SIZE.x, TILE_SIZE.y);
@@ -35,7 +35,7 @@ public:
 
 	inline static IntRect* const STONE_ROUND = new IntRect(9 * TILE_SIZE.x, 0, TILE_SIZE.x, TILE_SIZE.y);
 	inline static IntRect* const STONE_EGG = new IntRect(9 * TILE_SIZE.x, TILE_SIZE.y, TILE_SIZE.x, TILE_SIZE.y);
-	inline static IntRect* const STONE_BIG = new IntRect(10 * TILE_SIZE.x, 0, 2*TILE_SIZE.x, 2*TILE_SIZE.y);
+	inline static IntRect* const STONE_BIG = new IntRect(10 * TILE_SIZE.x+1, 0, 2*TILE_SIZE.x-2, 2*TILE_SIZE.y-2);
 
 	inline static IntRect* const STONE_SMALL_EGG = new IntRect(2 * TILE_SIZE.x, 3*TILE_SIZE.y, TILE_SIZE.x, TILE_SIZE.y);
 	inline static IntRect* const STONE_SMALL = new IntRect(3 * TILE_SIZE.x, 3*TILE_SIZE.y, TILE_SIZE.x, TILE_SIZE.y);

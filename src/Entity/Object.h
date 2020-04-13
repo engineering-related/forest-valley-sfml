@@ -18,6 +18,7 @@ protected:
 	Sprite sprite;
 	Texture* texture;
 	int zIndex;
+	bool fixedZIndex;
 
 	struct GridPos
 	{
@@ -46,12 +47,17 @@ public:
 
 	//Accesors
 	inline const int&getZIndex()const{return this->zIndex; }
-	const Vector2f getCenterPosition() const;
+	const Vector2f getCenterPosition();
+	inline const Vector2f &getPosition()const{return this->sprite.getPosition(); }
 	const IntRect& getHitbox();
+	inline const bool& getFixedZIndex() const{return this->fixedZIndex; }
 
 	//Modifiers
 	void flipTextureRect();
 	inline void setPosition(const Vector2f& pos){this->sprite.setPosition(pos); }
+	inline void setZIndex(const int &index){this->zIndex = index; }
+	void setZIndexYPos();
+	inline void setFixedZIndex(const bool& state){this->fixedZIndex = state;}
 
 	//Functions
 	virtual void draw(RenderTarget* window) const = 0;

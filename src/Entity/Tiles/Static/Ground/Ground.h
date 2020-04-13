@@ -34,7 +34,7 @@ public:
 
 	//Temp
 	inline static Parts* const STONE = Ground::getParts(Vector2i(0, 4));
-	inline static Parts* const WATER = Ground::getParts(Vector2i(0, 1));
+	inline static Parts* const WATER = Ground::getParts(Vector2i(0, 2));
 };
 
 

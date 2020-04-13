@@ -107,10 +107,24 @@ void Game::printFPS()
 	std::cout << this->FPS << std::endl;
 }
 
+void Game::sortZindex()
+{
+	std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool {
+		if (obj1->getZIndex() == obj2->getZIndex())
+		{
+			if(obj1->getCenterPosition().x == obj2->getCenterPosition().x)
+			{
+				return obj1->getCenterPosition().y > obj1->getCenterPosition().y;
+			}
+			else return obj1->getCenterPosition().x < obj2->getCenterPosition().x;
+
+		}
+		else return obj1->getZIndex() < obj2->getZIndex();
+	});
+}
 
 void Game::startLoop()
 {
-
 	while (this->window->isOpen())
 	{
 		//Events
@@ -123,15 +137,7 @@ void Game::startLoop()
 		this->map->draw(this->window);
 
 		//Sort the Objects based on zIndex
-		std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool
-		 {
-			 if(obj1->getZIndex() == obj2->getZIndex())
-			 {
-				return obj1->getCenterPosition().x < obj2->getCenterPosition().x;
-			 }
-			else return obj1->getZIndex() < obj2->getZIndex();
-		});
-
+		this->sortZindex();
 		//Update and draw Objects
 		for(Object* object: this->entites)
 		{

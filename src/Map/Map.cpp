@@ -29,7 +29,7 @@ void Map::init()
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(500, 500), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map = new MapGenerator(this->seed, Vector2i(400, 400), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
@@ -216,14 +216,45 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 	return returnPair;
 }
 
+void Map::spawnNatureObj(const IntRect& type, const int& x, const int& y)
+{
+	//Build object
+	Vector2f pos(x*TILE_SIZE.x, y*TILE_SIZE.y);
+	Nature* natureObj = new Nature(pos, type);
+
+	bool safeSpawn = true;
+	int width = 0, height = 0;
+
+	//Check the width and height of the object
+	if(natureObj->getHitbox().width <= TILE_SIZE.x) width = 1;
+	else width = 2;
+	if(natureObj->getHitbox().height <= TILE_SIZE.y) height = 2;
+	else height = 3;
+
+	//Dont spawn anything on rocks or in water
+	for (int row = -1; row <= width; row++)
+	{
+		for (int col = -1; col <= height; col++)
+		{
+			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK)
+				safeSpawn = false;
+			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
+				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_DEEP)
+				safeSpawn = false;
+		}
+	}
+	if (safeSpawn) this->interactableGrid[x][y] = natureObj;
+	else delete natureObj;
+}
+
 void Map::buildNature(unsigned int seed)
 {
 	srand(seed);
-	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	for (size_t x = 4; x < this->map->terrainVec.size() - 4; x++)
 	{
-		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
+		for (size_t y = 4; y < this->map->terrainVec[x].size()-4; y++)
 		{
-			Vector2f pos(x*TILE_SIZE.x, y*TILE_SIZE.y);
+			Vector2f pos(0.f, 0.f);
 			double r = ((double)rand() / (RAND_MAX));
 
 			//Nature vectors
@@ -235,22 +266,43 @@ void Map::buildNature(unsigned int seed)
 			std::vector<IntRect*> SMALL_FLOWERS = { Nature::FLOWER_ONE, Nature::FLOWER_TWO, Nature::FLOWER_THREE };
 			std::vector<IntRect*> BIG_FLOWERS = { Nature::FLOWER_BIG, Nature::FLOWER_WEED};
 
-			switch (this->map->terrainVec[x][y])
+			switch (this->drawVector[x][y])
 			{
 				case MapGenerator::TerrainType::GRASS_LIGHT:
-					if(r < 0.01)
+					if (r < 0.015)
 					{
-						this->interactableGrid[x][y] = new Nature(pos, *Nature::TREE_ROUND);
-					} else if(r < 0.015)
+						int index = rand() % SMALL_STONES.size();
+						this->spawnNatureObj(*SMALL_STONES[index], x, y);
+					}
+					else if (r < 0.03)
 					{
-						this->interactableGrid[x][y] = new Nature(pos, *Nature::STONE_SMALL);
+						std::vector<IntRect*> ALL_TREES = std::vector<IntRect*>();
+						for (int i = 0; i < 20; i++)
+						{
+							ALL_TREES.insert(ALL_TREES.end(), GROWING_TREES.begin(), GROWING_TREES.end());
+							ALL_TREES.insert(ALL_TREES.end(), STUMP_TREES.begin(), STUMP_TREES.end());
+						}
+						ALL_TREES.insert(ALL_TREES.end(), BIG_TREES.begin(), BIG_TREES.end());
+						int index = rand() % ALL_TREES.size();
+						this->spawnNatureObj(*ALL_TREES[index], x, y);
+					}
+					if (r < 0.02)
+					{
+						std::vector<IntRect*> ALL_FLOWERS = std::vector<IntRect*>();
+						for (int i = 0; i < 20; i++)
+						{
+							ALL_FLOWERS.insert(ALL_FLOWERS.end(), SMALL_FLOWERS.begin(), SMALL_FLOWERS.end());
+						}
+						ALL_FLOWERS.insert(ALL_FLOWERS.end(), BIG_FLOWERS.begin(), BIG_FLOWERS.end());
+						int index = rand() % ALL_FLOWERS.size();
+						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
 					}
 					break;
 				case MapGenerator::TerrainType::FOREST_SHALLOW:
-					if(r < 0.2)
+					if (r < 0.2)
 					{
 						std::vector<IntRect*> ALL_TREES = std::vector<IntRect*>();
-						for(int i = 0; i < 10; i++)
+						for (int i = 0; i < 20; i++)
 						{
 							ALL_TREES.insert(ALL_TREES.end(), BIG_TREES.begin(), BIG_TREES.end());
 						}
@@ -258,15 +310,14 @@ void Map::buildNature(unsigned int seed)
 						ALL_TREES.insert(ALL_TREES.end(), STUMP_TREES.begin(), STUMP_TREES.end());
 
 						int index = rand() % ALL_TREES.size();
-
-						this->interactableGrid[x][y] = new Nature(pos, *ALL_TREES[index]);
+						this->spawnNatureObj(*ALL_TREES[index], x, y);
 					}
 					break;
 				case MapGenerator::TerrainType::FOREST_DEEP:
-					if(r < 0.6)
+					if (r < 0.6)
 					{
 						int index = rand() % BIG_TREES.size();
-						this->interactableGrid[x][y] = new Nature(pos, *BIG_TREES[index]);
+						this->spawnNatureObj(*BIG_TREES[index], x, y);
 					}
 					break;
 				case MapGenerator::TerrainType::SAND:
@@ -279,17 +330,24 @@ void Map::buildNature(unsigned int seed)
 
 					break;
 				case MapGenerator::TerrainType::WHEAT:
+					if (r < 0.5)
+					{
+						std::vector<IntRect*> ALL_FLOWERS = std::vector<IntRect*>();
+						ALL_FLOWERS.insert(ALL_FLOWERS.end(), SMALL_FLOWERS.begin(), SMALL_FLOWERS.end());
+						ALL_FLOWERS.insert(ALL_FLOWERS.end(), BIG_FLOWERS.begin(), BIG_FLOWERS.end());
 
+						int index = rand() % ALL_FLOWERS.size();
+						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
+					}
 					break;
 				case MapGenerator::TerrainType::MINERALS:
-				if(r < 0.1)
+					if (r < 0.1)
 					{
-						std::vector<IntRect*> ALL_STONES = std::vector <IntRect*>();
+						std::vector<IntRect*> ALL_STONES = std::vector<IntRect*>();
 						ALL_STONES.insert(ALL_STONES.end(), SMALL_STONES.begin(), SMALL_STONES.end());
 						ALL_STONES.insert(ALL_STONES.end(), BIG_STONES.begin(), BIG_STONES.end());
 						int index = rand() % ALL_STONES.size();
-
-						this->interactableGrid[x][y] = new Nature(pos, *ALL_STONES[index]);
+						this->spawnNatureObj(*ALL_STONES[index], x, y);
 					}
 					break;
 				default:

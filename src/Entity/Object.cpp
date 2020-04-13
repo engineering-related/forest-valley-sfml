@@ -20,49 +20,54 @@ Object::~Object()
 void Object::init()
 {
 	this->zIndex = 0;
+	this->fixedZIndex = false;
 	this->spriteSheetComponent = nullptr;
 	this->movementComponent = nullptr;
 	this->animationComponent = nullptr;
 	this->hitboxComponent = nullptr;
 }
 
+void Object::setZIndexYPos()
+{
+	this->zIndex = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height;
+}
+
 void Object::createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos)
 {
-	if (this->spriteSheetComponent != nullptr)
+	if (this->spriteSheetComponent)
 		delete this->spriteSheetComponent;
 	this->spriteSheetComponent = new SpriteSheetComponent(nrOfImgs, startPos, endPos);
 }
 
 void Object::createMovementComponent(const float maxVelocity, const float acceleration, const float deAcceleration)
 {
-	if (this->movementComponent != nullptr)
+	if (this->movementComponent)
 		delete this->movementComponent;
 	this->movementComponent = new MovementComponent(this->sprite, maxVelocity, acceleration, deAcceleration);
 }
 
 void Object::createAnimationComponent(AnimationComponent::Animation* startAnim)
 {
-	if (this->animationComponent != nullptr)
+	if (this->animationComponent)
 		delete this->animationComponent;
 	this->animationComponent = new AnimationComponent(this->sprite, startAnim);
 }
 
 void Object::createHitboxComponent()
 {
-	if (this->hitboxComponent != nullptr)
+	if (this->hitboxComponent)
 		delete this->hitboxComponent;
 	this->hitboxComponent = new HitboxComponent(this->sprite);
 }
 
-const Vector2f Object::getCenterPosition() const
+const Vector2f Object::getCenterPosition()
 {
-	if(this->hitboxComponent)
-	{
-		Vector2f centerPosition;
-		centerPosition.x = this->sprite.getPosition().x + this->hitboxComponent->getHitbox().width / 2;
-		centerPosition.y = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height / 2;
-		return centerPosition;
-	}
+	if (!this->hitboxComponent)
+		this->createHitboxComponent();
+	Vector2f centerPosition;
+	centerPosition.x = this->sprite.getPosition().x + this->hitboxComponent->getHitbox().width / 2;
+	centerPosition.y = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height / 2;
+	return centerPosition;
 }
 const IntRect& Object::getHitbox()
 {
@@ -86,7 +91,6 @@ void Object::setWorldGridPos()
 	this->gridPos.topLeft.y = floor(this->sprite.getPosition().y / TILE_SIZE.y);
 	this->gridPos.bottomRight.x = floor((this->sprite.getPosition().x + this->hitboxComponent->getHitbox().width) / TILE_SIZE.x);
 	this->gridPos.bottomRight.y = floor((this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height) / TILE_SIZE.y);
-	this->zIndex = this->sprite.getPosition().y + this->hitboxComponent->getHitbox().height;
 }
 
 void Object::draw(RenderTarget* window) const
@@ -108,7 +112,8 @@ void Object::update(const float& dt, const float& multiplier)
 	}
 	else
 	{
-		this->setWorldGridPos();
 		this->hitboxComponent->update(dt, multiplier);
+		this->setWorldGridPos();
+		if(!this->fixedZIndex) this->setZIndexYPos();
 	}
 }

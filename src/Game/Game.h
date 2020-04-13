@@ -35,6 +35,7 @@ private:
 	void pollEvents();
 	void updateClock();
 	void printFPS();
+	void sortZindex();
 	void startLoop();
 
 public:

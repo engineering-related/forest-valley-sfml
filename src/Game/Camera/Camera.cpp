@@ -18,7 +18,7 @@ void Camera::zoomViewAt(const sf::Vector2i& pixel, sf::RenderWindow& window, con
 	view.zoom(zoom);
 	window.setView(view);
 	const sf::Vector2f afterCoord { window.mapPixelToCoords(pixel) };
-	const sf::Vector2f offsetCoords { beforeCoord - afterCoord };
+	const sf::Vector2f offsetCoords { roundf(beforeCoord.x - afterCoord.x), roundf(beforeCoord.y - afterCoord.y) };
 	view.move(offsetCoords);
 	window.setView(view);
 }
@@ -42,14 +42,14 @@ void Camera::updateView(const Vector2f& targetPos, RenderTarget* window, const f
 {
 	this->view = window->getView();
 
-	Vector2f dist = Vector2f(this->roundToNearestPixel(targetPos.x) - this->roundToNearestPixel(this->view.getCenter().x),
+	/*Vector2f dist = Vector2f(this->roundToNearestPixel(targetPos.x) - this->roundToNearestPixel(this->view.getCenter().x),
 							this->roundToNearestPixel(targetPos.y) - this->roundToNearestPixel(this->view.getCenter().y));
 
 	float roundedX = this->roundToNearestPixel(targetPos.x);
 	float roundedY = this->roundToNearestPixel(targetPos.y);
 
 	Vector2f movement(roundedX, roundedY);
-	this->view.setCenter(movement);
+	this->view.setCenter(movement);*/
 	//Vector2f movement = targetPos - view.getCenter();
 	//view.move(Vector2f(movement.x * dt, movement.y * dt));
 

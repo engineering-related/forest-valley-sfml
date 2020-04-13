@@ -33,9 +33,9 @@ void MapGenerator::initTerrainTypes()
 	this->terrainVec = std::vector<std::vector<TerrainType>>(this->mapDimensions.x, std::vector<TerrainType>(this->mapDimensions.y, TerrainType::WATER_DEEP));
 
 	//HeightMap standard
-	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.2f, Color(50, 80, 170)));
-	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(55, 102, 196)));
-	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
+	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
+	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.15f, Color(55, 102, 196)));
+	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.20f, Color(208, 208, 128)));
 	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));
 	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.7f, Color(59, 49, 52)));
 	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.75f, Color(76, 59, 58)));
@@ -79,7 +79,7 @@ void MapGenerator::initTerrainTypes()
 	////this->heightRegions.push_back(Terrain(TerrainType::SNOW, 0.95f, Color(255, 255, 255)));
 
 	//Forestmap
-	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.20f, Color(0, 40, 0)));
+	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.25f, Color(0, 40, 0)));
 	this->forestRegions[0].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);
 	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.5f, Color(0, 60, 0)));
 	this->forestRegions[1].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);

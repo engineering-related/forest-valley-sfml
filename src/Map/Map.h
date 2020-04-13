@@ -11,6 +11,7 @@ class Map
 private:
 	void init();
 	void initMapGenerator();
+	void spawnNatureObj(const IntRect &type, const int& x, const int& y);
 	unsigned int seed;
 
 	RenderTexture renderTexture;
