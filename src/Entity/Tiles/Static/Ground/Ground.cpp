@@ -4,8 +4,8 @@ Ground::Ground(Vector2f pos, Vector2i type) :
 	StaticTile(pos, util::txh::Ground->getTexture(), false, true)
 {
 	this->type = type;
-	this->createSpriteSheetComponent(util::txh::Ground->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
-	this->sprite.setTextureRect(this->spriteSheetComponent->getTextureRects()[type.x][type.y]);
+	this->addComponent<SpriteSheetComponent>(util::txh::Ground->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
+	this->sprite.setTextureRect(this->getComponent<SpriteSheetComponent>().getTextureRects()[type.x][type.y]);
 }
 
 Ground::~Ground()

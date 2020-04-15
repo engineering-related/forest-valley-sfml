@@ -37,6 +37,8 @@
 #include <numeric>
 #include <iostream>
 #include <climits>
+#include <bitset>
+#include <array>
 
 // Additional C/C++ libs
 #include <atomic>
@@ -79,12 +81,12 @@
 #define PI 3.14159265359
 
 //Game
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 880
+#define WINDOW_WIDTH 768
+#define WINDOW_HEIGHT 768
 #define MULTIPLIER 60
 #define FRAMERATELIMIT 144
 #define CAP 30
 #define SCALE sf::Vector2f(1.f, 1.f)
-#define TILE_SIZE sf::Vector2i(32, 32)
+#define TILE_SIZE sf::Vector2f(32, 32)
 
 #endif // PRECOMPILED_HEADER_HPP

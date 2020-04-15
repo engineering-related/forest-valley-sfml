@@ -12,6 +12,11 @@ Game::~Game()
 	delete this->font;
 	delete this->map;
 	delete this->camera;
+	//Delete all entities
+	for(Object* entity: this->entites)
+	{
+		delete entity;
+	}
 }
 
 void Game::init()
@@ -22,6 +27,7 @@ void Game::init()
 	float screenScalingFactor = platform.getScreenScalingFactor(this->window->getSystemHandle());
 	VideoMode mode = VideoMode(WINDOW_WIDTH * screenScalingFactor, WINDOW_HEIGHT * screenScalingFactor);
 	//VideoMode desktopMode = VideoMode().getDesktopMode();
+
 	this->window->create(mode, "Forest Valley", Style::Default);
 	srand(time(NULL));
 	platform.setIcon(this->window->getSystemHandle());
@@ -39,7 +45,7 @@ void Game::init()
 	this->initMap();
 
 	//Testing Obejcts
-	this->player = new Player(Vector2f(this->map->textureSize.x/2, this->map->textureSize.y/2));
+	this->player = new Player(Vector2f(this->map->textureSize.x / 2, this->map->textureSize.y / 2));
 	this->entites.push_back(this->player);
 
 	//Init camera
@@ -97,7 +103,7 @@ void Game::updateClock()
 	if (this->incer >= this->cap)
 	{
 		this->incer = 0.f;
-		//this->printFPS();
+		this->printFPS();
 	}
 	this->incer += this->dt * this->multiplier;
 }
@@ -110,17 +116,23 @@ void Game::printFPS()
 void Game::sortZindex()
 {
 	std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool {
-		if (obj1->getZIndex() == obj2->getZIndex())
+		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
 		{
-			if(obj1->getCenterPosition().x == obj2->getCenterPosition().x)
+			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
 			{
-				return obj1->getCenterPosition().y > obj1->getCenterPosition().y;
+				return obj1->getComponent<PositionComponent>().getCenterPosition().y > obj2->getComponent<PositionComponent>().getCenterPosition().y;
 			}
-			else return obj1->getCenterPosition().x < obj2->getCenterPosition().x;
-
+			else
+				return obj1->getComponent<PositionComponent>().getCenterPosition().x < obj2->getComponent<PositionComponent>().getCenterPosition().x;
 		}
-		else return obj1->getZIndex() < obj2->getZIndex();
+		else
+			return obj1->getComponent<PositionComponent>().getZIndex() < obj2->getComponent<PositionComponent>().getZIndex();
 	});
+}
+
+void Game::checkColision(Object* Object)
+{
+	(void)Object;
 }
 
 void Game::startLoop()
@@ -145,10 +157,9 @@ void Game::startLoop()
 			object->draw(this->window);
 		}
 		this->map->map->draw(window);
-		this->camera->updateView(this->player->getCenterPosition(), this->window, this->dt, this->multiplier);
+		this->camera->updateView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
 
 		this->window->display();
-		//Update view
 	}
 }
 

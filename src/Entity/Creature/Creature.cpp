@@ -1,11 +1,12 @@
 #include "Creature.h"
 
-Creature::Creature(Vector2f pos, util::txh::Data* textureData, Vector2i startSheetPos, Vector2i endSheetPos,
+Creature::Creature(Vector2f pos, util::txh::Data* textureData,
+				  Vector2i startSheetPos, Vector2i endSheetPos,
 	float maxVelocity, float acceleration, float deAcceleration) :
 	Object(pos, textureData->getTexture())
 {
-	this->createSpriteSheetComponent(textureData->getNrOfSheetImages(), startSheetPos, endSheetPos);
-	this->createMovementComponent(maxVelocity, acceleration, deAcceleration);
+	this->addComponent<SpriteSheetComponent>(textureData->getNrOfSheetImages(), startSheetPos, endSheetPos);
+	this->addComponent<MovementComponent>(this->sprite, maxVelocity, acceleration, deAcceleration);
 }
 
 Creature::~Creature()
@@ -18,16 +19,16 @@ void Creature::none()
 	switch (this->move.direction)
 	{
 		case Movement::Direction::U:
-			this->animationComponent->setAnimation(&this->idle.up);
+			this->getComponent<AnimationComponent>().setAnimation(&this->idle.up);
 			break;
 		case Movement::Direction::D:
-			this->animationComponent->setAnimation(&this->idle.down);
+			this->getComponent<AnimationComponent>().setAnimation(&this->idle.down);
 			break;
 		case Movement::Direction::L:
-			this->animationComponent->setAnimation(&this->idle.left);
+			this->getComponent<AnimationComponent>().setAnimation(&this->idle.left);
 			break;
 		case Movement::Direction::R:
-			this->animationComponent->setAnimation(&this->idle.right);
+			this->getComponent<AnimationComponent>().setAnimation(&this->idle.right);
 			break;
 		default:
 			break;
@@ -38,32 +39,32 @@ void Creature::up(const float& dt, const float& multiplier)
 {
 	this->move.direction = Movement::Direction::U;
 	this->move.NOW = true, this->move.UP = true;
-	this->animationComponent->setAnimation(&this->walking.up);
-	this->movementComponent->move(0.f, -1.f, dt, multiplier);
+	this->getComponent<AnimationComponent>().setAnimation(&this->walking.up);
+	this->getComponent<MovementComponent>().move(0.f, -1.f, dt, multiplier);
 }
 
 void Creature::left(const float& dt, const float& multiplier)
 {
 	this->move.direction = Movement::Direction::L;
 	this->move.NOW = true, this->move.LEFT = true;
-	this->animationComponent->setAnimation(&this->walking.left);
-	this->movementComponent->move(-1.f, 0.f, dt, multiplier);
+	this->getComponent<AnimationComponent>().setAnimation(&this->walking.left);
+	this->getComponent<MovementComponent>().move(-1.f, 0.f, dt, multiplier);
 }
 
 void Creature::down(const float& dt, const float& multiplier)
 {
 	this->move.direction = Movement::Direction::D;
 	this->move.NOW = true, this->move.DOWN = true;
-	this->animationComponent->setAnimation(&this->walking.down);
-	this->movementComponent->move(0.f, 1.f, dt, multiplier);
+	this->getComponent<AnimationComponent>().setAnimation(&this->walking.down);
+	this->getComponent<MovementComponent>().move(0.f, 1.f, dt, multiplier);
 }
 
 void Creature::right(const float& dt, const float& multiplier)
 {
 	this->move.direction = Movement::Direction::R;
 	this->move.NOW = true, this->move.RIGHT = true;
-	this->animationComponent->setAnimation(&this->walking.right);
-	this->movementComponent->move(1.f, 0.f, dt, multiplier);
+	this->getComponent<AnimationComponent>().setAnimation(&this->walking.right);
+	this->getComponent<MovementComponent>().move(1.f, 0.f, dt, multiplier);
 }
 
 void Creature::checkTextureFlip()
@@ -72,12 +73,12 @@ void Creature::checkTextureFlip()
 	{
 		if (this->move.direction == Movement::Direction::L && this->move.prevDirection != this->move.direction)
 		{
-			this->spriteSheetComponent->flipTexture();
+			this->getComponent<SpriteSheetComponent>().flipTexture();
 			this->move.prevDirection = this->move.direction;
 		}
 		else if (this->move.direction == Movement::Direction::R && this->move.prevDirection != this->move.direction)
 		{
-			this->spriteSheetComponent->flipTexture();
+			this->getComponent<SpriteSheetComponent>().flipTexture();
 			this->move.prevDirection = this->move.direction;
 		}
 	}
@@ -109,8 +110,6 @@ void Creature::update(const float& dt, const float& multiplier)
 	//Facing direction
 	//this->checkTextureFlip();
 	this->updateAngle();
-	//Animation
-	this->animationComponent->updateFrames(dt, multiplier);
 	if (!this->move.NOW) this->none();
 	Object::update(dt, multiplier);
 	this->move.reset();

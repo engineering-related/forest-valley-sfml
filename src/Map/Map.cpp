@@ -29,11 +29,12 @@ void Map::init()
 void Map::initMapGenerator()
 {
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(400, 400), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map = new MapGenerator(this->seed, Vector2i(200, 200), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
+	this->drawGrid = grid;
 	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
 }
 
@@ -170,7 +171,7 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 {
 	Tile* tileType;
 	Tile::Parts* type;
-	Vector2f pos(TILE_SIZE.x*x, TILE_SIZE.y*y);
+	Vector2f pos(TILE_SIZE.x*x - 0.01, TILE_SIZE.y*y - 0.01);
 
 	switch (this->map->terrainVec[x][y])
 	{
@@ -219,16 +220,16 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 void Map::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 {
 	//Build object
-	Vector2f pos(x*TILE_SIZE.x, y*TILE_SIZE.y);
+	Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
 	Nature* natureObj = new Nature(pos, type);
 
 	bool safeSpawn = true;
 	int width = 0, height = 0;
 
 	//Check the width and height of the object
-	if(natureObj->getHitbox().width <= TILE_SIZE.x) width = 1;
+	if(natureObj->getComponent<HitboxComponent>().getHitbox().width <= TILE_SIZE.x) width = 1;
 	else width = 2;
-	if(natureObj->getHitbox().height <= TILE_SIZE.y) height = 2;
+	if(natureObj->getComponent<HitboxComponent>().getHitbox().height <= TILE_SIZE.y) height = 2;
 	else height = 3;
 
 	//Dont spawn anything on rocks or in water
@@ -404,7 +405,6 @@ void Map::updateTexture()
 	{
 		if (std::get<0>(tuple) > currentHeight)
 		{
-			std::cout << currentHeight << std::endl;
 			currentHeight = std::get<0>(tuple);
 			for (auto& container : grid1D)
 			{
@@ -426,12 +426,11 @@ void Map::updateTexture()
 			gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
 
 		}
-
 		std::pair<Tile*, Tile::Parts*> cellInfo = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y);
-		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = this->getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y);
-
 		//Save the pointer to the Tile obj to the grid
 		this->grid[std::get<1>(tuple).x][std::get<1>(tuple).y] = std::get<0>(cellInfo);
+
+		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = this->getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y);
 
 		//Loop through each neighbour and draw the Tile with the correct type at the neighbour pos
 		Vector2f drawPos(0.f, 0.f);
@@ -442,8 +441,9 @@ void Map::updateTexture()
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
 				if(!gridDrawn[gridPos.x][gridPos.y])
 				{
+					this->drawGrid[gridPos.x][gridPos.y] = std::get<0>(cellInfo);
 					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
-					std::get<0>(cellInfo)->setPosition(drawPos);
+					std::get<0>(cellInfo)->getComponent<PositionComponent>().setPosition(drawPos);
 					std::get<0>(cellInfo)->changeType(*std::get<0>(neighBoursInfo[x][y]));
 					std::get<0>(cellInfo)->draw(&renderTexture);
 					gridDrawn[gridPos.x][gridPos.y] = true;

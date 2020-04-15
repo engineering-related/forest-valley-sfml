@@ -1,9 +1,11 @@
 #ifndef ANIMATION_COMPONENT
 #define ANIMATION_COMPONENT
 
+#include "Component.h"
+
 using namespace sf;
 
-class AnimationComponent
+class AnimationComponent : public Component
 {
 private:
 	Sprite* spritePtr;
@@ -31,10 +33,12 @@ public:
 	void setIndex(const unsigned int &index);
 	int findIndex(const IntRect* currentFrame);
 	void updateFrames(const float& dt, const float& multiplier);
-	void update(const float& dt, const float& multiplier);
 
 	AnimationComponent(Sprite& sprite, Animation* startAnim);
 	~AnimationComponent();
+
+	void draw(RenderTarget* window);
+	void update(const float& dt, const float& multiplier);
 };
 
 

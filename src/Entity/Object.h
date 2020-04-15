@@ -1,38 +1,24 @@
 #ifndef GAME_OBJECT
 #define GAME_OBJECT
 
-#include "Components/SpriteSheetComponent.h"
-#include "Components/MovementComponent.h"
-#include "Components/AnimationComponent.h"
-#include "Components/HitboxComponent.h"
+#include "Components/AllComponents.hpp"
 
 using namespace sf;
 
 class Object
 {
 private:
-	void init();
+	void initComponents();
 
 protected:
 	//Data
 	Sprite sprite;
 	Texture* texture;
-	int zIndex;
-	bool fixedZIndex;
-
-	struct GridPos
-	{
-		Vector2i topLeft;	  //Top left pos of hitbox
-		Vector2i bottomRight; //Bottom right pos of hitbox
-	};
-	GridPos gridPos;
-	void setWorldGridPos();
 
 	//Components
-	SpriteSheetComponent* spriteSheetComponent;
-	MovementComponent* movementComponent;
-	AnimationComponent* animationComponent;
-	HitboxComponent* hitboxComponent;
+	std::vector<std::unique_ptr<Component>> components;
+	ComponentArray componentArray;
+	ComponentBitSet componentBitSet;
 
 public:
 	//Constructors
@@ -40,24 +26,32 @@ public:
 	virtual ~Object();
 
 	//Components
-	void createSpriteSheetComponent(const Vector2i nrOfImgs, const Vector2i startPos, const Vector2i endPos);
-	void createMovementComponent(const float maxVelocity, const float acceleration, const float deAcceleration);
-	void createAnimationComponent(AnimationComponent::Animation* startAnim);
-	void createHitboxComponent();
+	template <typename T> bool hasComponent() const
+	{
+		return componentBitSet[getComponentTypeID<T>()];
+	}
+	template <typename T, typename... TArgs>
+	T& addComponent(TArgs&&... mArgs)
+	{
+		T* c(new T(std::forward<TArgs>(mArgs)...));
+		c->entity = this;
+		std::unique_ptr<Component> uPtr{ c };
+		components.emplace_back(std::move(uPtr));
 
-	//Accesors
-	inline const int&getZIndex()const{return this->zIndex; }
-	const Vector2f getCenterPosition();
-	inline const Vector2f &getPosition()const{return this->sprite.getPosition(); }
-	const IntRect& getHitbox();
-	inline const bool& getFixedZIndex() const{return this->fixedZIndex; }
+		componentArray[getComponentTypeID<T>()] = c;
+		componentBitSet[getComponentTypeID<T>()] = true;
+
+		//c->init();
+		return *c;
+	}
+	template <typename T> T& getComponent() const
+	{
+		auto ptr(componentArray[getComponentTypeID<T>()]);
+		return *static_cast<T*>(ptr);
+	}
+	//Accessors
 
 	//Modifiers
-	void flipTextureRect();
-	inline void setPosition(const Vector2f& pos){this->sprite.setPosition(pos); }
-	inline void setZIndex(const int &index){this->zIndex = index; }
-	void setZIndexYPos();
-	inline void setFixedZIndex(const bool& state){this->fixedZIndex = state;}
 
 	//Functions
 	virtual void draw(RenderTarget* window) const = 0;

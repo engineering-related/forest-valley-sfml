@@ -36,6 +36,7 @@ private:
 	void updateClock();
 	void printFPS();
 	void sortZindex();
+	void checkColision(Object* Object);
 	void startLoop();
 
 public:

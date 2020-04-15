@@ -1,9 +1,11 @@
 #ifndef HITBOX_COMPONENT
 #define HITBOX_COMPONENT
 
+#include "Component.h"
+
 using namespace sf;
 
-class HitboxComponent
+class HitboxComponent : public Component
 {
 private:
 	IntRect hitbox;
@@ -16,7 +18,8 @@ public:
 
 	//Accessor
 	inline const IntRect &getHitbox() const{return this->hitbox; }
-	void draw(RenderTarget* window) const;
+
+	void draw(RenderTarget* window);
 	void update(const float& dt, const float& multiplier);
 };
 

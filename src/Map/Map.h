@@ -18,6 +18,7 @@ private:
 	Sprite sprite;
 
 	std::vector<std::vector<Tile*>> grid;
+	std::vector<std::vector<Tile*>> drawGrid;
 	std::vector<std::vector<Nature*>> interactableGrid;
 	std::vector<std::vector<MapGenerator::TerrainType>> drawVector;
 

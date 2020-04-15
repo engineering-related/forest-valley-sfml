@@ -42,16 +42,16 @@ void Camera::updateView(const Vector2f& targetPos, RenderTarget* window, const f
 {
 	this->view = window->getView();
 
-	/*Vector2f dist = Vector2f(this->roundToNearestPixel(targetPos.x) - this->roundToNearestPixel(this->view.getCenter().x),
-							this->roundToNearestPixel(targetPos.y) - this->roundToNearestPixel(this->view.getCenter().y));
+	Vector2f dist = Vector2f(this->roundToNearestPixel(targetPos.x) - this->roundToNearestPixel(this->view.getCenter().x),
+						this->roundToNearestPixel(targetPos.y) - this->roundToNearestPixel(this->view.getCenter().y));
 
-	float roundedX = this->roundToNearestPixel(targetPos.x);
+    float roundedX = this->roundToNearestPixel(targetPos.x);
 	float roundedY = this->roundToNearestPixel(targetPos.y);
 
 	Vector2f movement(roundedX, roundedY);
-	this->view.setCenter(movement);*/
+	this->view.setCenter(movement);
+	//window->setView(this->view);
 	//Vector2f movement = targetPos - view.getCenter();
-	//view.move(Vector2f(movement.x * dt, movement.y * dt));
-
-	window->setView(this->view);
+	//std::cout << movement.x << " " << movement.y << std::endl;
+	//view.move(Vector2f(dist.x * dt, dist.y * dt));
 }

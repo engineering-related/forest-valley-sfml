@@ -1,9 +1,12 @@
 #ifndef SPRITE_SHEET_COMPONENT
 #define SPRITE_SHEET_COMPONENT
 
+
+#include "Component.h"
+
 using namespace sf;
 
-class SpriteSheetComponent
+class SpriteSheetComponent : public Component
 {
 private:
 	Vector2i nrOfImgs;
@@ -22,9 +25,11 @@ public:
 
 	//Functions
 	void flipTexture();
+	void flipTextureRect();
 	void addTextureRect(IntRect rect, const int&x, const int& y);
 	static std::vector<std::vector<IntRect>> createTextureRects(const Vector2i& nrOfImgs, const Vector2i &startPos, const Vector2i &endPos);
-
+	void draw(RenderTarget* window);
+	void update(const float& dt, const float& multiplier);
 };
 
 #endif

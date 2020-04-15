@@ -9,6 +9,9 @@
 /*COMPLIER
 	-TO NOT TREAT WARNINGS AS ERRORS REMOVE "-Werror"
 	 IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
+
+	-TO UPPRESS WARNING "unused variable" REMOVE
+	"-Wunused"IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
 */
 
 //Some animals?
@@ -24,6 +27,4 @@ int main()
 {
 	Game* game = new Game();
 	game->start();
-	delete game;
-	return 0;
 }

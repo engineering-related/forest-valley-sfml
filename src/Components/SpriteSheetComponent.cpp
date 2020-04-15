@@ -21,6 +21,14 @@ std::vector<std::vector<IntRect>>& SpriteSheetComponent::getTextureRects()
 	return this->textureRects;
 }
 
+/*
+void SpriteSheetComponent::flipTextureRect()
+{
+	IntRect rect = this->sprite->getTextureRect();
+	rect.left += rect.width;
+	rect.width = -rect.width;
+	this->sprite->setTextureRect(rect);
+}*/
 
 void SpriteSheetComponent::flipTexture()
 {
@@ -56,4 +64,13 @@ std::vector<std::vector<IntRect>> SpriteSheetComponent::createTextureRects(const
 		textureRects.push_back(temp);
 	}
 	return textureRects;
+}
+
+void SpriteSheetComponent::draw(RenderTarget* window)
+{
+}
+
+void SpriteSheetComponent::update(const float& dt, const float& multiplier)
+{
+
 }

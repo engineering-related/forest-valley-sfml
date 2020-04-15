@@ -1,7 +1,5 @@
 #include "MovementComponent.h"
 
-
-
 MovementComponent::MovementComponent(Sprite &sprite, float maxVelocity, float acc, float deAcc)
 {
 	this->spritePtr = &sprite;
@@ -9,6 +7,7 @@ MovementComponent::MovementComponent(Sprite &sprite, float maxVelocity, float ac
 	this->deAcc = deAcc;
 	this->maxVel = maxVelocity;
 	this->prevPos = this->spritePtr->getPosition();
+	this->shouldUpdate = true;
 }
 
 MovementComponent::~MovementComponent()
@@ -33,7 +32,7 @@ void MovementComponent::move(const float dir_x, const float dir_y, const float& 
 	this->vel.y += this->acc * dir_y * dt * multiplier;
 }
 
-void MovementComponent::update(const float & dt, const float & multiplier)
+void MovementComponent::updatePos(const float& dt, const float& multiplier)
 {
 	//Horizontal x-movement
 	if (this->vel.x > 0.f)
@@ -76,11 +75,16 @@ void MovementComponent::update(const float & dt, const float & multiplier)
 	}
 }
 
-void MovementComponent::updateSprite(const float& dt, const float &multiplier)
+void MovementComponent::draw(RenderTarget* window)
 {
-	if (this->spritePtr)
+
+}
+
+void MovementComponent::update(const float& dt, const float& multiplier)
+{
+	if (this->shouldUpdate)
 	{
-		this->update(dt, multiplier);
+		this->updatePos(dt, multiplier);
 		this->prevPos = this->spritePtr->getPosition();
 		this->spritePtr->move(this->getClampedMagVel(this->vel) * dt);
 	}

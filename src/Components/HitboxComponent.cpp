@@ -8,9 +8,10 @@ HitboxComponent::HitboxComponent(Sprite& sprite)
 
 HitboxComponent::~HitboxComponent()
 {
+
 }
 
-void HitboxComponent::draw(RenderTarget* window) const
+void HitboxComponent::draw(RenderTarget* window)
 {
 	RectangleShape hitboxRect;
 	hitboxRect.setPosition(this->spritePtr->getPosition());
@@ -22,3 +23,4 @@ void HitboxComponent::update(const float& dt, const float& multiplier)
 {
 	this->hitbox = this->spritePtr->getTextureRect();
 }
+

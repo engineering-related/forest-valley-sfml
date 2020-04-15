@@ -37,6 +37,11 @@ void AnimationComponent::updateFrames(const float& dt, const float& multiplier)
 	this->previousAnim = this->currentAnim;
 }
 
+void AnimationComponent::draw(RenderTarget* window)
+{
+
+}
+
 void AnimationComponent::update(const float& dt, const float& multiplier)
 {
 	this->updateFrames(dt, multiplier);

@@ -4,8 +4,8 @@ Mountain::Mountain(Vector2f pos, Vector2i type) :
 	StaticTile(pos, util::txh::Rock->getTexture(), true, false)
 {
 	this->type = type;
-	this->createSpriteSheetComponent(util::txh::Rock->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
-	this->sprite.setTextureRect(this->spriteSheetComponent->getTextureRects()[type.x][type.y]);
+	this->addComponent<SpriteSheetComponent>(util::txh::Rock->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
+	this->sprite.setTextureRect(this->getComponent<SpriteSheetComponent>().getTextureRects()[type.x][type.y]);
 }
 
 Mountain::~Mountain()

@@ -14,8 +14,8 @@ Tile::~Tile()
 
 void Tile::changeType(const Vector2i& type)
 {
-	if(this->spriteSheetComponent != nullptr)
-		this->sprite.setTextureRect(this->spriteSheetComponent->getTextureRects()[type.x][type.y]);
+	if(this->hasComponent<SpriteSheetComponent>())
+		this->sprite.setTextureRect(this->getComponent<SpriteSheetComponent>().getTextureRects()[type.x][type.y]);
 }
 
 void Tile::draw(RenderTarget * window) const
