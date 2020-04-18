@@ -23,12 +23,11 @@ void Object::initComponents()
 
 void Object::draw(RenderTarget* window) const
 {
+	window->draw(this->sprite);
 	for(auto & c: this->components)
 	{
-		(void)c;
 		//c->draw(window);
 	}
-	window->draw(this->sprite);
 }
 
 void Object::update(const float& dt, const float& multiplier)

@@ -16,9 +16,6 @@ private:
 
 	RenderTexture renderTexture;
 	Sprite sprite;
-
-	std::vector<std::vector<Tile*>> grid;
-	std::vector<std::vector<Tile*>> drawGrid;
 	std::vector<std::vector<Nature*>> interactableGrid;
 	std::vector<std::vector<MapGenerator::TerrainType>> drawVector;
 
@@ -27,6 +24,7 @@ private:
 	//One of the three textures are drawn on top of the main texture
 public:
 	MapGenerator* map;
+	std::vector<std::vector<Tile*>> grid;
 	std::vector<Object*>* entitesPtr;
 	Vector2i textureSize;
 
@@ -34,7 +32,6 @@ public:
 	~Map();
 
 	//Functions
-	//TODO: CHANGE Ground::Parts TO Tile::Parts so it can be used for others
 	std::pair<Tile*, Tile::Parts*> getCellInfo(const size_t& x, const size_t& y);
 	std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y);
 	void updateTexture();

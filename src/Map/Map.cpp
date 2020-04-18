@@ -34,7 +34,6 @@ void Map::initMapGenerator()
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
-	this->drawGrid = grid;
 	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
 }
 
@@ -171,7 +170,7 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 {
 	Tile* tileType;
 	Tile::Parts* type;
-	Vector2f pos(TILE_SIZE.x*x - 0.01, TILE_SIZE.y*y - 0.01);
+	Vector2f pos(TILE_SIZE.x*x, TILE_SIZE.y*y);
 
 	switch (this->map->terrainVec[x][y])
 	{
@@ -441,11 +440,20 @@ void Map::updateTexture()
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
 				if(!gridDrawn[gridPos.x][gridPos.y])
 				{
-					this->drawGrid[gridPos.x][gridPos.y] = std::get<0>(cellInfo);
+					//Delete if an object exist in a previous layer
+					if(this->grid[gridPos.x][gridPos.y] != nullptr)
+					{
+						delete this->grid[gridPos.x][gridPos.y];
+					}
+					this->grid[gridPos.x][gridPos.y] = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y).first;
 					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
-					std::get<0>(cellInfo)->getComponent<PositionComponent>().setPosition(drawPos);
-					std::get<0>(cellInfo)->changeType(*std::get<0>(neighBoursInfo[x][y]));
-					std::get<0>(cellInfo)->draw(&renderTexture);
+					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
+					this->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
+					this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().update(0.f, 0.f); //HitboxPos needs to be updated
+					//Update colision component rect
+					if(this->grid[gridPos.x][gridPos.y]->hasComponent<ColisionComponent>())
+						this->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
+					this->grid[gridPos.x][gridPos.y]->draw(&renderTexture);
 					gridDrawn[gridPos.x][gridPos.y] = true;
 				}
 			}

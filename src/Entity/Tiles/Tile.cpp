@@ -5,6 +5,8 @@ Tile::Tile(Vector2f pos, Texture* texture, bool solid, bool walkable) :
 {
 	this->solid = solid;
 	this->walkable = walkable;
+	if(solid || !walkable) this->addComponent<ColisionComponent>(this->sprite);
+	this->getComponent<HitboxComponent>().setColor(Color::Green);
 }
 
 Tile::~Tile()

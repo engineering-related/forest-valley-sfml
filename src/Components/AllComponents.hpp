@@ -7,5 +7,6 @@
 #include "Components/MovementComponent.h"
 #include "Components/PositionComponent.h"
 #include "Components/SpriteSheetComponent.h"
+#include "Components/ColisionComponent.h"
 
 #endif

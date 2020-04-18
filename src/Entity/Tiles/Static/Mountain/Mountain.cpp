@@ -6,6 +6,8 @@ Mountain::Mountain(Vector2f pos, Vector2i type) :
 	this->type = type;
 	this->addComponent<SpriteSheetComponent>(util::txh::Rock->getNrOfSheetImages(), Vector2i(0, 0), Vector2i(this->texture->getSize().x, this->texture->getSize().y));
 	this->sprite.setTextureRect(this->getComponent<SpriteSheetComponent>().getTextureRects()[type.x][type.y]);
+	this->getComponent<HitboxComponent>().setColor(Color::Red);
+	this->getComponent<ColisionComponent>().setRects(this->sprite.getTextureRect());
 }
 
 Mountain::~Mountain()

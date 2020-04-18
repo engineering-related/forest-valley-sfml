@@ -29,6 +29,7 @@ public:
 	const Vector2f getCenterPosition();
 	inline const Vector2f &getPosition()const{return this->spritePtr->getPosition(); }
 	inline const bool& getFixedZIndex() const{return this->fixedZIndex; }
+	inline const GridPos& getGridPos() const{return this->gridPos; }
 
 	//Modifiers
 	inline void setPosition(const Vector2f& pos){this->spritePtr->setPosition(pos); }

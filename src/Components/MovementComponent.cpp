@@ -7,7 +7,6 @@ MovementComponent::MovementComponent(Sprite &sprite, float maxVelocity, float ac
 	this->deAcc = deAcc;
 	this->maxVel = maxVelocity;
 	this->prevPos = this->spritePtr->getPosition();
-	this->shouldUpdate = true;
 }
 
 MovementComponent::~MovementComponent()
@@ -82,12 +81,9 @@ void MovementComponent::draw(RenderTarget* window)
 
 void MovementComponent::update(const float& dt, const float& multiplier)
 {
-	if (this->shouldUpdate)
-	{
-		this->updatePos(dt, multiplier);
-		this->prevPos = this->spritePtr->getPosition();
-		this->spritePtr->move(this->getClampedMagVel(this->vel) * dt);
-	}
+	this->updatePos(dt, multiplier);
+	this->prevPos = this->spritePtr->getPosition();
+	this->moveSprite(this->vel, dt);
 }
 
 Vector2f MovementComponent::getClampedMagVel(const Vector2f &vel)
