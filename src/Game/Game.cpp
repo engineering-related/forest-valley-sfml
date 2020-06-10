@@ -58,22 +58,8 @@ void Game::initMap()
 	this->map = new Map(&this->entites);
 }
 
-
-void Game::pollEvents()
+void Game::handleInput()
 {
-	Event event;
-	while (this->window->pollEvent(event))
-	{
-		if (event.type == Event::Closed)
-			this->window->close();
-		if (event.type == sf::Event::MouseWheelScrolled)
-		{
-			if (event.mouseWheelScroll.delta > 0)
-				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
-			else if (event.mouseWheelScroll.delta < 0)
-				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
-		}
-	}
 	if (Keyboard::isKeyPressed(Keyboard::Escape))
 		this->window->close();
 
@@ -93,6 +79,24 @@ void Game::pollEvents()
 	{
 		this->player->right(this->dt, this->multiplier);
 	}
+}
+
+void Game::pollEvents()
+{
+	Event event;
+	while (this->window->pollEvent(event))
+	{
+		if (event.type == Event::Closed)
+			this->window->close();
+		if (event.type == sf::Event::MouseWheelScrolled)
+		{
+			if (event.mouseWheelScroll.delta > 0)
+				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
+			else if (event.mouseWheelScroll.delta < 0)
+				Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
+		}
+	}
+	this->handleInput();
 }
 
 void Game::updateClock()

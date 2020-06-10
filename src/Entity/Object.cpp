@@ -18,6 +18,10 @@ void Object::initComponents()
 {
 	this->addComponent<HitboxComponent>(this->sprite);
 	this->addComponent<PositionComponent>(this->sprite);
+
+	//Update them once
+	this->getComponent<HitboxComponent>().update(0.f, 0.f);
+	this->getComponent<PositionComponent>().update(0.f, 0.f);
 }
 
 

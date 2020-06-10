@@ -32,6 +32,7 @@ private:
 
 	void init();
 	void initMap();
+	void handleInput();
 	void pollEvents();
 	void updateClock();
 	void printFPS();

@@ -23,6 +23,7 @@ void Map::init()
 	this->initMapGenerator();
 	this->buildNature(this->seed);
 	this->updateTexture();
+	//this->addNature();
 
 }
 
@@ -355,6 +356,11 @@ void Map::buildNature(unsigned int seed)
 			}
 		}
 	}
+	srand(time(NULL));
+}
+
+void Map::addNature()
+{
 	//Push into the main game object vector
 	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
 	{
@@ -366,7 +372,41 @@ void Map::buildNature(unsigned int seed)
 			}
 		}
 	}
-	srand(time(NULL));
+}
+
+void Map::drawNature(RenderTarget* texture)
+{
+	//REFACTOR FFS
+	std::vector<Nature*> interactableGrid1D;
+	for (size_t x = 0; x < this->interactableGrid.size(); x++)
+	{
+		for (size_t y = 0; y < this->interactableGrid.size(); y++)
+		{
+			if (this->interactableGrid[x][y] != nullptr)
+			{
+				interactableGrid1D.push_back(interactableGrid[x][y]);
+			}
+		}
+	}
+
+	std::sort(interactableGrid1D.begin(), interactableGrid1D.end(), [](Object* obj1, Object* obj2) -> bool {
+		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
+		{
+			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
+			{
+				return obj1->getComponent<PositionComponent>().getCenterPosition().y > obj2->getComponent<PositionComponent>().getCenterPosition().y;
+			}
+			else
+				return obj1->getComponent<PositionComponent>().getCenterPosition().x < obj2->getComponent<PositionComponent>().getCenterPosition().x;
+		}
+		else
+			return obj1->getComponent<PositionComponent>().getZIndex() < obj2->getComponent<PositionComponent>().getZIndex();
+	});
+
+	for (Nature* natueObj : interactableGrid1D)
+	{
+		natueObj->draw(texture);
+	}
 }
 
 void Map::updateTexture()
@@ -459,6 +499,9 @@ void Map::updateTexture()
 			}
 		}
 	}
+
+	//Draw natureObjects
+	this->drawNature(&this->renderTexture);
 
 	//Set the texture to the sprite
 	this->renderTexture.display();

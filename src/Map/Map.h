@@ -37,6 +37,8 @@ public:
 	void updateTexture();
 
 	void buildNature(unsigned int seed);
+	void addNature();
+	void drawNature(RenderTarget* texture);
 	void draw(RenderTarget* window);
 	void update(const float& dt, const float& multiplier);
 };
