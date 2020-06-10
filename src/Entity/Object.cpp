@@ -16,8 +16,8 @@ Object::~Object()
 
 void Object::initComponents()
 {
-	this->addComponent<PositionComponent>(this->sprite);
 	this->addComponent<HitboxComponent>(this->sprite);
+	this->addComponent<PositionComponent>(this->sprite);
 }
 
 

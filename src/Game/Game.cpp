@@ -39,7 +39,7 @@ void Game::init()
 	this->multiplier = MULTIPLIER;
 	this->framerateLimit = FRAMERATELIMIT;
 	this->cap = CAP;
-	this->window->setFramerateLimit(144);
+	this->window->setFramerateLimit(this->framerateLimit);
 
 	//Init Map
 	this->initMap();

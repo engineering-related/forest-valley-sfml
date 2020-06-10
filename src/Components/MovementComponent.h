@@ -2,6 +2,7 @@
 #define MOVEMENT_COMPONENT
 
 #include "Component.h"
+#include "Entity/Object.h"
 
 using namespace sf;
 

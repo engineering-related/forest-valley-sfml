@@ -415,7 +415,7 @@ void Map::updateTexture()
 					{
 						for(int col = -1; col <= 1; col++)
 						{
-							// sets all train arund one cell to it self
+							//set all terrain around the cell to it self
 							this->drawVector[currentGridPos.x + row][currentGridPos.y + col] = this->map->terrainVec[currentGridPos.x][currentGridPos.y];
 						}
 					}
