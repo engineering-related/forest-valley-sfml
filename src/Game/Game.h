@@ -36,8 +36,10 @@ private:
 	void pollEvents();
 	void updateClock();
 	void printFPS();
+	/////EXTRACT TO SYSTEM CLASS////
 	void sortZindex();
 	void checkTileColision(Object* object);
+	/////////////////////////////////
 	void startLoop();
 
 public:

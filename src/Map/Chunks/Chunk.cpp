@@ -18,13 +18,10 @@ void Chunk::init()
 	this->sprite.setPosition(this->pos);
 }
 
-void Chunk::draw(RenderTarget *window)
+void Chunk::drawTiles(RenderTarget *window)
 {
 	window->draw(this->sprite);
-	for(Object* object: this->dynamicEntites)
-	{
-		object->draw(window);
-	}
+
 }
 
 void Chunk::update(const float& dt, const float& multiplier)

@@ -19,7 +19,7 @@ public:
 	Chunk(Vector2f pos);
 	~Chunk();
 
-	void draw(RenderTarget* window);
+	void drawTiles(RenderTarget* window);
 	void update(const float &dt, const float &multiplier);
 	void setTexture();
 

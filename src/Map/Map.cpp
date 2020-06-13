@@ -35,8 +35,7 @@ void Map::init()
 	this->initChunks();
 	this->buildNature(this->seed);
 	this->updateTexture();
-	//this->addNature();
-
+	this->addNatureToChunks();
 }
 
 void Map::initMapGenerator()
@@ -389,53 +388,26 @@ void Map::buildNature(unsigned int seed)
 	srand(time(NULL));
 }
 
-void Map::addNature()
+void Map::addNatureToChunks()
 {
 	//Push into the main game object vector
-	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	int chunkX = -1;
+	int chunkY = -1;
+	for (size_t x = 0; x < this->map->terrainVec.size(); x++)
 	{
-		for (size_t y = 3; y < this->map->terrainVec[x].size() - 3; y++)
+		if(x % Chunk::size->x == 0) chunkX++;
+		for (size_t y = 0; y < this->map->terrainVec[x].size(); y++)
 		{
+			if(y % Chunk::size->y == 0) chunkY++;
+
 			if (this->interactableGrid[x][y] != nullptr)
 			{
-				this->entitesPtr->push_back(this->interactableGrid[x][y]);
+				this->chunks[chunkX][chunkY]->dynamicEntites.push_back(this->interactableGrid[x][y]);
+				std::cout << x << " " << chunkX << std::endl;
+				std::cout << y << " " << chunkY << std::endl;
 			}
 		}
-	}
-}
-
-void Map::drawNature(RenderTarget* texture)
-{
-	//REFACTOR FFS
-	std::vector<Nature*> interactableGrid1D;
-	for (size_t x = 0; x < this->interactableGrid.size(); x++)
-	{
-		for (size_t y = 0; y < this->interactableGrid.size(); y++)
-		{
-			if (this->interactableGrid[x][y] != nullptr)
-			{
-				interactableGrid1D.push_back(interactableGrid[x][y]);
-			}
-		}
-	}
-
-	std::sort(interactableGrid1D.begin(), interactableGrid1D.end(), [](Object* obj1, Object* obj2) -> bool {
-		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
-		{
-			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
-			{
-				return obj1->getComponent<PositionComponent>().getCenterPosition().y > obj2->getComponent<PositionComponent>().getCenterPosition().y;
-			}
-			else
-				return obj1->getComponent<PositionComponent>().getCenterPosition().x < obj2->getComponent<PositionComponent>().getCenterPosition().x;
-		}
-		else
-			return obj1->getComponent<PositionComponent>().getZIndex() < obj2->getComponent<PositionComponent>().getZIndex();
-	});
-
-	for (Nature* natueObj : interactableGrid1D)
-	{
-		natueObj->draw(texture);
+		chunkY = -1;
 	}
 }
 
@@ -546,7 +518,7 @@ void Map::updateTexture()
 		}
 	}
 
-	//Set the texture of each chunk after they have been draw to
+	//Set the texture of each chunk after they have been drawn to
 	for (int x = 0; x < this->chunkSize.x; x++)
 	{
 		for (int y = 0; y < this->chunkSize.y; y++)
@@ -554,8 +526,6 @@ void Map::updateTexture()
 			this->chunks[x][y]->setTexture();
 		}
 	}
-	//Draw natureObjects
-	//this->drawNature(&this->renderTexture);
 
 	//Set the texture to the sprite
 	//this->renderTexture.display();
@@ -568,10 +538,9 @@ void Map::draw(RenderTarget * window)
 	{
 		for (int y = 0; y < this->chunkSize.y; y++)
 		{
-			this->chunks[x][y]->draw(window);
+			this->chunks[x][y]->drawTiles(window);
 		}
 	}
-	//window->draw(this->sprite);
 }
 
 void Map::update(const float& dt, const float& multiplier)
