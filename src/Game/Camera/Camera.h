@@ -8,6 +8,7 @@ class Camera
 private:
 	float pixelToUnits = 32;
 	View view;
+	float zoom = 1/1.5f;
 
 public:
 	Camera(RenderTarget* window);

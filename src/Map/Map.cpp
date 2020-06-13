@@ -16,11 +16,21 @@ Map::~Map()
 			delete this->grid[x][y];
 		}
 	}
+
+	//Delete chunks
+	for (int x = 0; x < this->chunkSize.x; ++x)
+	{
+		for (int y = 0; y < this->chunkSize.y; ++y)
+		{
+			delete this->chunks[x][y];
+		}
+	}
 }
 
 void Map::init()
 {
 	this->initMapGenerator();
+	this->initChunks();
 	this->buildNature(this->seed);
 	this->updateTexture();
 	//this->addNature();
@@ -29,13 +39,21 @@ void Map::init()
 
 void Map::initMapGenerator()
 {
+	this->chunkSize = Vector2i(7, 7);
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(200, 200), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map = new MapGenerator(this->seed, Vector2i(Chunk::size->x * this->chunkSize.x, Chunk::size->y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
 	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
+}
+
+
+void Map::initChunks()
+{
+	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkSize.x, std::vector<Chunk*>(this->chunkSize.y, new Chunk()));
+
 }
 
 std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y)

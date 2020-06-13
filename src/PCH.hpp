@@ -84,7 +84,7 @@
 #define WINDOW_WIDTH 768
 #define WINDOW_HEIGHT 768
 #define MULTIPLIER 60
-#define FRAMERATELIMIT 144
+#define FRAMERATELIMIT 10000
 #define CAP 30
 #define SCALE sf::Vector2f(1.f, 1.f)
 #define TILE_SIZE sf::Vector2f(32, 32)

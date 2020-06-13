@@ -2,6 +2,7 @@
 #define MAP
 
 #include "MapGenerator/MapGenerator.h"
+#include "Chunks/Chunk.h"
 #include "Entity/AllEntities.hpp"
 
 using namespace sf;
@@ -11,6 +12,7 @@ class Map
 private:
 	void init();
 	void initMapGenerator();
+	void initChunks();
 	void spawnNatureObj(const IntRect &type, const int& x, const int& y);
 	unsigned int seed;
 
@@ -23,9 +25,11 @@ private:
 	//Dynamic tiles goes on three different textures depending on their frame
 	//One of the three textures are drawn on top of the main texture
 public:
+	Vector2i chunkSize;
 	MapGenerator* map;
 	std::vector<std::vector<Tile*>> grid;
 	std::vector<Object*>* entitesPtr;
+	std::vector<std::vector<Chunk*>> chunks;
 	Vector2i textureSize;
 
 	Map(std::vector<Object*>* entites);

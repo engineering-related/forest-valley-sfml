@@ -4,6 +4,8 @@
 Camera::Camera(RenderTarget* window)
 {
 	this->view = window->getView();
+	this->view.setSize(this->view.getSize()*this->zoom);
+	window->setView(this->view);
 }
 
 Camera::~Camera()
