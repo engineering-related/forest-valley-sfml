@@ -115,7 +115,8 @@ void Game::updateClock()
 void Game::printFPS()
 {
 	//std::cout << this->FPS << std::endl;
-	this->window->setTitle("Forest Valley FPS: " + std::to_string(this->FPS));
+	this->window->setTitle("Forest Valley FPS: " + std::to_string(this->FPS) +
+	"    SEED: " + std::to_string(this->seed));
 }
 
 //Will be moved into a separate system in another file later

@@ -16,6 +16,9 @@ private:
 	void spawnNatureObj(const IntRect &type, const int& x, const int& y);
 	unsigned int seed;
 
+	RenderTexture renderTexture;
+	Sprite sprite;
+
 	std::vector<std::vector<Nature*>> interactableGrid;
 	std::vector<std::vector<MapGenerator::TerrainType>> drawVector;
 

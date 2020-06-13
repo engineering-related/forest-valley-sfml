@@ -441,6 +441,11 @@ void Map::drawNature(RenderTarget* texture)
 
 void Map::updateTexture()
 {
+	//Init rendertexture
+	this->renderTexture.clear();
+	this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
+	this->renderTexture.create(this->textureSize.x, this->textureSize.y);
+
 	//The container for the drawing information stored in a tuple
 	std::vector<std::pair<int, Vector2i>> grid1D;
 
@@ -513,17 +518,28 @@ void Map::updateTexture()
 						delete this->grid[gridPos.x][gridPos.y];
 					}
 					this->grid[gridPos.x][gridPos.y] = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y).first;
-					drawPos = Vector2f((gridPos.x % Chunk::size->x) * TILE_SIZE.x, (gridPos.y % Chunk::size->y) * TILE_SIZE.y);
+
+					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
+
 					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 					this->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
 					this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().update(0.f, 0.f); //HitboxPos needs to be updated
+
 					//Update colision component rect
 					if(this->grid[gridPos.x][gridPos.y]->hasComponent<ColisionComponent>())
 					{
 						this->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
 					}
+
+					//Change drawPos to fit with the chunk texture
+					drawPos = Vector2f((gridPos.x % Chunk::size->x) * TILE_SIZE.x, (gridPos.y % Chunk::size->y) * TILE_SIZE.y);
+					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
+
 					//Draw to the correct chunk texture
 					this->grid[gridPos.x][gridPos.y]->draw(&this->chunks[chunkPos.x][chunkPos.y]->renderTexture);
+
+					//Reset tile object the correct world position
+					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y  * TILE_SIZE.y));
 					gridDrawn[gridPos.x][gridPos.y] = true;
 				}
 			}
@@ -540,13 +556,21 @@ void Map::updateTexture()
 	}
 	//Draw natureObjects
 	//this->drawNature(&this->renderTexture);
+
+	//Set the texture to the sprite
+	//this->renderTexture.display();
+	//this->sprite.setTexture(this->renderTexture.getTexture());
 }
 
 void Map::draw(RenderTarget * window)
 {
-	this->chunks[0][0]->draw(window);
-	this->chunks[0][1]->draw(window);
-	this->chunks[2][2]->draw(window);
+	for (int x = 0; x < this->chunkSize.x; x++)
+	{
+		for (int y = 0; y < this->chunkSize.y; y++)
+		{
+			this->chunks[x][y]->draw(window);
+		}
+	}
 	//window->draw(this->sprite);
 }
 
