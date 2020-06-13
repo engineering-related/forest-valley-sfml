@@ -9,6 +9,8 @@ Map::Map(std::vector<Object*>* entites)
 Map::~Map()
 {
 	delete this->map;
+
+	//Delete objects
 	for(size_t x = 0; x < this->grid.size(); x++)
 	{
 		for(size_t y = 0; y < this->grid[x].size(); y++)
@@ -39,7 +41,7 @@ void Map::init()
 
 void Map::initMapGenerator()
 {
-	this->chunkSize = Vector2i(7, 7);
+	this->chunkSize = Vector2i(4, 4);
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
 	this->map = new MapGenerator(this->seed, Vector2i(Chunk::size->x * this->chunkSize.x, Chunk::size->y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
@@ -52,8 +54,18 @@ void Map::initMapGenerator()
 
 void Map::initChunks()
 {
-	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkSize.x, std::vector<Chunk*>(this->chunkSize.y, new Chunk()));
-
+	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkSize.x, std::vector<Chunk*>(this->chunkSize.y, nullptr));
+	Vector2f pos(0, 0);
+	for (int x = 0; x < this->chunkSize.x; x++)
+	{
+		for (int y = 0; y < this->chunkSize.y; y++)
+		{
+			this->chunks[x][y] = new Chunk(pos);
+			pos.y += Chunk::size->y*TILE_SIZE.y;
+		}
+		pos.y = 0;
+		pos.x += Chunk::size->x * TILE_SIZE.x;
+	}
 }
 
 std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y)
@@ -429,11 +441,6 @@ void Map::drawNature(RenderTarget* texture)
 
 void Map::updateTexture()
 {
-	//Init rendertexture
-	this->renderTexture.clear();
-	this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
-	this->renderTexture.create(this->textureSize.x, this->textureSize.y);
-
 	//The container for the drawing information stored in a tuple
 	std::vector<std::pair<int, Vector2i>> grid1D;
 
@@ -496,6 +503,8 @@ void Map::updateTexture()
 			for (size_t y = 0; y < neighBoursInfo[x].size(); y++)
 			{
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
+				Vector2i chunkPos(floor(gridPos.x / Chunk::size->x),
+								  floor(gridPos.y / Chunk::size->y));
 				if(!gridDrawn[gridPos.x][gridPos.y])
 				{
 					//Delete if an object exist in a previous layer
@@ -504,31 +513,41 @@ void Map::updateTexture()
 						delete this->grid[gridPos.x][gridPos.y];
 					}
 					this->grid[gridPos.x][gridPos.y] = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y).first;
-					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
+					drawPos = Vector2f((gridPos.x % Chunk::size->x) * TILE_SIZE.x, (gridPos.y % Chunk::size->y) * TILE_SIZE.y);
 					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 					this->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
 					this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().update(0.f, 0.f); //HitboxPos needs to be updated
 					//Update colision component rect
 					if(this->grid[gridPos.x][gridPos.y]->hasComponent<ColisionComponent>())
+					{
 						this->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
-					this->grid[gridPos.x][gridPos.y]->draw(&renderTexture);
+					}
+					//Draw to the correct chunk texture
+					this->grid[gridPos.x][gridPos.y]->draw(&this->chunks[chunkPos.x][chunkPos.y]->renderTexture);
 					gridDrawn[gridPos.x][gridPos.y] = true;
 				}
 			}
 		}
 	}
 
+	//Set the texture of each chunk after they have been draw to
+	for (int x = 0; x < this->chunkSize.x; x++)
+	{
+		for (int y = 0; y < this->chunkSize.y; y++)
+		{
+			this->chunks[x][y]->setTexture();
+		}
+	}
 	//Draw natureObjects
-	this->drawNature(&this->renderTexture);
-
-	//Set the texture to the sprite
-	this->renderTexture.display();
-	this->sprite.setTexture(this->renderTexture.getTexture());
+	//this->drawNature(&this->renderTexture);
 }
 
 void Map::draw(RenderTarget * window)
 {
-	window->draw(this->sprite);
+	this->chunks[0][0]->draw(window);
+	this->chunks[0][1]->draw(window);
+	this->chunks[2][2]->draw(window);
+	//window->draw(this->sprite);
 }
 
 void Map::update(const float& dt, const float& multiplier)
