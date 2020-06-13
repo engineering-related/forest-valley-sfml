@@ -35,14 +35,14 @@ void Map::init()
 	this->initChunks();
 	this->buildNature(this->seed);
 	this->updateTexture();
-	this->addNatureToChunks();
+	//this->addNatureToChunks();
 }
 
 void Map::initMapGenerator()
 {
 	this->chunkSize = Vector2i(4, 4);
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(Chunk::size->x * this->chunkSize.x, Chunk::size->y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map = new MapGenerator(this->seed, Vector2i(CHUNK_SIZE.x * this->chunkSize.x, CHUNK_SIZE.y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 	this->drawVector = this->map->terrainVec;
@@ -60,10 +60,10 @@ void Map::initChunks()
 		for (int y = 0; y < this->chunkSize.y; y++)
 		{
 			this->chunks[x][y] = new Chunk(pos);
-			pos.y += Chunk::size->y*TILE_SIZE.y;
+			pos.y += CHUNK_SIZE.y*TILE_SIZE.y;
 		}
 		pos.y = 0;
-		pos.x += Chunk::size->x * TILE_SIZE.x;
+		pos.x += CHUNK_SIZE.x * TILE_SIZE.x;
 	}
 }
 
@@ -395,10 +395,10 @@ void Map::addNatureToChunks()
 	int chunkY = -1;
 	for (size_t x = 0; x < this->map->terrainVec.size(); x++)
 	{
-		if(x % Chunk::size->x == 0) chunkX++;
+		if(x % CHUNK_SIZE.x == 0) chunkX++;
 		for (size_t y = 0; y < this->map->terrainVec[x].size(); y++)
 		{
-			if(y % Chunk::size->y == 0) chunkY++;
+			if(y % CHUNK_SIZE.y == 0) chunkY++;
 
 			if (this->interactableGrid[x][y] != nullptr)
 			{
@@ -480,8 +480,8 @@ void Map::updateTexture()
 			for (size_t y = 0; y < neighBoursInfo[x].size(); y++)
 			{
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
-				Vector2i chunkPos(floor(gridPos.x / Chunk::size->x),
-								  floor(gridPos.y / Chunk::size->y));
+				Vector2i chunkPos(floor(gridPos.x / CHUNK_SIZE.x),
+								  floor(gridPos.y / CHUNK_SIZE.y));
 				if(!gridDrawn[gridPos.x][gridPos.y])
 				{
 					//Delete if an object exist in a previous layer
@@ -504,7 +504,7 @@ void Map::updateTexture()
 					}
 
 					//Change drawPos to fit with the chunk texture
-					drawPos = Vector2f((gridPos.x % Chunk::size->x) * TILE_SIZE.x, (gridPos.y % Chunk::size->y) * TILE_SIZE.y);
+					drawPos = Vector2f((gridPos.x % CHUNK_SIZE.x) * TILE_SIZE.x, (gridPos.y % CHUNK_SIZE.y) * TILE_SIZE.y);
 					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 
 					//Draw to the correct chunk texture

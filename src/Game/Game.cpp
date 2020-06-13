@@ -107,14 +107,13 @@ void Game::updateClock()
 	if (this->incer >= this->cap)
 	{
 		this->incer = 0.f;
-		this->printFPS();
+		this->printInfoToWindow();
 	}
 	this->incer += this->dt * this->multiplier;
 }
 
-void Game::printFPS()
+void Game::printInfoToWindow()
 {
-	//std::cout << this->FPS << std::endl;
 	this->window->setTitle("Forest Valley | FPS: " + std::to_string(this->FPS) +
 	" | SEED: " + std::to_string(this->seed));
 }

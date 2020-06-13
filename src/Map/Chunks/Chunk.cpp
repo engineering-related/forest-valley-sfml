@@ -14,7 +14,7 @@ Chunk::~Chunk()
 void Chunk::init()
 {
 	this->renderTexture.clear();
-	this->renderTexture.create(this->size->x*TILE_SIZE.x, this->size->y*TILE_SIZE.y);
+	this->renderTexture.create(CHUNK_SIZE.x*TILE_SIZE.x, CHUNK_SIZE.y*TILE_SIZE.y);
 	this->sprite.setPosition(this->pos);
 }
 

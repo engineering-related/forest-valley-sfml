@@ -35,7 +35,7 @@ private:
 	void handleInput();
 	void pollEvents();
 	void updateClock();
-	void printFPS();
+	void printInfoToWindow();
 	/////EXTRACT TO SYSTEM CLASS////
 	void sortZindex();
 	void checkTileColision(Object* object);

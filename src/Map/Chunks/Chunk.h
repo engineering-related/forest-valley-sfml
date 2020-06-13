@@ -22,8 +22,6 @@ public:
 	void drawTiles(RenderTarget* window);
 	void update(const float &dt, const float &multiplier);
 	void setTexture();
-
-	inline static Vector2i* const size = new Vector2i(50, 50);
 };
 
 
