@@ -7,7 +7,7 @@ int main(){
 	sf::TcpSocket socket;
 	char connectionType, mode;
 
-	short int port = 3203;
+	short int port = 25565;
 	char buffer[2000];
 	std::size_t received;
 
@@ -33,7 +33,6 @@ int main(){
 
 	std::cout << buffer << std::endl;
 
-	system("pause");
 
 	return 0;
 }
