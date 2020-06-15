@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	std::cin.ignore(10000, '\n');
 
 	return 0;
-}
+}*/
 
 //FUNKTIONERNA
 
@@ -173,8 +173,10 @@ void doServerUDP(unsigned short Port)
 
 	// Stäng socketen när vi är klara
 	server.unbind();
-}*/
+}
 
+
+/*
 class spelare
 {
 public:
@@ -478,3 +480,4 @@ void playerRecieve(class spelare& s)
 	}
 	//std::cout << s.ID << " ID, " << s.hastighetX << " hastighet x, " << s.hastighetY << " hastighet y" << std::endl;
 }
+*/
