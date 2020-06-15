@@ -6,55 +6,58 @@ int main(){
 	sf::IpAddress ip = sf::IpAddress::getLocalAddress();
 	sf::TcpSocket socket;
 	char connectionType;
-	char mode = 'r';
-
-	short int port = 25565;
-	char buffer[2000];
-	std::size_t received;
-
-	std::string text = "Conected to: ";
 
 	std::cout << "s)erver or c)lient" << std::endl;
 	std::cin >> connectionType;
+
+	short int port = 25565;
 
 	if(connectionType == 's'){
 		sf::TcpListener listener;
 		listener.listen(port);
 		listener.accept(socket);
-		text += "server ";
-		mode = 's';
 	}
-	else if(connectionType == 'c'){
+	else
 		socket.connect(ip, port);
-		text += " client";
-		mode = 'r';
-	}
 
-	socket.send(text.c_str(), text.length() +1);
+	sf::RectangleShape rect1, rect2;
+	rect1.setSize(sf::Vector2f(20, 20));
+	rect2.setSize(sf::Vector2f(20, 20));
 
-	socket.receive(buffer, sizeof(buffer), received);
-	std::cout << buffer << std::endl;
+	rect1.setFillColor(sf::Color::Red);
+	rect2.setFillColor(sf::Color::Blue);
 
-	bool done = false;
+	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
+	sf::Vector2f prevPosition, p2Position;
 
-	while (!done){
-		if(mode == 's'){
-			std::getline(std::cin, text);
-			socket.send(text.c_str(), text.length() +1);
-			mode = 'r';
-		}
-		else if (mode == 'r')
+	socket.setBlocking(false);
+
+	while(window.isOpen())
+	{
+		sf::Event event;
+		while (window.pollEvent(event))
 		{
-			socket.receive(buffer, sizeof(buffer), received);
-			if(received > 0){
-				std::cout << buffer << std::endl;
-				mode = 's';
-			}
-
+			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
+				window.close();
 		}
 
-	}
+		prevPosition = rect1.getPosition();
 
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			rect1.move(0.5f, 0.0f);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			rect1.move(-0.5f, 0.0f);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			rect1.move(0.0f, -0.5f);
+		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			rect1.move(0.0f, 0.5f);
+
+		window.draw(rect1);
+		window.draw(rect2);
+
+		window.display();
+		window.clear();
+	}
 
 	return 0;
 }

@@ -1,16 +1,16 @@
-#include "Network.h"
+#include "Client.h"
 
 
 /*
-int main(){
+int notMain(){
 	sf::IpAddress ip = sf::IpAddress::getLocalAddress();
 	sf::TcpSocket socket;
 
+	sf::SocketSelector selector;
+
 	char connectionType;
 	char mode = 'r';
-
-	std::cout << "s)erver or c)lient" << std::endl;
-	std::cin >> connectionType;
+	std::vector<sf::TcpSocket*> clients;
 
 	short int port = 25565;
 	char buffer[2000];
@@ -18,6 +18,8 @@ int main(){
 
 	std::string text = "Conected to: ";
 
+	std::cout << "s)erver or c)lient" << std::endl;
+	std::cin >> connectionType;
 
 	if(connectionType == 's'){
 		sf::TcpListener listener;
@@ -26,7 +28,6 @@ int main(){
 		text += "server ";
 		mode = 's';
 	}
-
 	else if(connectionType == 'c'){
 		socket.connect(ip, port);
 		text += " client";
@@ -62,4 +63,34 @@ int main(){
 
 	return 0;
 }
-*/
+
+
+int runClient(){
+
+	sf::IpAddress ip = sf::IpAddress::getLocalAddress();
+	sf::TcpSocket socket;
+	short int port = 25565;
+
+	bool done = false;
+	std::string id;
+	std::string text = "";
+
+	std::cout << "Enter online id: ";
+	std::cin >> id;
+
+	socket.connect(ip, port);
+
+	std::vector<sf::Text> chat;
+	sf::Packet packet;
+	packet << id;
+	socket.send(packet);
+	socket.setBlocking(false);
+
+	while (!done)
+	{
+
+	}
+
+
+	return 0;
+}*/

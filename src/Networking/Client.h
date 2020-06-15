@@ -1,19 +1,12 @@
-#ifndef NETWORK
-#define NETWORK
+#ifndef CLIENT
+#define CLIENT
 
 #include <SFML/Network.hpp>
 #include <iostream>
 #include <string.h>
 #include <vector>
 
-class Network
-{
-private:
 
-
-public:
-
-};
 
 
 
