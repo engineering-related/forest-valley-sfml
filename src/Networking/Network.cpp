@@ -43,7 +43,6 @@ int main(){
 
 		prevPosition = rect1.getPosition();
 
-
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			rect1.move(0.5f, 0.0f);
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
