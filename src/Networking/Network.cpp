@@ -40,7 +40,6 @@ int main(){
 
 	short int port = 25565;
 
-
 	if(connectionType == 's'){
 		sf::TcpListener listener;
 		listener.listen(port);
