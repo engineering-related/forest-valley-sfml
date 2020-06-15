@@ -32,6 +32,8 @@ int main(){
 
 	socket.setBlocking(false);
 
+	bool update = false;
+
 	while(window.isOpen())
 	{
 		sf::Event event;
@@ -39,18 +41,36 @@ int main(){
 		{
 			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
 				window.close();
+			else if (event.type == sf::Event::GainedFocus)
+				update = true;
+			else if(event.type == sf::Event::LostFocus)
+				update = false;
 		}
 
 		prevPosition = rect1.getPosition();
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			rect1.move(0.5f, 0.0f);
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			rect1.move(-0.5f, 0.0f);
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			rect1.move(0.0f, -0.5f);
-		else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			rect1.move(0.0f, 0.5f);
+		if(update)
+		{
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+				rect1.move(0.5f, 0.0f);
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+				rect1.move(-0.5f, 0.0f);
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+				rect1.move(0.0f, -0.5f);
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+				rect1.move(0.0f, 0.5f);
+		}
+
+		sf::Packet packet;
+		if (prevPosition != rect1.getPosition()){
+			packet << rect1.getPosition().x << rect1.getPosition().y;
+			socket.send(packet);
+		}
+
+		socket.receive(packet);
+		 if(packet >> p2Position.x >> p2Position.y)
+			 rect2.setPosition(p2Position);
+
 
 		window.draw(rect1);
 		window.draw(rect2);
