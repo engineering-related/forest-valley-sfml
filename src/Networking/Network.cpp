@@ -2,7 +2,9 @@
 
 sf::Mutex globalMutex;
 sf::RectangleShape rect1, rect2;
-sf::TcpSocket socket;
+sf::UdpSocket socket;
+sf::IpAddress sendIp = "";
+unsigned short port = 25565;
 bool quit = false;
 
 void handlePacketTraffic(void)
@@ -18,10 +20,10 @@ void handlePacketTraffic(void)
 			packet << rect1.getPosition().x << rect1.getPosition().y;
 		globalMutex.unlock();
 
-		socket.send(packet);
+		socket.send(packet, sendIp, port);
 
 		//Receive packet
-		socket.receive(packet);
+		socket.receive(packet, sendIp, port);
 		if(packet >> p2Position.x >> p2Position.y)
 		{
 			globalMutex.lock();
@@ -31,27 +33,80 @@ void handlePacketTraffic(void)
 		}
 	}
 }
+/*
+// ----- The client -----
+// Create a socket and bind it to the port 55001
+sf::UdpSocket socket;
+socket.bind(55001);
+// Send a message to 192.168.1.50 on port 55002
+std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
+socket.send(message.c_str(), message.size() + 1, "192.168.1.50", 55002);
 
+// Receive an answer (most likely from 192.168.1.50, but could be anyone else)
+char buffer[1024];
+std::size_t received = 0;
+sf::IpAddress sender;
+unsigned short port;
+
+socket.receive(buffer, sizeof(buffer), received, sender, port);
+std::cout << sender.ToString() << " said: " << buffer << std::endl;
+// ----- The server -----
+// ----- The server -----
+// Create a socket and bind it to the port 55002
+sf::UdpSocket socket;
+socket.bind(55002);
+// Receive a message from anyone
+char buffer[1024];
+
+std::size_t received = 0;
+sf::IpAddress sender;
+unsigned short port;
+
+socket.receive(buffer, sizeof(buffer), received, sender, port);
+std::cout << sender.ToString() << " said: " << buffer << std::endl;
+// Send an answer
+std::string message = "Welcome " + sender.toString();
+socket.send(message.c_str(), message.size() + 1, sender, port);
+*/
 
 int main(){
 	sf::Thread* thread = 0;
-	sf::IpAddress ip = sf::IpAddress::getLocalAddress(); //Use IP as client "78.72.205.138"
 
 	char connectionType;
 
 	std::cout << "s)erver or c)lient" << std::endl;
 	std::cin >> connectionType;
 
-	short int port = 25565;
+	//std::map<unsigned short, sf:IpAddress> computerID;
+
+	socket.bind(port);
 
 	if(connectionType == 's'){
-		sf::TcpListener listener;
-		listener.listen(port);
-		listener.accept(socket);
+		sendIp = sf::IpAddress::getLocalAddress();
+		bool receviedIp = false;
+		do {
+			// Receive a message from anyone
+			char buffer[1024];
+			std::size_t received = 0;
+			sf::IpAddress sender;
+			unsigned short port;
+			socket.receive(buffer, sizeof(buffer), received, sender, port);
+			if(received != 0){
+				std::cout << sender.toString() << " said: " << buffer << std::endl;
+				receviedIp = true;
+				sendIp = sender;
+			}
+		} while(!receviedIp);
 	}
 	else
-		socket.connect(ip, port);
+	{
+		sendIp = "46.236.80.69";
 
+		std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
+		socket.send(message.c_str(), message.size() + 1, sendIp, port);
+	}
+
+	/*
 
 	rect1.setSize(sf::Vector2f(20, 20));
 	rect2.setSize(sf::Vector2f(20, 20));
@@ -72,9 +127,10 @@ int main(){
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
+			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape){
 				quit = true;
 				window.close();
+			}
 		}
 
 		globalMutex.lock();
@@ -98,7 +154,7 @@ int main(){
 	{
 		thread->wait();
 		delete thread;
-	}
+	}*/
 	return 0;
 }
 

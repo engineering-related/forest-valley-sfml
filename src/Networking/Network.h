@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string.h>
 #include <vector>
+#include <map>
 
 class Network
 {
