@@ -1,79 +1,41 @@
 #include "Network.h"
 
 sf::Mutex globalMutex;
+sf::RectangleShape rect1, rect2;
 sf::UdpSocket socket;
 sf::IpAddress sendIp = "";
 unsigned short port = 24474;
-sf::Clock gameClock;
-float dt;
 bool quit = false;
-
-struct TestPlayer
-{
-	sf::Vector2f velocity;
-	sf::RectangleShape rect;
-	float speed = 200.f;
-
-	TestPlayer(sf::Color color)
-	{
-		rect.setSize(sf::Vector2f(20, 20));
-		rect.setFillColor(color);
-		this->velocity = sf::Vector2f(0.f, 0.f);
-	}
-	void update(const float& dt)
-	{
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			velocity = sf::Vector2f(speed, 0.0f);
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			velocity = sf::Vector2f(-speed, 0.0f);
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			velocity = sf::Vector2f(0.0f, -speed);
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			velocity = sf::Vector2f(0.0f, speed);
-		else
-			velocity = sf::Vector2f(0.0f, 0.0f);
-
-		rect.move(velocity * dt);
-	}
-
-	void draw(sf::RenderWindow& window)
-	{
-		window.draw(rect);
-	}
-};
-
-//Create two basic players
-TestPlayer localPlayer(sf::Color::Red);
-TestPlayer remotePlayer(sf::Color::Blue);
+float dt;
+sf::Clock gameClock;
 
 void handlePacketTraffic(void)
 {
-	static sf::Vector2f localPrevVel;
+	static sf::Vector2f prevPosition, p2Position;
 	static sf::Clock clock;
 	clock.restart().asMilliseconds();
 	while (!quit)
 	{
 		sf::Packet packet;
-		//30ms delay for packets, avoid traffic overflow!
 		if (clock.getElapsedTime().asMilliseconds() >= 30)
 		{
 			clock.restart().asMilliseconds();
-
 			//Send packet
 			globalMutex.lock();
-			if (localPrevVel != localPlayer.velocity)
-			{
-				packet << localPlayer.velocity.x << localPlayer.velocity.y;
-			}
+			if (prevPosition != rect1.getPosition())
+				packet << rect1.getPosition().x << rect1.getPosition().y;
 			globalMutex.unlock();
-			socket.send(packet, sendIp, port);
 
+			socket.send(packet, sendIp, port);
 			//Receive packet
 			socket.receive(packet, sendIp, port);
-			if (packet >> remotePlayer.velocity.x >> remotePlayer.velocity.y)
+			if (packet >> p2Position.x >> p2Position.y)
 			{
-				remotePlayer.rect.move(remotePlayer.velocity);
-				localPrevVel = localPlayer.velocity;
+				globalMutex.lock();
+
+				rect2.setPosition(p2Position);
+				prevPosition = rect1.getPosition();
+				globalMutex.unlock();
 			}
 		}
 	}
@@ -120,9 +82,15 @@ int main()
 		socket.send(message.c_str(), message.size() + 1, sendIp, port);
 	}
 
-	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Network Testing");
+	rect1.setSize(sf::Vector2f(20, 20));
+	rect2.setSize(sf::Vector2f(20, 20));
 
-	socket.setBlocking(false);
+	rect1.setFillColor(sf::Color::Red);
+	rect2.setFillColor(sf::Color::Blue);
+
+	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
+
+	//socket.setBlocking(false);
 
 	thread = new sf::Thread(&handlePacketTraffic);
 	thread->launch();
@@ -142,19 +110,27 @@ int main()
 		dt = gameClock.restart().asSeconds();
 		float FPS = 1.f / dt;
 		static float incer = 0;
-		static float cap = 1;
+		static float cap = 5;
 		incer += dt;
 		if (incer >= cap)
 		{
 			incer = 0;
-			window.setTitle("SFML Network testing | FPS: " + std::to_string(FPS));
+			window.setTitle("Forest Valley | FPS: " + std::to_string(FPS));
 		}
 
-		//globalMutex.lock();
-		localPlayer.update(dt);
-		localPlayer.draw(window);
-		remotePlayer.draw(window);
-		//globalMutex.unlock();
+		globalMutex.lock();
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			rect1.move(300.f*dt, 0.0f);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			rect1.move(-300.f*dt, 0.0f);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+			rect1.move(0.0f, -300.f*dt);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			rect1.move(0.0f, 300.f*dt);
+
+		window.draw(rect1);
+		window.draw(rect2);
+		globalMutex.unlock();
 
 		window.display();
 		window.clear();
