@@ -91,7 +91,7 @@ int main(){
 			sf::IpAddress sender;
 			unsigned short port;
 			socket.receive(buffer, sizeof(buffer), received, sender, port);
-			if(received != 0){
+			if(received > 0){
 				std::cout << sender.toString() << " said: " << buffer << std::endl;
 				receviedIp = true;
 				sendIp = sender;
