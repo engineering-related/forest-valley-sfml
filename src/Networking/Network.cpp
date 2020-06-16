@@ -80,11 +80,12 @@ int main(){
 	//std::map<unsigned short, sf:IpAddress> computerID;
 
 	socket.bind(port);
+	//socket.setBlocking(false);
 
 	if(connectionType == 's'){
-		sendIp = sf::IpAddress::getLocalAddress();
 		bool receviedIp = false;
-		do {
+		while(!receviedIp)
+		{
 			// Receive a message from anyone
 			char buffer[1024];
 			std::size_t received = 0;
@@ -92,21 +93,19 @@ int main(){
 			unsigned short port;
 			socket.receive(buffer, sizeof(buffer), received, sender, port);
 			if(received > 0){
+				std::cout << received << std::endl;
 				std::cout << sender.toString() << " said: " << buffer << std::endl;
 				receviedIp = true;
 				sendIp = sender;
 			}
-		} while(!receviedIp);
+		}
 	}
 	else
 	{
-		sendIp = "46.236.80.69";
-
+		sendIp = "78.72.205.138";
 		std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
 		socket.send(message.c_str(), message.size() + 1, sendIp, port);
 	}
-
-	/*
 
 	rect1.setSize(sf::Vector2f(20, 20));
 	rect2.setSize(sf::Vector2f(20, 20));
@@ -115,7 +114,6 @@ int main(){
 	rect2.setFillColor(sf::Color::Blue);
 
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
-
 
 	socket.setBlocking(false);
 
@@ -132,16 +130,15 @@ int main(){
 				window.close();
 			}
 		}
-
 		globalMutex.lock();
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-			rect1.move(0.5f, 0.0f);
+			rect1.move(0.1f, 0.0f);
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-			rect1.move(-0.5f, 0.0f);
+			rect1.move(-0.1f, 0.0f);
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-			rect1.move(0.0f, -0.5f);
+			rect1.move(0.0f, -0.1f);
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-			rect1.move(0.0f, 0.5f);
+			rect1.move(0.0f, 0.1f);
 
 		window.draw(rect1);
 		window.draw(rect2);
@@ -154,7 +151,7 @@ int main(){
 	{
 		thread->wait();
 		delete thread;
-	}*/
+	}
 	return 0;
 }
 
