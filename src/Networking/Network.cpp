@@ -12,6 +12,7 @@ void handlePacketTraffic(void)
 	{
 		sf::Packet packet;
 
+		//Send packet
 		globalMutex.lock();
 		if (prevPosition != rect1.getPosition())
 			packet << rect1.getPosition().x << rect1.getPosition().y;
@@ -19,11 +20,14 @@ void handlePacketTraffic(void)
 
 		socket.send(packet);
 
+		//Receive packet
 		socket.receive(packet);
 		if(packet >> p2Position.x >> p2Position.y)
 		{
+			globalMutex.lock();
 			rect2.setPosition(p2Position);
 			prevPosition = rect1.getPosition();
+			globalMutex.unlock();
 		}
 	}
 }
@@ -69,6 +73,7 @@ int main(){
 		while (window.pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
+				quit = true;
 				window.close();
 		}
 
