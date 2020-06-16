@@ -7,6 +7,8 @@ unsigned short port = 24474;
 sf::Clock gameClock;
 float dt;
 bool quit = false;
+float dt;
+sf::Clock gameClock;
 
 struct TestPlayer
 {
