@@ -1,4 +1,5 @@
 #include "Game/Game.h"
+#include "Networking/Networking.hpp"
 
 /*COMMANDS:
 	-CTRL + SHIFT + B TO BUILD AND RUN
@@ -22,10 +23,27 @@
 //https://opengameart.org/content/lpc-goat
 //https://opengameart.org/content/deer
 
-/*
+
 int main()
 {
-	Game* game = new Game();
-	game->start();
+	//Game* game = new Game();
+	//game->start();
+
+	//Networking class testing
+	char connectionType;
+
+	std::cout << "s)erver or c)lient" << std::endl;
+	std::cin >> connectionType;
+
+	if (connectionType == 's')
+	{
+		UDP_Server server;
+		server.init();
+	}
+	else
+	{
+		UDP_Client client();
+		client.connectToServer();
+	}
+
 }
-*/

@@ -76,6 +76,12 @@
 #include "Utility/Functions.hpp"
 #include "Utility/Textures.hpp"
 
+// Networking
+#include "Networking/UDP/Client/UDP_Client.h"
+#include "Networking/UDP/Server/UDP_Server.h"
+#include "Networking/TCP/Client/TCP_Client.h"
+#include "Networking/TCP/Server/TCP_Server.h"
+
 // Macros
 #define UNUSED(x) (void)(x)
 #define PI 3.14159265359
