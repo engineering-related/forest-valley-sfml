@@ -77,7 +77,7 @@ int main()
 	}
 	else
 	{
-		sendIp = "78.72.205.138";
+		sendIp = "192.168.72.118";//<-- LP "78.72.205.138";
 		std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
 		socket.send(message.c_str(), message.size() + 1, sendIp, port);
 	}
