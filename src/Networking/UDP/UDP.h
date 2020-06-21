@@ -23,10 +23,11 @@ public:
 		{
 			rect.setSize(sf::Vector2f(20, 20));
 			rect.setFillColor(color);
+			rect.setPosition(0.f, 0.f);
 			this->speedMagnitude = 100.f;
 			this->mouseClicked = false;
 			this->pos = rect.getPosition();
-			this->endPos = sf::Vector2f(0, 0);
+			this->endPos = this->pos;
 		}
 
 		void draw(sf::RenderTarget* target)
@@ -36,7 +37,16 @@ public:
 		void update(const float &dt)
 		{
 			if(pos != endPos)
+			{
 				this->rect.move(this->velocity*dt);
+
+			}
+			else
+			{
+				this->velocity.x = 0;
+				this->velocity.y = 0;
+			}
+
 
 			this->handleMouse();
 		}
