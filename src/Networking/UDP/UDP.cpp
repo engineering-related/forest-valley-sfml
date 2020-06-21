@@ -37,7 +37,7 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 			if (packet >> p2Pos.x >> p2Pos.y)
 			{
 				UDP_Network->globalMutex.lock();
-				UDP_Network->p2->p2Pos = p2Pos;
+				UDP_Network->p1->p2Pos = p2Pos;
 				prevPos = UDP_Network->p1->rect.getPosition();
 				UDP_Network->globalMutex.unlock();
 			}

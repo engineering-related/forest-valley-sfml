@@ -64,11 +64,10 @@ public:
 
 		void updatePlayers(const float& dt, TestPlayer* p2)
 		{
-			std::cout << p2Pos.x << " " << p2Pos.y << std::endl;
-			/*float angle = atan2f(p2->rect.getPosition().y - p2Pos.y, p2->rect.getPosition().x - p2Pos.x);
+			float angle = atan2f(p2->rect.getPosition().y - p2Pos.y, p2->rect.getPosition().x - p2Pos.x);
 			float distance = util::fn::distance2f(p2->rect.getPosition(), p2Pos);
 			p2->velocity = sf::Vector2f(speedMagnitude * cos(angle), speedMagnitude * sin(angle)) * powf(distance, 2);
-			p2->rect.move(p2->velocity * dt);*/
+			p2->rect.move(p2->velocity * dt);
 		}
 		void drawPlayers(sf::RenderTarget* target, TestPlayer* p2)
 		{
