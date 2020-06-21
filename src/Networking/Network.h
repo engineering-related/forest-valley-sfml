@@ -13,7 +13,6 @@ private:
 
 protected:
 	sf::Mutex globalMutex;
-	sf::RectangleShape rect1, rect2;
 	sf::IpAddress sendIp;
 	unsigned short port;
 	bool quit;

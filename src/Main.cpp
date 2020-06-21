@@ -39,11 +39,13 @@ int main()
 	{
 		UDP_Server server;
 		server.init();
+		server.run();
 	}
 	else
 	{
 		UDP_Client client;
 		client.connectToServer();
+		client.run();
 	}
 
 }
