@@ -14,7 +14,7 @@ public:
 	struct TestPlayer
 	{
 		sf::RectangleShape rect;
-		sf::Vector2f pos, endPos;
+		sf::Vector2f endPos;
 		sf::Vector2f velocity;
 		bool mouseClicked;
 		float speedMagnitude;
@@ -24,10 +24,11 @@ public:
 			rect.setSize(sf::Vector2f(20, 20));
 			rect.setFillColor(color);
 			rect.setPosition(0.f, 0.f);
-			this->speedMagnitude = 100.f;
+			rect.setOrigin(rect.getSize()*0.5f);
+			this->speedMagnitude = 200.f;
 			this->mouseClicked = false;
-			this->pos = rect.getPosition();
-			this->endPos = this->pos;
+			this->endPos = this->rect.getPosition();
+			this->velocity = sf::Vector2f(0.f, 0.f);
 		}
 
 		void draw(sf::RenderTarget* target)
@@ -36,34 +37,32 @@ public:
 		}
 		void update(const float &dt)
 		{
-			if(pos != endPos)
+			if(sf::Vector2i(round(this->rect.getPosition().x), round(this->rect.getPosition().y)) != sf::Vector2i(round(endPos.x), round(endPos.y)))
 			{
 				this->rect.move(this->velocity*dt);
-
 			}
 			else
 			{
 				this->velocity.x = 0;
 				this->velocity.y = 0;
 			}
-
-
-			this->handleMouse();
 		}
-		void handleMouse()
+		void handleMouse(sf::RenderWindow* window)
 		{
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mouseClicked)
+			sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos))
 			{
 				mouseClicked = true;
-				endPos = (sf::Vector2f)sf::Mouse::getPosition();
-				float angle = atan2f(endPos.x - pos.x, endPos.y - pos.y);
+				endPos = (sf::Vector2f)mousePos;
+				float angle = atan2f(endPos.y - this->rect.getPosition().y, endPos.x - this->rect.getPosition().x);
 				velocity = sf::Vector2f(speedMagnitude*cos(angle), speedMagnitude*sin(angle));
 			}
 			else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				mouseClicked = false;
 		}
 	};
-	TestPlayer* p1, *p2;
+	TestPlayer* p1;
+	TestPlayer *p2;
 	UDP();
 	virtual ~UDP();
 	void run();
