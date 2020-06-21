@@ -42,7 +42,7 @@ int main()
 	}
 	else
 	{
-		UDP_Client client();
+		UDP_Client client;
 		client.connectToServer();
 	}
 
