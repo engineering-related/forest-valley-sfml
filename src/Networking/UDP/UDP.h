@@ -28,6 +28,7 @@ public:
 			this->mouseClicked = false;
 			this->pos = rect.getPosition();
 			this->endPos = this->pos;
+			this->velocity = sf::Vector2f(0.f, 0.f);
 		}
 
 		void draw(sf::RenderTarget* target)
@@ -39,16 +40,12 @@ public:
 			if(pos != endPos)
 			{
 				this->rect.move(this->velocity*dt);
-
 			}
 			else
 			{
 				this->velocity.x = 0;
 				this->velocity.y = 0;
 			}
-
-
-			this->handleMouse();
 		}
 		void handleMouse()
 		{
@@ -63,7 +60,8 @@ public:
 				mouseClicked = false;
 		}
 	};
-	TestPlayer* p1, *p2;
+	TestPlayer* p1;
+	TestPlayer* p2;
 	UDP();
 	virtual ~UDP();
 	void run();

@@ -82,6 +82,7 @@ void UDP::run(){
 		this->p1->draw(&window);
 		this->p2->draw(&window);
 		this->p1->update(dt);
+		this->p1->handleMouse();
 		this->p2->update(dt);
 		globalMutex.unlock();
 
