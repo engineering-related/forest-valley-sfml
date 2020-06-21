@@ -27,7 +27,10 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 			//Send packet
 			UDP_Network->globalMutex.lock();
 			if (prevEndPos != UDP_Network->p1->endPos)
-				packet << UDP_Network->p1->endPos.x << UDP_Network->p1->endPos.y << UDP_Network->p1->velocity.x << UDP_Network->p2->velocity.y;
+			{
+				packet << UDP_Network->p1->endPos.x << UDP_Network->p1->endPos.y <<
+						  UDP_Network->p1->velocity.x << UDP_Network->p2->velocity.y;
+			}
 			UDP_Network->globalMutex.unlock();
 
 			UDP_Network->socket.send(packet, UDP_Network->sendIp, UDP_Network->port);
@@ -50,6 +53,7 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 void UDP::run(){
 	sf::Thread* thread = 0;
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
+	window.setFramerateLimit(144);
 
 	//socket.setBlocking(false);
 
@@ -61,8 +65,9 @@ void UDP::run(){
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
+			if (event.type == sf::Event::Closed)
 			{
+				std::cout << "CLOSE" << std::endl;
 				quit = true;
 				window.close();
 			}
@@ -82,8 +87,8 @@ void UDP::run(){
 		globalMutex.lock();
 		this->p1->draw(&window);
 		this->p2->draw(&window);
+		this->p1->handleMouse(&window);
 		this->p1->update(dt);
-		this->p1->handleMouse();
 		this->p2->update(dt);
 		globalMutex.unlock();
 
