@@ -15,7 +15,7 @@ UDP::~UDP()
 
 void UDP::handlePacketTraffic(UDP* UDP_Network)
 {
-	static sf::Vector2f prevPos;
+	static sf::Vector2f prevPos, p2Pos;
 	static sf::Clock clock;
 	clock.restart().asMilliseconds();
 	while (!UDP_Network->quit)
@@ -26,7 +26,7 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 			clock.restart().asMilliseconds();
 			//Send packet
 			UDP_Network->globalMutex.lock();
-			if (prevPos != UDP_Network->p1->endPos)
+			if (prevPos != UDP_Network->p1->rect.getPosition())
 				packet << UDP_Network->p1->rect.getPosition().x << UDP_Network->p1->rect.getPosition().y;
 
 			UDP_Network->globalMutex.unlock();
@@ -34,10 +34,11 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 			UDP_Network->socket.send(packet, UDP_Network->sendIp, UDP_Network->port);
 			//Receive packet
 			UDP_Network->socket.receive(packet, UDP_Network->sendIp, UDP_Network->port);
-			if (packet >> UDP_Network->p2->p2Pos.x >> UDP_Network->p2->p2Pos.y)
+			if (packet >> p2Pos.x >> p2Pos.y)
 			{
 				UDP_Network->globalMutex.lock();
-				prevPos = UDP_Network->p1->endPos;
+				UDP_Network->p2->p2Pos = p2Pos;
+				prevPos = UDP_Network->p1->rect.getPosition();
 				UDP_Network->globalMutex.unlock();
 			}
 		}

@@ -48,20 +48,6 @@ public:
 				this->velocity.y = 0;
 			}
 		}
-		void updatePlayers(const float &dt, TestPlayer* p2)
-		{
-			if (sf::Vector2i(round(p2->rect.getPosition().x), round(p2->rect.getPosition().y)) != sf::Vector2i(round(p2Pos.x), round(p2Pos.y)))
-			{
-				float angle = atan2f(p2->rect.getPosition().y - p2Pos.y, p2->rect.getPosition().x - p2Pos.x);
-				float distance = util::fn::distance2f(p2->rect.getPosition(), p2Pos);
-				p2->velocity = sf::Vector2f(speedMagnitude*cos(angle), speedMagnitude*sin(angle)) * powf(distance, 2);
-			}
-			p2->rect.move(p2->velocity*dt);
-		}
-		void drawPlayers(sf::RenderTarget* target, TestPlayer* p2)
-		{
-			target->draw(p2->rect);
-		}
 		void handleMouse(sf::RenderWindow* window)
 		{
 			sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
@@ -74,6 +60,21 @@ public:
 			}
 			else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 				mouseClicked = false;
+		}
+
+		void updatePlayers(const float& dt, TestPlayer* p2)
+		{
+			if (sf::Vector2i(round(p2->rect.getPosition().x), round(p2->rect.getPosition().y)) != sf::Vector2i(round(p2Pos.x), round(p2Pos.y)))
+			{
+				float angle = atan2f(p2->rect.getPosition().y - p2Pos.y, p2->rect.getPosition().x - p2Pos.x);
+				float distance = util::fn::distance2f(p2->rect.getPosition(), p2Pos);
+				p2->velocity = sf::Vector2f(speedMagnitude * cos(angle), speedMagnitude * sin(angle)) * powf(distance, 2);
+			}
+			p2->rect.move(p2->velocity * dt);
+		}
+		void drawPlayers(sf::RenderTarget* target, TestPlayer* p2)
+		{
+			target->draw(p2->rect);
 		}
 	};
 	TestPlayer* p1;
