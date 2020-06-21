@@ -29,7 +29,7 @@ void UDP::handlePacketTraffic(UDP* UDP_Network)
 			if (prevEndPos != UDP_Network->p1->endPos)
 			{
 				packet << UDP_Network->p1->endPos.x << UDP_Network->p1->endPos.y <<
-						  UDP_Network->p1->velocity.x << UDP_Network->p2->velocity.y;
+						  UDP_Network->p1->velocity.x << UDP_Network->p1->velocity.y;
 			}
 			UDP_Network->globalMutex.unlock();
 
