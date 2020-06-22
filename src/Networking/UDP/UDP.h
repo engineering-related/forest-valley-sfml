@@ -38,20 +38,19 @@ public:
 		}
 		void update(const float &dt)
 		{
-			if(sf::Vector2i(round(this->rect.getPosition().x), round(this->rect.getPosition().y)) != sf::Vector2i(round(endPos.x), round(endPos.y)))
-			{
+			bool move = false;
+			if ((this->velocity.x >= 0 && this->rect.getPosition().x < endPos.x) ||
+				(this->velocity.x <= 0 && this->rect.getPosition().x > endPos.x) ||
+				(this->velocity.y >= 0 && this->rect.getPosition().y < endPos.y) ||
+				(this->velocity.y <= 0 && this->rect.getPosition().y > endPos.y))
+					move = true;
+			if(move)
 				this->rect.move(this->velocity*dt);
-			}
-			else
-			{
-				this->velocity.x = 0;
-				this->velocity.y = 0;
-			}
 		}
 		void handleMouse(sf::RenderWindow* window)
 		{
 			sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos))
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos) && !mouseClicked)
 			{
 				mouseClicked = true;
 				endPos = (sf::Vector2f)mousePos;
@@ -64,11 +63,13 @@ public:
 
 		void updatePlayers(const float& dt, TestPlayer* p2)
 		{
-			float angle = atan2f(p2Pos.y - p2->rect.getPosition().y, p2Pos.x - p2->rect.getPosition().x);
-			//float distance = sqrt(pow(p2Pos.x - p2->rect.getPosition().x, 2) + pow(p2Pos.y - p2->rect.getPosition().y, 2));
-			//std::cout << distance << std::endl;
-			p2->velocity = sf::Vector2f(p2->speedMagnitude * cos(angle), p2->speedMagnitude * sin(angle)); //* powf(distance, 2);
-			p2->rect.move(p2->velocity * dt);
+			sf::Vector2f d(p2Pos.x - p2->rect.getPosition().x, p2Pos.y - p2->rect.getPosition().y);
+			if(abs(d.x) >= 1 && abs(d.y) >= 1)
+			{
+				float angle = atan2f(d.y, d.x);
+				p2->velocity = sf::Vector2f(p2->speedMagnitude * cos(angle), p2->speedMagnitude * sin(angle));
+				p2->rect.move(p2->velocity * dt);
+			}
 		}
 		void drawPlayers(sf::RenderTarget* target, TestPlayer* p2)
 		{
