@@ -16,36 +16,65 @@ Network::~Network()
 }
 
 void Network::UDP_Traffic(Network* network){
-	static sf::Vector2f prevPos, p2Pos;
-	static sf::Clock clock;
-	clock.restart().asMilliseconds();
+
+	network->clock.restart().asMilliseconds();
 	while (!network->quit)
 	{
-		sf::Packet packet;
-		if (clock.getElapsedTime().asMilliseconds() >= 10)
+		if (network->clock.getElapsedTime().asMilliseconds() >= 10)
 		{
-			clock.restart().asMilliseconds();
-			//Send packet
-			network->globalMutex.lock();
-			if (prevPos != network->p1->rect.getPosition())
-				packet << network->p1->rect.getPosition().x << network->p1->rect.getPosition().y;
-
-			network->globalMutex.unlock();
-
-			network->UDP_Socket.send(packet, network->sendIp, network->port);
-			//Receive packet
-			network->UDP_Socket.receive(packet, network->sendIp, network->port);
-			if (packet >> p2Pos.x >> p2Pos.y)
-			{
-				network->globalMutex.lock();
-				network->p1->p2Pos = p2Pos;
-				prevPos = network->p1->rect.getPosition();
-				network->globalMutex.unlock();
-			}
+			network->clock.restart().asMilliseconds();
+			sf::Packet packet;
+			network->UDP_Send(packet);
+			network->UDP_Recieve(packet);
 		}
 	}
 }
 
+void Network::UDP_Send(sf::Packet &packet)
+{
+	//Send packet
+	this->globalMutex.lock();
+	if (prevPos != this->p1->rect.getPosition())
+		packet << this->p1->rect.getPosition().x << this->p1->rect.getPosition().y;
+	this->globalMutex.unlock();
+
+	this->UDP_Socket.send(packet, this->sendIp, this->port);
+}
+
+void Network::UDP_Recieve(sf::Packet& packet)
+{
+	//Receive packet
+	this->UDP_Socket.receive(packet, this->sendIp, this->port);
+	if (packet >> this->p2Pos.x >> this->p2Pos.y)
+	{
+		this->globalMutex.lock();
+		this->p1->p2Pos = this->p2Pos;
+		this->prevPos = this->p1->rect.getPosition();
+		this->globalMutex.unlock();
+	}
+}
+
+void Network::TCP_Traffic(Network* network)
+{
+	/*static sf::Vector2f prevPosition, p2Position;
+	while(!quit)
+	{
+		sf::Packet packet;
+
+		globalMutex.lock();
+		if (prevPosition != rect1.getPosition())
+			packet << rect1.getPosition().x << rect1.getPosition().y;
+		globalMutex.unlock();
+
+		socket.send(packet);
+
+		socket.receive(packet);
+		if(packet >> p2Position.x >> p2Position.y)
+		{
+			rect2.setPosition(p2Position);
+			prevPosition = rect1.getPosition();
+		}*/
+}
 
 void Network::UDP_Run(){
 	sf::Thread* thread = 0;
