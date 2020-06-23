@@ -1,22 +1,19 @@
-#include "UDP_Server.h"
+#include "Server.h"
 
-UDP_Server::UDP_Server()
+Server::Server(/* args */)
 {
-
 }
 
-UDP_Server::~UDP_Server()
+Server::~Server()
 {
-
 }
 
-
-void UDP_Server::init()
+void Server::init()
 {
 	char connectionType;
 
-	socket.bind(port);
-	socket.setBlocking(false);
+	UDP_Socket.bind(port);
+	UDP_Socket.setBlocking(false);
 
 	bool receviedIp = false;
 	while (!receviedIp)
@@ -26,7 +23,7 @@ void UDP_Server::init()
 		std::size_t received = 0;
 		sf::IpAddress sender;
 		unsigned short port;
-		socket.receive(buffer, sizeof(buffer), received, sender, port);
+		UDP_Socket.receive(buffer, sizeof(buffer), received, sender, port);
 		if (received > 0)
 		{
 			std::cout << received << std::endl;
@@ -35,5 +32,4 @@ void UDP_Server::init()
 			sendIp = sender;
 		}
 	}
-
 }

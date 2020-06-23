@@ -37,15 +37,15 @@ int main()
 
 	if (connectionType == 's')
 	{
-		UDP_Server server;
+		Server server;
 		server.init();
-		server.run();
+		server.UDP_Run();
 	}
 	else
 	{
-		UDP_Client client;
+		Client client;
 		client.connectToServer();
-		client.run();
+		client.UDP_Run();
 	}
 
 }
