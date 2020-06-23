@@ -40,7 +40,7 @@ public:
 	TestPlayer *p1;
 	TestPlayer *p2;
 
-	enum class Action{DELETE, PICK_UP, DROP, CREATE, CRAFT};
+	enum class Action{DEL, PICK_UP, DROP, CREATE, CRAFT};
 
 	struct EntityState
 	{
