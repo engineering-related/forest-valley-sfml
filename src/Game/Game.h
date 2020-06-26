@@ -33,6 +33,7 @@ private:
 	void init();
 	void initMap();
 	void handleInput();
+	void onResize();
 	void pollEvents();
 	void updateClock();
 	void printInfoToWindow();

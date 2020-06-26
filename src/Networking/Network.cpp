@@ -76,7 +76,8 @@ void Network::TCP_Traffic(Network* network)
 		}*/
 }
 
-void Network::UDP_Run(){
+void Network::UDP_Run()
+{
 	sf::Thread* thread = 0;
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
 	window.setFramerateLimit(144);
@@ -92,9 +93,15 @@ void Network::UDP_Run(){
 		{
 			if (event.type == sf::Event::Closed)
 			{
-				std::cout << "CLOSE" << std::endl;
 				quit = true;
 				window.close();
+			}
+			if(event.type == sf::Event::Resized)
+			{
+				sf::Vector2f size = static_cast<sf::Vector2f>(window.getSize());
+				window.setSize(static_cast<sf::Vector2u>(size));
+				sf::View newView(sf::FloatRect(0.f, 0.f, size.x, size.y));
+				window.setView(newView);
 			}
 		}
 

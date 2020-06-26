@@ -25,10 +25,10 @@ void Game::init()
 	util::Platform platform;
 	this->window = new RenderWindow();
 	float screenScalingFactor = platform.getScreenScalingFactor(this->window->getSystemHandle());
-	VideoMode mode = VideoMode(WINDOW_WIDTH * screenScalingFactor, WINDOW_HEIGHT * screenScalingFactor);
+	VideoMode mode = VideoMode(WINDOW_WIDTH * screenScalingFactor, WINDOW_HEIGHT * screenScalingFactor, 32);
 	//VideoMode desktopMode = VideoMode().getDesktopMode();
-
 	this->window->create(mode, "Forest Valley", Style::Default);
+	this->onResize();
 	srand(time(NULL));
 	platform.setIcon(this->window->getSystemHandle());
 	//window->setVerticalSyncEnabled(true);
@@ -81,6 +81,16 @@ void Game::handleInput()
 	}
 }
 
+void Game::onResize()
+{
+	sf::Vector2f size = static_cast<sf::Vector2f>(this->window->getSize());
+
+	this->window->setSize(static_cast<sf::Vector2u>(size));
+
+	sf::View newView(sf::FloatRect(0.f, 0.f, size.x, size.y));
+	this->window->setView(newView);
+}
+
 void Game::pollEvents()
 {
 	Event event;
@@ -88,6 +98,8 @@ void Game::pollEvents()
 	{
 		if (event.type == Event::Closed)
 			this->window->close();
+		if (event.type == Event::Resized)
+			this->onResize();
 		if (event.type == sf::Event::MouseWheelScrolled)
 		{
 			if (event.mouseWheelScroll.delta > 0)
