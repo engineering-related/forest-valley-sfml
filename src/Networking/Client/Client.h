@@ -10,10 +10,10 @@ class Client: public Network
 	protected:
 		//UDP
 
-
 		//TCP
 
 	public:
+		std::string sendIP;
 		Client(/* args */);
 		virtual ~Client();
 
