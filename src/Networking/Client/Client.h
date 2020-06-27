@@ -15,7 +15,8 @@ class Client: public Network
 		std::string text;
 
 	public:
-		std::string sendIP;
+		std::string publicSendIp;
+		std::string localSendIp;
 		Client(/* args */);
 		virtual ~Client();
 

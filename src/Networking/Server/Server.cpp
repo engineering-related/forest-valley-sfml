@@ -39,8 +39,16 @@ void Server::UDP_init()
 
 void Server::TCP_init()
 {
-	this->TCP_listener.listen(port);
+	if(this->TCP_listener.listen(port) != sf::Socket::Done)
+	{
+
+	};
+
 	this->selector.add(TCP_listener);
+
+
+
+
 
 	while(!this->quit)
 	{

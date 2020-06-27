@@ -47,5 +47,4 @@ int main()
 		client.connectToServer();
 		//client.UDP_run();
 	}
-
 }
