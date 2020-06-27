@@ -61,7 +61,7 @@ void Server::TCP_init()
 			}
 			else
 			{
-				for(int i= 0; i < this->clients.size(); i++)
+				for(size_t i= 0; i < this->clients.size(); i++)
 				{
 					if(selector.isReady(*clients[i]))
 					{
@@ -71,8 +71,8 @@ void Server::TCP_init()
 							std::string text;
 							packet >> text;
 							sendPacket << text;
-							for(int j = 0; j < this->clients.size(); j++)
-							{TCP_Socket.setBlocking(false);
+							for(size_t j = 0; j < this->clients.size(); j++)
+							{
 								if(i != j)
 								{
 									clients[j]->send(sendPacket);

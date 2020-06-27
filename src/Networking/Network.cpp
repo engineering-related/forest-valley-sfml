@@ -11,7 +11,6 @@ Network::Network()
 	//UDP
 
 	//TCP
-	TCP_Socket.setBlocking(false);
 }
 
 Network::~Network()

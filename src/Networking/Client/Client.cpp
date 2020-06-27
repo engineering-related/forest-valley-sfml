@@ -14,11 +14,12 @@ Client::~Client()
 void Client::connectToServer(){
 	//TCP
 	std::cout << "Enter id: ";
-	std::cin >> this->id;
+	std::cin >> id;
 	TCP_Socket.connect(sendIP, port);
 	sf::Packet packet;
-	packet << this->id;
+	packet << id;
 	TCP_Socket.send(packet);
+	TCP_Socket.setBlocking(false);
 
 	//UDP
 	UDP_Socket.bind(port);
