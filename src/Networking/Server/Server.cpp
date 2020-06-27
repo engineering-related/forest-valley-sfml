@@ -6,9 +6,12 @@ Server::Server(/* args */)
 
 Server::~Server()
 {
+	//Remove all clients
+	for(std::vector<sf::TcpSocket*>::iterator it = this->clients.begin(); it != this->clients.end(); it++)
+		delete *it;
 }
 
-void Server::init()
+void Server::UDP_init()
 {
 	char connectionType;
 
@@ -32,4 +35,59 @@ void Server::init()
 			sendIp = sender;
 		}
 	}
+}
+
+void Server::TCP_init()
+{
+	this->TCP_listener.listen(port);
+	this->selector.add(TCP_listener);
+
+	while(!this->quit)
+	{
+		if(this->selector.wait())
+		{
+			if(this->selector.isReady(this->TCP_listener))
+			{
+				sf::TcpSocket *socket = new sf::TcpSocket;
+				this->TCP_listener.accept(*socket);
+				sf::Packet packet;
+				std::string id;
+				if(socket->receive(packet) == sf::Socket::Done)
+					packet >> id;
+
+				std::cout << id << " connected to server" << std::endl;
+				this->clients.push_back(socket);
+				this->selector.add(*socket);
+			}
+			else
+			{
+				for(int i= 0; i < this->clients.size(); i++)
+				{
+					if(selector.isReady(*clients[i]))
+					{
+						sf::Packet packet, sendPacket;
+						if(this->clients[i]->receive(packet) == sf::Socket::Done)
+						{
+							std::string text;
+							packet >> text;
+							sendPacket << text;
+							for(int j = 0; j < this->clients.size(); j++)
+							{TCP_Socket.setBlocking(false);
+								if(i != j)
+								{
+									clients[j]->send(sendPacket);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void Server::init()
+{
+	this->TCP_init();
+	this->UDP_init();
 }

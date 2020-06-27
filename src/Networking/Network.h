@@ -53,14 +53,14 @@ public:
 	};
 
 	//UDP
-	static void UDP_Traffic(Network* network);
-	void UDP_Run();
-	void UDP_Send(sf::Packet &packet);
-	void UDP_Recieve(sf::Packet& packet);
+	static void UDP_traffic(Network* network);
+	void UDP_run();
+	void UDP_send(sf::Packet &packet);
+	void UDP_recieve(sf::Packet& packet);
 
 	//TCP
-	static void TCP_Traffic(Network* network);
-	void  TCP_Run();
+	static void TCP_traffic(Network* network);
+	void  TCP_run();
 };
 
 

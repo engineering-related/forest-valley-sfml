@@ -11,6 +11,8 @@ class Client: public Network
 		//UDP
 
 		//TCP
+		std::string id;
+		std::string text;
 
 	public:
 		std::string sendIP;

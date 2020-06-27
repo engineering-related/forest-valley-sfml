@@ -7,6 +7,11 @@ Network::Network()
 
 	this->p1 = new TestPlayer(sf::Color::Red, "Player 1");
 	this->p2 = new TestPlayer(sf::Color::Blue, "Player 2");
+
+	//UDP
+
+	//TCP
+	TCP_Socket.setBlocking(false);
 }
 
 Network::~Network()
@@ -15,7 +20,7 @@ Network::~Network()
 	delete this->p2;
 }
 
-void Network::UDP_Traffic(Network* network){
+void Network::UDP_traffic(Network* network){
 
 	network->clock.restart().asMilliseconds();
 	while (!network->quit)
@@ -24,13 +29,13 @@ void Network::UDP_Traffic(Network* network){
 		{
 			network->clock.restart().asMilliseconds();
 			sf::Packet packet;
-			network->UDP_Send(packet);
-			network->UDP_Recieve(packet);
+			network->UDP_send(packet);
+			network->UDP_recieve(packet);
 		}
 	}
 }
 
-void Network::UDP_Send(sf::Packet &packet)
+void Network::UDP_send(sf::Packet &packet)
 {
 	//Send packet
 	this->globalMutex.lock();
@@ -41,7 +46,7 @@ void Network::UDP_Send(sf::Packet &packet)
 	this->UDP_Socket.send(packet, this->sendIp, this->port);
 }
 
-void Network::UDP_Recieve(sf::Packet& packet)
+void Network::UDP_recieve(sf::Packet& packet)
 {
 	//Receive packet
 	this->UDP_Socket.receive(packet, this->sendIp, this->port);
@@ -54,7 +59,7 @@ void Network::UDP_Recieve(sf::Packet& packet)
 	}
 }
 
-void Network::TCP_Traffic(Network* network)
+void Network::TCP_traffic(Network* network)
 {
 	/*static sf::Vector2f prevPosition, p2Position;
 	while(!quit)
@@ -76,14 +81,14 @@ void Network::TCP_Traffic(Network* network)
 		}*/
 }
 
-void Network::UDP_Run()
+void Network::UDP_run()
 {
 	sf::Thread* thread = 0;
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
 	window.setFramerateLimit(144);
 
 
-	thread = new sf::Thread(&Network::UDP_Traffic, this);
+	thread = new sf::Thread(&Network::UDP_traffic, this);
 	thread->launch();
 
 	while (window.isOpen())

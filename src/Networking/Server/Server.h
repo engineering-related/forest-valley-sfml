@@ -5,15 +5,24 @@
 
 class Server: public Network
 {
-	private:
+private:
+	
+protected:
+	//UDP
 
-	protected:
+	//TCP
+	sf::SocketSelector selector;
+	sf::TcpListener TCP_listener;
+	std::vector<sf::TcpSocket*> clients;
 
-	public:
-		Server(/* args */);
-		virtual ~Server();
-
-		void init();
+public:
+	Server(/* args */);
+	virtual ~Server();
+	
+	void UDP_init();
+	void TCP_init();
+	void init();
+	
 };
 
 #endif
