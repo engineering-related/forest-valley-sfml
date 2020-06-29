@@ -9,6 +9,11 @@ Network::Network()
 	this->localSendIp = "";
 	this->publicSendIp = "";
 	this->delay = 20;
+
+	//Player creation
+	srand(time(NULL));
+	sf::Color playerColor = sf::Color(rand() % 255, rand() % 255, rand() % 255);
+	this->player = new TestPlayer(playerColor);
 }
 
 Network::~Network()

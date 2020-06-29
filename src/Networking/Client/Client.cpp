@@ -5,9 +5,7 @@ Client::Client(/* args */)
 	this->publicSendIp =  "87.96.222.250"; //"78.72.205.138";
 	this->localSendIp = "192.168.1.104";
 
-	srand(time(NULL));
-	sf::Color playerColor = sf::Color(rand() % 255, rand() % 255, rand() % 255);
-	this->player = new TestPlayer(playerColor);
+
 
 	this->thread = new sf::Thread(&Network::traffic, this);
 }

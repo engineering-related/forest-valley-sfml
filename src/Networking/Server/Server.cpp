@@ -2,9 +2,6 @@
 
 Server::Server(/* args */)
 {
-	srand(time(NULL));
-	sf::Color playerColor = sf::Color(rand() % 255, rand() % 255, rand() % 255);
-	this->player = new TestPlayer(playerColor);
 	this->thread = new sf::Thread(&Server::run, this);
 }
 
@@ -41,7 +38,7 @@ void Server::listenConnections()
 			if (received > 0)
 			{
 				std::cout << received << std::endl;
-				std::cout << "(UDP) " << sender.toString() << " connected with " << buffer << std::endl;
+				std::cout << "(UDP) "<< " connected with ip" << buffer << std::endl;
 				receviedIp = true;
 				client->localIp = sender;
 			}
@@ -50,7 +47,7 @@ void Server::listenConnections()
 		client->player->rect.setFillColor(color);
 
 
-		std::cout << client->id << "(TCP) connected to server with ip: " << client->localIp << std::endl;
+		std::cout << "(TCP) "<< client->id << " connected with ip: " << client->localIp << std::endl;
 
 		this->selector.add(client->TCP_Socket);
 		this->selector.add(client->UDP_Socket);
@@ -62,13 +59,14 @@ void Server::listenConnections()
 		//Send back the serverstate to the connected player
 		for (auto p : allPlayers)
 		{
-			sendPacket << p.first << p.second->localIp.toString() << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
-			p.second->player->rect.getFillColor().r << p.second->player->rect.getFillColor().g << p.second->player->rect.getFillColor().b;
+			sendPacket << p.first << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
+			(sf::Int32)p.second->player->rect.getFillColor().r <<
+			(sf::Int32)p.second->player->rect.getFillColor().g <<
+			(sf::Int32)p.second->player->rect.getFillColor().b;
 		}
-		if(selector.isReady(client->TCP_Socket))
-		{
-			client->TCP_Socket.send(sendPacket);
-		}
+
+		client->TCP_Socket.send(sendPacket);
+
 		//Update for the rest of the server
 		sf::Packet serverSendPacket;
 		serverSendPacket << (int)TCP_type::PLAYER_CONNECTED <<
@@ -83,7 +81,7 @@ void Server::listenConnections()
 				p.second->TCP_Socket.send(serverSendPacket);
 			}
 		}
-		players[client->id] = client;
+		//this->addPlayer(serverSendPacket);
 	}
 }
 
