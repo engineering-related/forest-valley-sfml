@@ -1,20 +1,51 @@
 #ifndef TEST_PLAYER
 #define TEST_PLAYER
 
+
+enum class Action{DEL, PICK_UP, DROP, CREATE, CRAFT};
+
+struct EntityState
+{
+	//TCP
+	unsigned int action;
+	sf::Vector2i chunkID;
+	unsigned int chunkObjectID;
+	unsigned int objectID;
+	unsigned int HP;
+	std::vector<unsigned int> equippedItems;
+};
+
+/*sf::Packet& operator <<(sf::Packet& packet, const EntityState& s)
+{
+    return packet << s.action << s.chunkID.x << s.chunkID.y
+				  << s.chunkObjectID << s.objectID << s.HP;
+}
+
+sf::Packet& operator >>(sf::Packet& packet, EntityState& s)
+{
+    return packet >> s.action >> s.chunkID.x >> s.chunkID.y
+				  >> s.chunkObjectID >> s.objectID >> s.HP;
+}*/
+
 class TestPlayer
 {
 public:
-	std::string id = "";
 	sf::RectangleShape rect;
 	sf::Vector2f endPos;
 	sf::Vector2f velocity;
+	sf::Vector2f prevPos;
 	sf::Vector2f p2Pos;
 	bool mouseClicked;
 	float speedMagnitude;
+	EntityState state;
 
-	TestPlayer(sf::Color color, std::string id)
+	void initState()
 	{
-		this->id = id;
+		//i.e state.chunkID = Vector2i(1, 3);
+	}
+
+	TestPlayer(sf::Color color)
+	{
 		rect.setSize(sf::Vector2f(20, 20));
 		rect.setFillColor(color);
 		rect.setPosition(0.f, 0.f);
@@ -23,12 +54,18 @@ public:
 		this->mouseClicked = false;
 		this->endPos = this->rect.getPosition();
 		this->velocity = sf::Vector2f(0.f, 0.f);
+		this->initState();
+
 	}
 	~TestPlayer(){}
 
 	void draw(sf::RenderTarget* target)
 	{
 		target->draw(rect);
+	}
+	void updateEntityState()
+	{
+		//Ofc update for everything later
 	}
 	void update(const float &dt)
 	{
@@ -40,6 +77,9 @@ public:
 				move = true;
 		if(move)
 			this->rect.move(this->velocity*dt);
+
+		//Update entity state about the information to send
+		this->updateEntityState();
 	}
 	void handleMouse(sf::RenderWindow* window)
 	{
@@ -53,21 +93,6 @@ public:
 		}
 		else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			mouseClicked = false;
-	}
-
-	void updatePlayers(const float& dt, TestPlayer* p2)
-	{
-		sf::Vector2f d(p2Pos.x - p2->rect.getPosition().x, p2Pos.y - p2->rect.getPosition().y);
-		if(abs(d.x) >= 1 && abs(d.y) >= 1)
-		{
-			float angle = atan2f(d.y, d.x);
-			p2->velocity = sf::Vector2f(p2->speedMagnitude * cos(angle), p2->speedMagnitude * sin(angle));
-			p2->rect.move(p2->velocity * dt);
-		}
-	}
-	void drawPlayers(sf::RenderTarget* target, TestPlayer* p2)
-	{
-		target->draw(p2->rect);
 	}
 };
 

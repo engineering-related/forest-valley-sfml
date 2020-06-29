@@ -2,10 +2,14 @@
 
 Client::Client(/* args */)
 {
-	std::cout << sf::IpAddress::getLocalAddress().toString() << std::endl;
 	this->publicSendIp =  "87.96.222.250"; //"78.72.205.138";
 	this->localSendIp = "192.168.1.104";
-	this->text = "";
+
+	srand(time(NULL));
+	sf::Color playerColor = sf::Color(rand() % 255, rand() % 255, rand() % 255);
+	this->player = new TestPlayer(playerColor);
+
+	this->thread = new sf::Thread(&Network::traffic, this);
 }
 
 Client::~Client()
@@ -13,19 +17,48 @@ Client::~Client()
 
 }
 
-void Client::connectToServer(){
-	//TCP
-	std::cout << "Enter id: ";
-	std::cin >> id;
-	TCP_Socket.connect(localSendIp, port);
-	sf::Packet packet;
-	packet << id;
-	TCP_Socket.send(packet);
-	TCP_Socket.setBlocking(false);
+void Client::TCP_connect()
+{
 
-	//UDP
+}
+
+void Client::UDP_connect()
+{
 	UDP_Socket.bind(port);
 	UDP_Socket.setBlocking(false);
 	std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
 	UDP_Socket.send(message.c_str(), message.size() + 1, publicSendIp, port);
 }
+
+void Client::connectToServer()
+{
+	//Connect to the server with an id
+	std::cout << "Enter id: ";
+	std::cin >> id;
+	TCP_Socket.connect(localSendIp, port);
+	sf::Packet sendPacket;
+	sendPacket << id << sf::IpAddress::getLocalAddress().toString() << player->rect.getPosition().x << player->rect.getPosition().y <<
+	player->rect.getFillColor().r << player->rect.getFillColor().g << player->rect.getFillColor().b;
+	TCP_Socket.send(sendPacket);
+	UDP_connect();
+	//Get a packet back about the server state
+	sf::Packet recievePacket;
+	TCP_Socket.receive(recievePacket);
+	int serverSize;
+	recievePacket >> serverSize;
+	for (size_t i = 0; i < (size_t)serverSize; i++)
+	{
+		Network* n = new Network();
+		sf::Color color;
+		sf::Vector2f pos;
+		recievePacket >> n->id >>
+					     pos.x >> pos.y >>
+						 color.r >> color.g >> color.b;
+		n->player->rect.setPosition(pos);
+		n->player->rect.setFillColor(color);
+		players[n->id] = n;
+	}
+
+	TCP_Socket.setBlocking(false);
+}
+

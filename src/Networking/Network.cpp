@@ -4,33 +4,74 @@ Network::Network()
 {
 	this->port = 24474;
 	this->quit = false;
-
-	this->p1 = new TestPlayer(sf::Color::Red, "Player 1");
-	this->p2 = new TestPlayer(sf::Color::Blue, "Player 2");
-
-	//UDP
-
-	//TCP
+	this->UDP_send_packet = true;
+	this->TCP_send_packet = true;
+	this->localSendIp = "";
+	this->publicSendIp = "";
+	this->delay = 20;
 }
 
 Network::~Network()
 {
-	delete this->p1;
-	delete this->p2;
+	for (auto p : players)
+		delete p.second;
+	delete player;
 }
 
-void Network::UDP_traffic(Network* network){
+void Network::updatePlayers(const float &dt)
+{
+	for (auto p : players)
+	{
+		sf::Vector2f d(p.second->player->p2Pos.x - p.second->player->rect.getPosition().x,
+					   p.second->player->p2Pos.y - p.second->player->rect.getPosition().y);
+		if(abs(d.x) >= 1 && abs(d.y) >= 1)
+		{
+			float angle = atan2f(d.y, d.x);
+			p.second->player->velocity = sf::Vector2f(p.second->player->speedMagnitude * cos(angle),
+													  p.second->player->speedMagnitude * sin(angle));
+			p.second->player->rect.move(p.second->player->velocity * dt);
+		}
+	}
+	this->player->update(dt);
+}
 
+void Network::drawPlayers(sf::RenderTarget* target)
+{
+	for (auto p : players)
+	{
+		p.second->player->draw(target);
+	}
+
+	this->player->draw(target);
+}
+
+void Network::traffic(Network* network)
+{
 	network->clock.restart().asMilliseconds();
 	while (!network->quit)
 	{
-		if (network->clock.getElapsedTime().asMilliseconds() >= 10)
+		if (network->clock.getElapsedTime().asMilliseconds() >= network->delay)
 		{
 			network->clock.restart().asMilliseconds();
-			sf::Packet packet;
-			network->UDP_send(packet);
-			network->UDP_recieve(packet);
+			network->UDP_send_packet = true;
 		}
+
+		sf::Packet UDP_packet, TCP_packet;
+		if(network->UDP_send_packet)
+		{
+			network->UDP_send(UDP_packet);
+			network->UDP_send_packet = false;
+		}
+
+		if(network->TCP_send_packet)
+		{
+			//Send TCP data later
+			//network->TCP_send(TCP_packet);
+			network->TCP_send_packet = false;
+		}
+
+		network->UDP_recieve(UDP_packet, true);
+		network->TCP_recieve(TCP_packet);
 	}
 }
 
@@ -38,58 +79,87 @@ void Network::UDP_send(sf::Packet &packet)
 {
 	//Send packet
 	this->globalMutex.lock();
-	if (prevPos != this->p1->rect.getPosition())
-		packet << this->p1->rect.getPosition().x << this->p1->rect.getPosition().y;
+	if (this->player->prevPos != this->player->rect.getPosition())
+		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
-	this->UDP_Socket.send(packet, this->sendIp, this->port);
+	this->UDP_Socket.send(packet, this->localSendIp, this->port);
 }
 
-void Network::UDP_recieve(sf::Packet& packet)
+void Network::UDP_recieve(sf::Packet& packet, bool empty)
 {
 	//Receive packet
-	this->UDP_Socket.receive(packet, this->sendIp, this->port);
-	if (packet >> this->p2Pos.x >> this->p2Pos.y)
+	if(empty)
+		this->UDP_Socket.receive(packet, this->localSendIp, this->port);
+	std::string id;
+	Vector2f pos;
+	if (packet >> id >> pos.x >> pos.y)
 	{
 		this->globalMutex.lock();
-		this->p1->p2Pos = this->p2Pos;
-		this->prevPos = this->p1->rect.getPosition();
+		players[id]->player->p2Pos = pos;
+		this->player->prevPos = this->player->rect.getPosition();
 		this->globalMutex.unlock();
 	}
 }
 
-void Network::TCP_traffic(Network* network)
+void Network::TCP_send(sf::Packet &packet)
 {
-	/*static sf::Vector2f prevPosition, p2Position;
-	while(!quit)
-	{
-		sf::Packet packet;
+	this->globalMutex.lock();
 
-		globalMutex.lock();
-		if (prevPosition != rect1.getPosition())
-			packet << rect1.getPosition().x << rect1.getPosition().y;
-		globalMutex.unlock();
-
-		socket.send(packet);
-
-		socket.receive(packet);
-		if(packet >> p2Position.x >> p2Position.y)
-		{
-			rect2.setPosition(p2Position);
-			prevPosition = rect1.getPosition();
-		}*/
+	this->globalMutex.unlock();
 }
 
-void Network::UDP_run()
+void Network::addPlayer(sf::Packet &packet)
 {
-	sf::Thread* thread = 0;
+	std::string id;
+	std::string cLocalIp;
+	sf::Vector2f pos;
+	sf::Color color;
+	packet >> id >> cLocalIp >>
+			  pos.x >> pos.y >>
+	          color.r >> color.g >> color.b;
+
+	Network* p = new Network();
+	p->player->rect.setPosition(pos);
+	p->player->rect.setFillColor(color);
+	this->globalMutex.lock();
+	this->players[id] = p;
+	this->globalMutex.unlock();
+}
+
+void Network::removePlayer(sf::Packet &packet)
+{
+
+}
+
+void Network::TCP_recieve(sf::Packet &packet)
+{
+	int type;
+	packet >> type;
+	switch ((TCP_type)type)
+	{
+	case TCP_type::PLAYER_CONNECTED:
+		addPlayer(packet);
+		break;
+	case TCP_type::PLAYER_LEFT:
+		removePlayer(packet);
+		break;
+	case TCP_type::SERVER_QUIT:
+		quit = true;
+		break;
+	case TCP_type::GAME_PAUSED:
+		//Pause the game...
+		break;
+	default:
+		break;
+	}
+}
+
+void Network::start()
+{
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
 	window.setFramerateLimit(144);
-
-
-	thread = new sf::Thread(&Network::UDP_traffic, this);
-	thread->launch();
-
+	this->thread->launch();
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -108,6 +178,8 @@ void Network::UDP_run()
 				window.setView(newView);
 			}
 		}
+		if(quit)
+			window.close();
 
 		dt = gameClock.restart().asSeconds();
 		float FPS = 1.f / dt;
@@ -121,13 +193,10 @@ void Network::UDP_run()
 		}
 
 		globalMutex.lock();
-		this->p1->draw(&window);
-		this->p1->handleMouse(&window);
-		this->p1->update(dt);
-		this->p1->updatePlayers(dt, p2);
-		this->p1->drawPlayers(&window, p2);
+		this->player->handleMouse(&window);
+		this->updatePlayers(dt);
+		this->drawPlayers(&window);
 		globalMutex.unlock();
-
 		window.display();
 		window.clear();
 	}

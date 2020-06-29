@@ -15,9 +15,17 @@ class Network
 private:
 
 protected:
-	//Globals
+	sf::Thread* thread;
+
+public:
+	Network();
+	virtual ~Network();
+
 	sf::Mutex globalMutex;
-	sf::IpAddress sendIp;
+	sf::IpAddress publicSendIp;
+	sf::IpAddress localSendIp;
+	sf::IpAddress localIp;
+	std::string id;
 	unsigned short port;
 	bool quit;
 	float dt;
@@ -25,42 +33,34 @@ protected:
 	float delay;
 	//UDP
 	sf::UdpSocket UDP_Socket;
-	bool shouldSendPacket;
+	bool UDP_send_packet;
+	bool TCP_send_packet;
 	//TCP
 	sf::TcpSocket TCP_Socket;
-
-	sf::Vector2f prevPos, p2Pos;
 	sf::Clock clock;
 
-public:
-	Network();
-	virtual ~Network();
+	//Traffic
+	static void traffic(Network* network);
 
-	std::unordered_map<std::string, TestPlayer*> players;
-	TestPlayer *p1;
-	TestPlayer *p2;
-
-	enum class Action{DEL, PICK_UP, DROP, CREATE, CRAFT};
-
-	struct EntityState
-	{
-		Action action;
-		sf::Vector2i chunkID;
-		unsigned int chunkObjectID;
-		unsigned int objectID;
-		unsigned int HP;
-		std::vector<unsigned int> equippedItems;
-	};
+	//Players
+	TestPlayer* player;
+	std::unordered_map<std::string, Network*> players;
+	void updatePlayers(const float & dt);
+	void drawPlayers(sf::RenderTarget* target);
 
 	//UDP
-	static void UDP_traffic(Network* network);
-	void UDP_run();
+	void start();
 	void UDP_send(sf::Packet &packet);
-	void UDP_recieve(sf::Packet& packet);
+	void UDP_recieve(sf::Packet& packet, bool empty);
 
 	//TCP
-	static void TCP_traffic(Network* network);
-	void  TCP_run();
+	enum class TCP_type{PLAYER_CONNECTED, PLAYER_LEFT, SERVER_QUIT, GAME_PAUSED};
+	void TCP_send(sf::Packet &packet);
+	void TCP_recieve(sf::Packet&packet);
+
+	//FUNCTIONS
+	void addPlayer(sf::Packet &packet);
+	void removePlayer(sf::Packet &packet);
 };
 
 

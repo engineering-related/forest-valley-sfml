@@ -11,16 +11,15 @@ class Client: public Network
 		//UDP
 
 		//TCP
-		std::string id;
-		std::string text;
 
 	public:
-		std::string publicSendIp;
-		std::string localSendIp;
-		Client(/* args */);
+		Client();
 		virtual ~Client();
 
+		void TCP_connect();
+		void UDP_connect();
 		void connectToServer();
+		void disconnectFromServer();
 };
 
 #endif

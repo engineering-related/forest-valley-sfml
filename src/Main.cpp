@@ -39,12 +39,13 @@ int main()
 	{
 		Server server;
 		server.init();
+		server.start();
 		//server.UDP_run();
 	}
 	else
 	{
 		Client client;
 		client.connectToServer();
-		//client.UDP_run();
+		client.start();
 	}
 }
