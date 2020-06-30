@@ -38,7 +38,7 @@ void Server::listenConnections()
 			if (received > 0)
 			{
 				std::cout << received << std::endl;
-				std::cout << "(UDP) "<< " connected with ip" << buffer << std::endl;
+				std::cout << "(UDP) connected with ip " << buffer << std::endl;
 				receviedIp = true;
 				client->localIp = sender;
 			}
@@ -72,7 +72,7 @@ void Server::listenConnections()
 		serverSendPacket << (int)TCP_type::PLAYER_CONNECTED <<
 		client->id << client->localIp.toString() <<
 		pos.x << pos.y <<
-		color.r << color.g << color.b;
+		(sf::Int32)color.r << (sf::Int32)color.g << (sf::Int32)color.b;
 
 		for (auto p : players)
 		{

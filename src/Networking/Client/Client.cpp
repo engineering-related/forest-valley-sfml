@@ -47,11 +47,12 @@ void Client::connectToServer()
 	for (size_t i = 0; i < (size_t)serverSize; i++)
 	{
 		Network* n = new Network();
-		sf::Color color;
+		sf::Int32 r, g, b;
 		sf::Vector2f pos;
 		recievePacket >> n->id >>
 					     pos.x >> pos.y >>
-						 color.r >> color.g >> color.b;
+						 r >> g >> b;
+		sf::Color color(r, g, b);
 		n->player->rect.setPosition(pos);
 		n->player->rect.setFillColor(color);
 		players[n->id] = n;
