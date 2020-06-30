@@ -119,12 +119,13 @@ void Network::addPlayer(sf::Packet &packet)
 	std::string id;
 	std::string cLocalIp;
 	sf::Vector2f pos;
-	sf::Color color;
+	sf::Int32 r, g, b;
 	packet >> id >> cLocalIp >>
 			  pos.x >> pos.y >>
-	          color.r >> color.g >> color.b;
+	          r >> g >> b;
 
 	Network* p = new Network();
+	sf::Color color(r, g, b);
 	p->player->rect.setPosition(pos);
 	p->player->rect.setFillColor(color);
 	this->globalMutex.lock();

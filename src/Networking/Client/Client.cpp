@@ -5,8 +5,6 @@ Client::Client(/* args */)
 	this->publicSendIp =  "87.96.222.250"; //"78.72.205.138";
 	this->localSendIp = "192.168.1.104";
 
-
-
 	this->thread = new sf::Thread(&Network::traffic, this);
 }
 
@@ -36,7 +34,9 @@ void Client::connectToServer()
 	TCP_Socket.connect(localSendIp, port);
 	sf::Packet sendPacket;
 	sendPacket << id << sf::IpAddress::getLocalAddress().toString() << player->rect.getPosition().x << player->rect.getPosition().y <<
-	player->rect.getFillColor().r << player->rect.getFillColor().g << player->rect.getFillColor().b;
+	(sf::Int32)player->rect.getFillColor().r <<
+	(sf::Int32)player->rect.getFillColor().g <<
+	(sf::Int32)player->rect.getFillColor().b;
 	TCP_Socket.send(sendPacket);
 	UDP_connect();
 	//Get a packet back about the server state

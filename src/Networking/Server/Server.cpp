@@ -17,14 +17,15 @@ void Server::listenConnections()
 		Client *client = new Client;
 		this->TCP_listener.accept(client->TCP_Socket);
 		sf::Packet packet;
-		sf::Color color;
+		sf::Int32 r, g, b;
 		sf::Vector2f pos;
 		//Receve packet about the new player information
 		if(client->TCP_Socket.receive(packet) == sf::Socket::Done)
 		{
 			packet >> client->id >> pos.x >> pos.y >>
-			color.r >> color.g >> color.b;
+			r >> g >> b;
 		}
+		sf::Color color(r, g, b);
 
 		bool receviedIp = false;
 		while (!receviedIp)
@@ -45,7 +46,6 @@ void Server::listenConnections()
 		}
 		client->player->rect.setPosition(pos);
 		client->player->rect.setFillColor(color);
-
 
 		std::cout << "(TCP) "<< client->id << " connected with ip: " << client->localIp << std::endl;
 
