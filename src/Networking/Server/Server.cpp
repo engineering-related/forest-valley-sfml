@@ -49,7 +49,6 @@ void Server::listenConnections()
 		std::cout << "(TCP) connected with ip: " << client->localIp << std::endl;
 
 		this->selector.add(client->TCP_Socket);
-		client->UDP_Socket.setBlocking(false);
 		this->selector.add(client->UDP_Socket);
 
 		sf::Packet sendPacket;
@@ -94,24 +93,25 @@ void Server::update()
 	{
 		for(auto i: players)
 		{
-			if(this->selector.isReady(i.second->TCP_Socket))
+			if(this->selector.isReady(i.second->UDP_Socket))
 			{
 				sf::Packet packet, sendPacket, serverPacket;
-				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Done)
+				if(UDP_Socket.receive(packet, i.second->localIp, port) == sf::Socket::Done)
 				{
 					sf::Vector2f pos;
 					packet >> pos.x >> pos.y;
+					std::cout << pos.x << " " << pos.y << std::endl;
 					sendPacket << i.second->id << pos.x << pos.y;
-					serverPacket << (int)TCP_type::PLAYER_LEFT << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+					serverPacket << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 
 					this->UDP_recieve(sendPacket, false);
-					i.second->TCP_Socket.send(serverPacket);
+					i.second->UDP_Socket.send(serverPacket, sf::IpAddress::getLocalAddress(), port);
 
 					for(auto j: players)
 					{
 						if(j.second != i.second)
 						{
-							j.second->TCP_Socket.send(sendPacket);
+							j.second->UDP_Socket.send(sendPacket, sf::IpAddress::getLocalAddress(), port);
 						}
 					}
 				}

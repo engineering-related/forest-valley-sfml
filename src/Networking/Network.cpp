@@ -64,17 +64,16 @@ void Network::traffic(Network* network)
 		sf::Packet UDP_packet, TCP_packet;
 		if(network->UDP_send_packet)
 		{
-			//network->UDP_send(UDP_packet);
+			network->UDP_send(UDP_packet);
 			network->UDP_send_packet = false;
 		}
-		network->globalMutex.lock();
-		if(network->player->mouseClicked)
+
+		if(network->TCP_send_packet)
 		{
 			//Send TCP data later
-			network->TCP_send(TCP_packet);
+			//network->TCP_send(TCP_packet);
 			network->TCP_send_packet = false;
 		}
-		network->globalMutex.unlock();
 
 		network->UDP_recieve(UDP_packet, true);
 		network->TCP_recieve(TCP_packet);
@@ -111,9 +110,8 @@ void Network::UDP_recieve(sf::Packet& packet, bool empty)
 void Network::TCP_send(sf::Packet &packet)
 {
 	this->globalMutex.lock();
-	packet << this->player->endPos.x << this->player->endPos.y;
+
 	this->globalMutex.unlock();
-	this->TCP_Socket.send(packet);
 }
 
 void Network::addPlayer(sf::Packet &packet)
@@ -152,7 +150,7 @@ void Network::TCP_recieve(sf::Packet &packet)
 		addPlayer(packet);
 		break;
 	case TCP_type::PLAYER_LEFT:
-		UDP_recieve(packet, false);
+		removePlayer(packet);
 		break;
 	case TCP_type::SERVER_QUIT:
 		quit = true;
