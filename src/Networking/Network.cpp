@@ -64,14 +64,15 @@ void Network::traffic(Network* network)
 		sf::Packet UDP_packet, TCP_packet;
 		if(network->UDP_send_packet)
 		{
-			network->TCP_send(TCP_packet);
 			//network->UDP_send(UDP_packet);
 			network->UDP_send_packet = false;
 		}
-
-		if(network->TCP_send_packet)
+		network->globalMutex.lock();
+		if(network->player->mouseClicked)
 		{
+			network->globalMutex.unlock();
 			//Send TCP data later
+			network->TCP_send(TCP_packet);
 			network->TCP_send_packet = false;
 		}
 
