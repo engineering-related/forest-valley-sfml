@@ -70,11 +70,11 @@ void Network::traffic(Network* network)
 		network->globalMutex.lock();
 		if(network->player->mouseClicked)
 		{
-			network->globalMutex.unlock();
 			//Send TCP data later
 			network->TCP_send(TCP_packet);
 			network->TCP_send_packet = false;
 		}
+		network->globalMutex.unlock();
 
 		network->UDP_recieve(UDP_packet, true);
 		network->TCP_recieve(TCP_packet);
@@ -86,7 +86,7 @@ void Network::UDP_send(sf::Packet &packet)
 	//Send packet
 	this->globalMutex.lock();
 	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << this->player->endPos.x << this->player->endPos.y;
+		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, this->localSendIp, this->port);
@@ -111,8 +111,7 @@ void Network::UDP_recieve(sf::Packet& packet, bool empty)
 void Network::TCP_send(sf::Packet &packet)
 {
 	this->globalMutex.lock();
-	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	packet << this->player->endPos.x << this->player->endPos.y;
 	this->globalMutex.unlock();
 	this->TCP_Socket.send(packet);
 }
