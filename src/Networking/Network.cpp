@@ -64,14 +64,14 @@ void Network::traffic(Network* network)
 		sf::Packet UDP_packet, TCP_packet;
 		if(network->UDP_send_packet)
 		{
-			network->UDP_send(UDP_packet);
+			network->TCP_send(TCP_packet);
+			//network->UDP_send(UDP_packet);
 			network->UDP_send_packet = false;
 		}
 
 		if(network->TCP_send_packet)
 		{
 			//Send TCP data later
-			//network->TCP_send(TCP_packet);
 			network->TCP_send_packet = false;
 		}
 
@@ -126,6 +126,8 @@ void Network::addPlayer(sf::Packet &packet)
 
 	Network* p = new Network();
 	sf::Color color(r, g, b);
+	p->id = id;
+	p->localIp = sf::IpAddress(cLocalIp);
 	p->player->rect.setPosition(pos);
 	p->player->rect.setFillColor(color);
 	this->globalMutex.lock();
@@ -148,7 +150,7 @@ void Network::TCP_recieve(sf::Packet &packet)
 		addPlayer(packet);
 		break;
 	case TCP_type::PLAYER_LEFT:
-		removePlayer(packet);
+		UDP_recieve(packet, false);
 		break;
 	case TCP_type::SERVER_QUIT:
 		quit = true;

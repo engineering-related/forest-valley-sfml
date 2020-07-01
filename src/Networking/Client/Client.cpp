@@ -22,7 +22,7 @@ void Client::UDP_connect()
 {
 	UDP_Socket.bind(port);
 	UDP_Socket.setBlocking(false);
-	std::string message = "Hi, I am " + sf::IpAddress::getLocalAddress().toString();
+	std::string message = "Hi, I am " + id;
 	UDP_Socket.send(message.c_str(), message.size() + 1, localSendIp, port);
 }
 
@@ -33,10 +33,13 @@ void Client::connectToServer()
 	std::cin >> id;
 	TCP_Socket.connect(localSendIp, port);
 	sf::Packet sendPacket;
-	sendPacket << id << sf::IpAddress::getLocalAddress().toString() << player->rect.getPosition().x << player->rect.getPosition().y <<
-	(sf::Int32)player->rect.getFillColor().r <<
-	(sf::Int32)player->rect.getFillColor().g <<
-	(sf::Int32)player->rect.getFillColor().b;
+	sf::Int32 r = player->rect.getFillColor().r;
+	sf::Int32 g = player->rect.getFillColor().g;
+	sf::Int32 b = player->rect.getFillColor().b;
+	sendPacket << id << player->rect.getPosition().x << player->rect.getPosition().y <<
+	r <<
+	g <<
+	b;
 	TCP_Socket.send(sendPacket);
 	UDP_connect();
 	//Get a packet back about the server state

@@ -38,8 +38,7 @@ void Server::listenConnections()
 			UDP_Socket.receive(buffer, sizeof(buffer), received, sender, port);
 			if (received > 0)
 			{
-				std::cout << received << std::endl;
-				std::cout << "(UDP) connected with ip " << buffer << std::endl;
+				std::cout << "(UDP) connected with message: " << buffer << std::endl;
 				receviedIp = true;
 				client->localIp = sender;
 			}
@@ -47,9 +46,10 @@ void Server::listenConnections()
 		client->player->rect.setPosition(pos);
 		client->player->rect.setFillColor(color);
 
-		std::cout << "(TCP) "<< client->id << " connected with ip: " << client->localIp << std::endl;
+		std::cout << "(TCP) connected with ip: " << client->localIp << std::endl;
 
 		this->selector.add(client->TCP_Socket);
+		client->UDP_Socket.setBlocking(false);
 		this->selector.add(client->UDP_Socket);
 
 		sf::Packet sendPacket;
@@ -72,7 +72,7 @@ void Server::listenConnections()
 		serverSendPacket << (int)TCP_type::PLAYER_CONNECTED <<
 		client->id << client->localIp.toString() <<
 		pos.x << pos.y <<
-		(sf::Int32)color.r << (sf::Int32)color.g << (sf::Int32)color.b;
+		r << g << b;
 
 		for (auto p : players)
 		{
@@ -81,7 +81,10 @@ void Server::listenConnections()
 				p.second->TCP_Socket.send(serverSendPacket);
 			}
 		}
-		//this->addPlayer(serverSendPacket);
+		//Add player to the server
+		this->globalMutex.lock();
+		this->players[client->id] = client;
+		this->globalMutex.unlock();
 	}
 }
 
@@ -91,24 +94,24 @@ void Server::update()
 	{
 		for(auto i: players)
 		{
-			if(selector.isReady(i.second->UDP_Socket))
+			if(this->selector.isReady(i.second->TCP_Socket))
 			{
 				sf::Packet packet, sendPacket, serverPacket;
-				if(i.second->UDP_Socket.receive(packet, i.second->localIp, port) == sf::Socket::Done)
+				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Done)
 				{
 					sf::Vector2f pos;
 					packet >> pos.x >> pos.y;
 					sendPacket << i.second->id << pos.x << pos.y;
-					serverPacket << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+					serverPacket << (int)TCP_type::PLAYER_LEFT << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 
 					this->UDP_recieve(sendPacket, false);
-					i.second->UDP_Socket.send(serverPacket, sf::IpAddress::getLocalAddress(), port);
+					i.second->TCP_Socket.send(serverPacket);
 
 					for(auto j: players)
 					{
 						if(j.second != i.second)
 						{
-							j.second->UDP_Socket.send(sendPacket, sf::IpAddress::getLocalAddress(), port);
+							j.second->TCP_Socket.send(sendPacket);
 						}
 					}
 				}
@@ -122,7 +125,7 @@ void Server::update()
 void Server::UDP_init()
 {
 	UDP_Socket.bind(port);
-	UDP_Socket.setBlocking(false);
+	//UDP_Socket.setBlocking(false);
 	this->selector.add(this->UDP_Socket);
 }
 
@@ -135,8 +138,8 @@ void Server::TCP_init()
 
 void Server::init()
 {
-	this->TCP_init();
 	this->UDP_init();
+	this->TCP_init();
 	std::cout << "Enter id: ";
 	std::cin >> id;
 	this->id = id;
