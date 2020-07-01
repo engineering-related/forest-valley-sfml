@@ -14,6 +14,7 @@ protected:
 	sf::SocketSelector selector;
 	sf::TcpListener TCP_listener;
 	sf::UdpSocket testSocket;
+	std::unordered_map<std::string, Client*> clients;
 
 public:
 	Server();

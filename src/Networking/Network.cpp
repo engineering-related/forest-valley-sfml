@@ -85,7 +85,7 @@ void Network::UDP_send(sf::Packet &packet)
 	//Send packet
 	this->globalMutex.lock();
 	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, this->localSendIp, this->port);
