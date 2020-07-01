@@ -13,11 +13,14 @@ protected:
 	//TCP
 	sf::SocketSelector selector;
 	sf::TcpListener TCP_listener;
+	sf::UdpSocket testSocket;
 
 public:
 	Server();
 	virtual ~Server();
 	
+	sf::Time tickRate;
+
 	void UDP_init();
 	void TCP_init();
 	void init();

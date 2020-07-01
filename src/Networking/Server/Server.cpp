@@ -3,6 +3,7 @@
 Server::Server(/* args */)
 {
 	this->thread = new sf::Thread(&Server::run, this);
+	this->tickRate = sf::milliseconds(this->delay);
 }
 
 Server::~Server()
@@ -49,7 +50,6 @@ void Server::listenConnections()
 		std::cout << "(TCP) connected with ip: " << client->localIp << std::endl;
 
 		this->selector.add(client->TCP_Socket);
-		this->selector.add(client->UDP_Socket);
 
 		sf::Packet sendPacket;
 		std::unordered_map<std::string, Network*> allPlayers = players;
@@ -89,31 +89,29 @@ void Server::listenConnections()
 
 void Server::update()
 {
+	//Dont need socket selectors for UDP maybe?
 	if(!this->selector.isReady(TCP_listener))
 	{
 		for(auto i: players)
 		{
-			if(this->selector.isReady(i.second->UDP_Socket))
+			sf::Packet packet, sendPacket, serverPacket;
+			sf::IpAddress clientAdress;
+
+			if(UDP_Socket.receive(packet, clientAdress, port) == sf::Socket::Done)
 			{
-				sf::Packet packet, sendPacket, serverPacket;
-				if(UDP_Socket.receive(packet, i.second->localIp, port) == sf::Socket::Done)
+				sf::Vector2f pos;
+				std::string clientId;
+				packet >> clientId >> pos.x >> pos.y;
+				sendPacket << clientId << pos.x << pos.y;
+				serverPacket << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+
+				UDP_recieve(sendPacket, false);
+				UDP_Socket.send(serverPacket, clientAdress, port);
+
+				for(auto j: players)
 				{
-					sf::Vector2f pos;
-					packet >> pos.x >> pos.y;
-					std::cout << pos.x << " " << pos.y << std::endl;
-					sendPacket << i.second->id << pos.x << pos.y;
-					serverPacket << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
-
-					this->UDP_recieve(sendPacket, false);
-					i.second->UDP_Socket.send(serverPacket, sf::IpAddress::getLocalAddress(), port);
-
-					for(auto j: players)
-					{
-						if(j.second != i.second)
-						{
-							j.second->UDP_Socket.send(sendPacket, sf::IpAddress::getLocalAddress(), port);
-						}
-					}
+					if(j.second != i.second)
+						UDP_Socket.send(sendPacket, j.second->localIp, port);
 				}
 			}
 		}
@@ -126,7 +124,6 @@ void Server::UDP_init()
 {
 	UDP_Socket.bind(port);
 	//UDP_Socket.setBlocking(false);
-	this->selector.add(this->UDP_Socket);
 }
 
 void Server::TCP_init()
@@ -150,7 +147,7 @@ void Server::run(Server* server)
 	while(!server->quit)
 	{
 		//Maybe add delay after!
-		if(server->selector.wait())
+		if(server->selector.wait(server->tickRate))
 		{
 			server->listenConnections();
 			server->update();

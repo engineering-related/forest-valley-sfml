@@ -21,9 +21,9 @@ void Client::TCP_connect()
 void Client::UDP_connect()
 {
 	UDP_Socket.bind(port);
-	UDP_Socket.setBlocking(false);
 	std::string message = "Hi, I am " + id;
 	UDP_Socket.send(message.c_str(), message.size() + 1, localSendIp, port);
+	//UDP_Socket.setBlocking(false);
 }
 
 void Client::connectToServer()
@@ -60,7 +60,6 @@ void Client::connectToServer()
 		n->player->rect.setFillColor(color);
 		players[n->id] = n;
 	}
-
 	TCP_Socket.setBlocking(false);
 }
 
