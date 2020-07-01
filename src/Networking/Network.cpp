@@ -110,8 +110,10 @@ void Network::UDP_recieve(sf::Packet& packet, bool empty)
 void Network::TCP_send(sf::Packet &packet)
 {
 	this->globalMutex.lock();
-
+	if (this->player->prevPos != this->player->rect.getPosition())
+		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
+	this->TCP_Socket.send(packet);
 }
 
 void Network::addPlayer(sf::Packet &packet)
