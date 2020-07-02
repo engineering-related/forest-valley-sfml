@@ -16,6 +16,7 @@ private:
 
 protected:
 	sf::Thread* thread;
+
 public:
 	Network();
 	virtual ~Network();
@@ -49,8 +50,8 @@ public:
 
 	//UDP
 	void start();
-	void UDP_send(sf::Packet &packet, sf::IpAddress &address);
-	void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
+	void UDP_send(std::string &id, sf::Packet &packet, sf::IpAddress &address);
+	bool UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
 
 	//TCP
 	enum class TCP_type{PLAYER_CONNECTED, PLAYER_LEFT, SERVER_QUIT, GAME_PAUSED};

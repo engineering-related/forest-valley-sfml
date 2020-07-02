@@ -96,12 +96,14 @@ void Server::update(Server* server)
 		{
 			sf::Packet recievePacket, sendPacket;
 			sf::IpAddress clientAdress;
-			server->UDP_send(sendPacket, i.second->localIp);
-			server->UDP_recieve(recievePacket, clientAdress);
-			for(auto j: server->clients)
+			server->UDP_send(server->id, sendPacket, i.second->localIp);
+			if(server->UDP_recieve(recievePacket, clientAdress))
 			{
-				if(j.second != i.second)
-					server->UDP_send(recievePacket, j.second->localSendIp);
+				for(auto j: server->clients)
+				{
+					if(j.second != i.second)
+						server->UDP_send(server->clients[clientAdress.toString()]->id, recievePacket, j.second->localSendIp);
+				}
 			}
 		}
 	}

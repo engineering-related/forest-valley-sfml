@@ -53,28 +53,33 @@ void Network::traffic(Network* network)
 	network->clock.restart().asMilliseconds();
 	while (!network->quit)
 	{
-		if (network->clock.getElapsedTime().asMilliseconds() >= 10)
+		if (network->clock.getElapsedTime().asMilliseconds() >= network->delay)
 		{
 			network->clock.restart().asMilliseconds();
 			sf::Packet packet;
-			network->UDP_send(packet, network->localSendIp);
+			network->UDP_send(network->id, packet, network->localSendIp);
 			network->UDP_recieve(packet, network->publicSendIp);
 		}
 	}
 }
 
-void Network::UDP_send(sf::Packet &packet, sf::IpAddress &address)
+void Network::UDP_send(std::string&id, sf::Packet &packet, sf::IpAddress &address)
 {
 	//Send packet
+	Network* net;
+	if(&id == &this->id)
+		net = this;
+	else net = players[id];
+
 	this->globalMutex.lock();
-	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	if (net->player->prevPos != net->player->rect.getPosition())
+		packet << id << net->player->rect.getPosition().x << net->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, address, this->port);
 }
 
-void Network::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
+bool Network::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 {
 	//Receive packet
 	this->UDP_Socket.receive(packet, address, this->port);
@@ -86,7 +91,9 @@ void Network::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 		players[id]->player->p2Pos = pos;
 		this->player->prevPos = this->player->rect.getPosition();
 		this->globalMutex.unlock();
+		return true;
 	}
+	else return false;
 }
 
 void Network::TCP_send(sf::Packet &packet)
