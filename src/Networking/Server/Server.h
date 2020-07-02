@@ -10,13 +10,12 @@ private:
 protected:
 	//UDP
 
+public:
 	//TCP
 	sf::SocketSelector selector;
 	sf::TcpListener TCP_listener;
 	sf::UdpSocket testSocket;
 	std::unordered_map<std::string, Client*> clients;
-
-public:
 	Server();
 	virtual ~Server();
 	
@@ -27,7 +26,7 @@ public:
 	void init();
 
 	void listenConnections();
-	void update();
+	static void update(Server* server);
 	static void run(Server* server);
 };
 

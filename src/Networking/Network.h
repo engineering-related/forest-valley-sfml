@@ -16,6 +16,7 @@ private:
 
 protected:
 	sf::Thread* thread;
+	sf::Thread* thread2;
 
 public:
 	Network();

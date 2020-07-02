@@ -168,6 +168,7 @@ void Network::start()
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Packets");
 	window.setFramerateLimit(144);
 	this->thread->launch();
+	if(this->thread2) thread2->launch();
 	while (window.isOpen())
 	{
 		sf::Event event;
