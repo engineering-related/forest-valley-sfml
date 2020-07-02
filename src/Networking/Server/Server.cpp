@@ -3,7 +3,6 @@
 Server::Server(/* args */)
 {
 	this->thread = new sf::Thread(&Server::run, this);
-	this->thread2 = new sf::Thread(&Server::update, this);
 	this->tickRate = sf::milliseconds(this->delay);
 }
 
@@ -91,23 +90,18 @@ void Server::listenConnections()
 
 void Server::update(Server* server)
 {
-	server->clock.restart().asMilliseconds();
-	while(!server->quit)
+	if(!server->selector.isReady(server->TCP_listener))
 	{
 		for(auto i: server->clients)
 		{
-			if (server->clock.getElapsedTime().asMilliseconds() >= 10)
+			sf::Packet recievePacket, sendPacket;
+			sf::IpAddress clientAdress;
+			server->UDP_send(sendPacket, i.second->localIp);
+			server->UDP_recieve(recievePacket, clientAdress);
+			for(auto j: server->clients)
 			{
-				server->clock.restart().asMilliseconds();
-				sf::Packet recievePacket, sendPacket;
-				sf::IpAddress clientAdress;
-				server->UDP_recieve(recievePacket, clientAdress);
-				server->UDP_send(sendPacket, clientAdress);
-				for(auto j: server->clients)
-				{
-					if(j.second != i.second)
-						server->UDP_send(recievePacket, j.second->localSendIp);
-				}
+				if(j.second != i.second)
+					server->UDP_send(recievePacket, j.second->localSendIp);
 			}
 		}
 	}
@@ -118,7 +112,7 @@ void Server::update(Server* server)
 void Server::UDP_init()
 {
 	UDP_Socket.bind(port);
-	//selector.add(UDP_Socket);
+	selector.add(UDP_Socket);
 	UDP_Socket.setBlocking(false);
 }
 
@@ -145,6 +139,7 @@ void Server::run(Server* server)
 		if(server->selector.wait(server->tickRate))
 		{
 			server->listenConnections();
+			server->update(server);
 		}
 	}
 }
