@@ -6,8 +6,6 @@ Network::Network()
 	this->quit = false;
 	this->UDP_send_packet = true;
 	this->TCP_send_packet = true;
-	this->localSendIp = "";
-	this->publicSendIp = "";
 	this->delay = 20;
 
 	//Player creation
@@ -55,28 +53,13 @@ void Network::traffic(Network* network)
 	network->clock.restart().asMilliseconds();
 	while (!network->quit)
 	{
-		if (network->clock.getElapsedTime().asMilliseconds() >= network->delay)
+		if (network->clock.getElapsedTime().asMilliseconds() >= 10)
 		{
 			network->clock.restart().asMilliseconds();
-			network->UDP_send_packet = true;
+			sf::Packet packet;
+			network->UDP_send(packet);
+			network->UDP_recieve(packet, true);
 		}
-
-		sf::Packet UDP_packet, TCP_packet;
-		if(network->UDP_send_packet)
-		{
-			network->UDP_send(UDP_packet);
-			network->UDP_send_packet = false;
-		}
-
-		if(network->TCP_send_packet)
-		{
-			//Send TCP data later
-			//network->TCP_send(TCP_packet);
-			network->TCP_send_packet = false;
-		}
-
-		network->UDP_recieve(UDP_packet, true);
-		network->TCP_recieve(TCP_packet);
 	}
 }
 
@@ -88,14 +71,14 @@ void Network::UDP_send(sf::Packet &packet)
 		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
-	this->UDP_Socket.send(packet, this->localSendIp, this->port);
+	this->UDP_Socket.send(packet, publicSendIp, this->port);
 }
 
 void Network::UDP_recieve(sf::Packet& packet, bool empty)
 {
 	//Receive packet
 	if(empty)
-		this->UDP_Socket.receive(packet, this->localSendIp, this->port);
+		this->UDP_Socket.receive(packet, publicSendIp, this->port);
 	std::string id;
 	Vector2f pos;
 	if (packet >> id >> pos.x >> pos.y)

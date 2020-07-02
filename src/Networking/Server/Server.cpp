@@ -99,10 +99,9 @@ void Server::update(Server* server)
 			sf::IpAddress clientAdress;
 
 			server->UDP_Socket.receive(packet, clientAdress, server->port);
-
+			std::cout << i.second->localIp << std::endl;
 			sf::Vector2f pos;
 			packet >> pos.x >> pos.y;
-			std::cout << pos.x << " " << pos.y << std::endl;
  			sendPacket << server->clients[i.first]->id << pos.x << pos.y;
 			serverPacket << server->id << server->player->rect.getPosition().x << server->player->rect.getPosition().y;
 
