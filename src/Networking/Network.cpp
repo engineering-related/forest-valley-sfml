@@ -57,28 +57,27 @@ void Network::traffic(Network* network)
 		{
 			network->clock.restart().asMilliseconds();
 			sf::Packet packet;
-			network->UDP_send(packet);
-			network->UDP_recieve(packet, true);
+			network->UDP_send(packet, network->localSendIp);
+			network->UDP_recieve(packet, network->publicSendIp);
 		}
 	}
 }
 
-void Network::UDP_send(sf::Packet &packet)
+void Network::UDP_send(sf::Packet &packet, sf::IpAddress &address)
 {
 	//Send packet
 	this->globalMutex.lock();
 	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+		packet << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
-	this->UDP_Socket.send(packet, publicSendIp, this->port);
+	this->UDP_Socket.send(packet, address, this->port);
 }
 
-void Network::UDP_recieve(sf::Packet& packet, bool empty)
+void Network::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 {
 	//Receive packet
-	if(empty)
-		this->UDP_Socket.receive(packet, publicSendIp, this->port);
+	this->UDP_Socket.receive(packet, address, this->port);
 	std::string id;
 	Vector2f pos;
 	if (packet >> id >> pos.x >> pos.y)

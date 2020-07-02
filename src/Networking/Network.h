@@ -51,8 +51,8 @@ public:
 
 	//UDP
 	void start();
-	void UDP_send(sf::Packet &packet);
-	void UDP_recieve(sf::Packet& packet, bool empty);
+	void UDP_send(sf::Packet &packet, sf::IpAddress &adress);
+	void UDP_recieve(sf::Packet& packet, sf::IpAddress &adress);
 
 	//TCP
 	enum class TCP_type{PLAYER_CONNECTED, PLAYER_LEFT, SERVER_QUIT, GAME_PAUSED};

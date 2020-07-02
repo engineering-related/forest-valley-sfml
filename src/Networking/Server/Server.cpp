@@ -91,26 +91,23 @@ void Server::listenConnections()
 
 void Server::update(Server* server)
 {
+	server->clock.restart().asMilliseconds();
 	while(!server->quit)
 	{
 		for(auto i: server->clients)
 		{
-			sf::Packet packet, sendPacket, serverPacket;
-			sf::IpAddress clientAdress;
-
-			server->UDP_Socket.receive(packet, clientAdress, server->port);
-			std::cout << i.second->localIp << std::endl;
-			sf::Vector2f pos;
-			packet >> pos.x >> pos.y;
- 			sendPacket << server->clients[i.first]->id << pos.x << pos.y;
-			serverPacket << server->id << server->player->rect.getPosition().x << server->player->rect.getPosition().y;
-
-			server->UDP_recieve(sendPacket, false);
-			server->UDP_Socket.send(serverPacket, clientAdress, server->port);
-			for(auto j: server->clients)
+			if (server->clock.getElapsedTime().asMilliseconds() >= 10)
 			{
-				if(j.second != i.second)
-					server->UDP_Socket.send(sendPacket, j.second->localIp, server->port);
+				server->clock.restart().asMilliseconds();
+				sf::Packet recievePacket, sendPacket;
+				sf::IpAddress clientAdress;
+				server->UDP_recieve(recievePacket, clientAdress);
+				server->UDP_send(sendPacket, clientAdress);
+				for(auto j: server->clients)
+				{
+					if(j.second != i.second)
+						server->UDP_send(recievePacket, j.second->localSendIp);
+				}
 			}
 		}
 	}
