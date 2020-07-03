@@ -27,18 +27,17 @@ void Client::traffic(Client* client)
 		if (client->clock.getElapsedTime().asMilliseconds() >= client->delay)
 		{
 			client->clock.restart().asMilliseconds();
-			client->UDP_send(packet, client->localSendIp);
+			client->UDP_send(client, packet, client->localSendIp);
 			client->UDP_recieve(packet, client->publicSendIp);
 		}
 	}
 }
 
-void Client::UDP_send(sf::Packet &packet, sf::IpAddress &address)
+void Client::UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address)
 {
-	//Send packet
 	this->globalMutex.lock();
-	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	if (n->player->prevPos != n->player->rect.getPosition())
+		packet << n->id << n->player->rect.getPosition().x << n->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, address, this->port);
@@ -49,7 +48,13 @@ void Client::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 	//Receive packet
 	this->UDP_Socket.receive(packet, address, this->port);
 	this->globalMutex.lock();
-	packet >> this->players;
+	for(auto i: players)
+	{
+		std::string id;
+		Vector2f pos;
+		packet >> id >> pos.x >> pos.y;
+		players[id]->player->p2Pos = pos;
+	}
 	this->globalMutex.unlock();
 }
 

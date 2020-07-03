@@ -17,7 +17,7 @@ public:
 	Server();
 	virtual ~Server();
 	
-	void UDP_send(sf::Packet &packet, sf::IpAddress &address);
+	void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address);
 	void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
 	void TCP_send(sf::Packet &packet);
 	void TCP_recieve(sf::Packet&packet);

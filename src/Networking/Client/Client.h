@@ -17,7 +17,7 @@ class Client: public Network
 		virtual ~Client();
 		static void traffic(Client* client);
 
-		void UDP_send(sf::Packet &packet, sf::IpAddress &address);
+		void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address);
 		void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
 		void TCP_send(sf::Packet &packet);
 		void TCP_recieve(sf::Packet&packet);

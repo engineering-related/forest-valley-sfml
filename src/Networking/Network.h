@@ -48,36 +48,11 @@ public:
 	void drawPlayers(sf::RenderTarget* target);
 	void start();
 	
-	virtual void UDP_send(sf::Packet &packet, sf::IpAddress &address) = 0;
+	virtual void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address) = 0;
 	virtual void UDP_recieve(sf::Packet& packet, sf::IpAddress &address) = 0;
 	virtual void TCP_send(sf::Packet &packet) = 0;
 	virtual void TCP_recieve(sf::Packet&packet) = 0;
 	enum class TCP_type{PLAYER_CONNECTED, PLAYER_LEFT, SERVER_QUIT, GAME_PAUSED};
 };
-
-template<typename S, typename N>
-sf::Packet& operator<<(sf::Packet& packet, std::unordered_map<S, N>& map)
-{
-	for(auto i: map)
-	{
-		packet << i.first << 
-		i.second->player->rect.getPosition().x << 
-		i.second->player->rect.getPosition().y;
-	}
-	return packet;
-}
-
-template<typename S, typename N>
-sf::Packet& operator>>(sf::Packet& packet, std::unordered_map<S, N>& map)
-{
-    for(auto i: map)
-	{
-		std::string id;
-		Vector2f pos;
-		if(packet >> id >> pos.x >> pos.y)
-			map[id]->player->p2Pos = pos;
-	}
-	return packet;
-}
 
 #endif

@@ -87,13 +87,21 @@ void Server::connectClient()
 	}
 }
 
-void Server::UDP_send(sf::Packet &packet, sf::IpAddress &address)
+void Server::UDP_send(Network* n, Packet &packet, sf::IpAddress &address)
 {
 	//Send packet
 	this->globalMutex.lock();
-	packet << this->players;
+	packet << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	for(auto i: players)
+	{
+		if(n != i.second)
+		{
+			packet << i.first <<
+			i.second->player->rect.getPosition().x <<
+			i.second->player->rect.getPosition().y;
+		}
+	}
 	this->globalMutex.unlock();
-
 	this->UDP_Socket.send(packet, address, this->port);
 }
 
@@ -129,7 +137,6 @@ void Server::update(Server* server)
 {
 	if(!server->selector.isReady(server->TCP_listener))
 	{
-		sf::Packet recievePacket;
 		sf::IpAddress clientAdress;
 		sf::Packet packet;
 		if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
@@ -137,7 +144,7 @@ void Server::update(Server* server)
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				server->UDP_send(packet, i.second->localIp);
+				server->UDP_send(i.second, packet, i.second->localIp);
 				server->UDP_recieve(packet, clientAdress);
 			}
 		}
