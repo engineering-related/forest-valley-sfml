@@ -91,8 +91,7 @@ void Server::UDP_send(sf::Packet &packet, sf::IpAddress &address)
 {
 	//Send packet
 	this->globalMutex.lock();
-	if (this->player->prevPos != this->player->rect.getPosition())
-		packet << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	packet << this->players;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, address, this->port);
@@ -139,9 +138,9 @@ void Server::update(Server* server)
 			for(auto i: server->players)
 			{
 				server->UDP_send(packet, i.second->localIp);
+				server->UDP_recieve(packet, clientAdress);
 			}
 		}
-		server->UDP_recieve(packet, clientAdress);
 	}
 }
 
