@@ -46,11 +46,17 @@ void Client::UDP_send(sf::Packet &packet, sf::IpAddress &address)
 
 void Client::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 {
-	//Do the same switch as TCP_recieve when fighting is added etc
+	//Receive packet
 	this->UDP_Socket.receive(packet, address, this->port);
-	this->globalMutex.lock();
-	packet >> this->players;
-	this->globalMutex.unlock();
+	std::string id;
+	Vector2f pos;
+	if (packet >> id >> pos.x >> pos.y)
+	{
+		this->globalMutex.lock();
+		players[id]->player->p2Pos = pos;
+		this->player->prevPos = this->player->rect.getPosition();
+		this->globalMutex.unlock();
+	}
 }
 
 

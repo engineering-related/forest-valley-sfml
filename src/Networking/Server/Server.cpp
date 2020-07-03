@@ -90,7 +90,8 @@ void Server::connectClient()
 void Server::UDP_send(sf::Packet &packet, sf::IpAddress &address)
 {
 	this->globalMutex.lock();
-	packet << this->players;
+	if (this->player->prevPos != this->player->rect.getPosition())
+		packet << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
 	this->globalMutex.unlock();
 
 	this->UDP_Socket.send(packet, address, this->port);
@@ -123,12 +124,12 @@ void Server::TCP_recieve(sf::Packet &packet)
 	//Receive data from all the clients about their state
 }
 
-
 void Server::update(Server* server)
 {
+	static int runs = 0;
+	server->clock.restart().asMilliseconds();
 	if(!server->selector.isReady(server->TCP_listener))
 	{
-		server->clock.restart().asMilliseconds();
 		sf::Packet recievePacket;
 		sf::IpAddress clientAdress;
 		sf::Packet packet;
@@ -141,7 +142,7 @@ void Server::update(Server* server)
 				server->UDP_recieve(packet, clientAdress);
 			}
 		}
-		std::cout << "asdrf" << std::endl;
+		std::cout << ++runs << std::endl;
 	}
 }
 
