@@ -52,10 +52,11 @@ void Server::checkNewClientConnection()
 		this->selector.add(client->TCP_Socket);
 
 		sf::Packet sendPacket;
-		sendPacket << (int)players.size() + 1;
+		std::unordered_map<std::string, Network*> allPlayers = players;
+		allPlayers[id] = this;
+		sendPacket << (int)allPlayers.size();
 		//Send back the serverstate to the connected player
-		sendPacket << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
-		for (auto p : players)
+		for (auto p : allPlayers)
 		{
 			sendPacket << p.first << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
 			(sf::Int32)p.second->player->rect.getFillColor().r <<
@@ -74,10 +75,7 @@ void Server::checkNewClientConnection()
 
 		for (auto p : players)
 		{
-			if(selector.isReady(p.second->TCP_Socket))
-			{
-				p.second->TCP_Socket.send(serverSendPacket);
-			}
+			p.second->TCP_Socket.send(serverSendPacket);
 		}
 		//Add player to the server
 		this->globalMutex.lock();
@@ -96,10 +94,7 @@ void Server::disconnectClient(Network* client)
 
 	for (auto p : players)
 	{
-		if(selector.isReady(p.second->TCP_Socket))
-		{
-			p.second->TCP_Socket.send(serverSendPacket);
-		}
+		p.second->TCP_Socket.send(serverSendPacket);
 	}
 }
 
@@ -160,22 +155,12 @@ void Server::update(Server* server)
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				//Check if a client disconnected
-				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
-				{
-					server->disconnectClient(i.second);
-				}
-				else
-				{
-					server->UDP_send(i.second, packet, i.second->localIp);
-					server->UDP_recieve(packet, clientAdress);
-				}
+				server->UDP_send(i.second, packet, i.second->localIp);
 			}
 		}
+		server->UDP_recieve(packet, clientAdress);
 	}
 }
-
-
 
 void Server::UDP_init()
 {
