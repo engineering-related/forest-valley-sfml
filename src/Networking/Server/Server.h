@@ -6,25 +6,30 @@
 class Server: public Network
 {
 private:
-
+	Thread* tickThread;
 protected:
 	
 public:
 	//TCP
 	sf::SocketSelector selector;
 	sf::TcpListener TCP_listener;
-	std::unordered_map<std::string, Client*> clients;
 
 	Server();
 	virtual ~Server();
 	
+	virtual void UDP_send(sf::Packet &packet, sf::IpAddress &address);
+	virtual void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
+	virtual void TCP_send(sf::Packet &packet);
+	virtual void TCP_recieve(sf::Packet&packet);
+
 	sf::Time tickRate;
 
 	void UDP_init();
 	void TCP_init();
 	void init();
 
-	void listenConnections();
+	void connectClient();
+	void disconnectClient();
 	static void update(Server* server);
 	static void run(Server* server);
 };

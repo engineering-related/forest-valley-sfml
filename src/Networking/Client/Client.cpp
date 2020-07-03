@@ -5,7 +5,7 @@ Client::Client(/* args */)
 	this->publicSendIp =  "87.96.222.250"; //"78.72.205.138";
 	this->localSendIp = "192.168.1.104";
 
-	this->thread = new sf::Thread(&Network::traffic, this);
+	this->thread = new sf::Thread(&Client::traffic, this);
 }
 
 Client::~Client()
@@ -14,6 +14,99 @@ Client::~Client()
 }
 
 void Client::TCP_connect()
+{
+
+}
+
+void Client::traffic(Client* client)
+{
+	client->clock.restart().asMilliseconds();
+	while (!client->quit)
+	{
+		sf::Packet packet;
+		if (client->clock.getElapsedTime().asMilliseconds() >= client->delay)
+		{
+			client->clock.restart().asMilliseconds();
+			client->UDP_send(packet, client->localSendIp);
+		}
+		client->UDP_recieve(packet, client->publicSendIp);
+	}
+}
+
+void Client::UDP_send(sf::Packet &packet, sf::IpAddress &address)
+{
+	//Send packet
+	this->globalMutex.lock();
+	if (this->player->prevPos != this->player->rect.getPosition())
+		packet << this->id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+	this->globalMutex.unlock();
+
+	this->UDP_Socket.send(packet, address, this->port);
+}
+
+void Client::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
+{
+	//Do the same switch as TCP_recieve when fighting is added etc
+	this->UDP_Socket.receive(packet, address, this->port);
+	this->globalMutex.lock();
+	packet >> this->players;
+	this->globalMutex.unlock();
+}
+
+
+void Client::TCP_send(sf::Packet &packet)
+{
+	this->globalMutex.lock();
+
+	this->globalMutex.unlock();
+}
+
+
+void Client::TCP_recieve(sf::Packet &packet)
+{
+	int type;
+	packet >> type;
+	switch ((TCP_type)type)
+	{
+	case TCP_type::PLAYER_CONNECTED:
+		this->addPlayer(packet);
+		break;
+	case TCP_type::PLAYER_LEFT:
+		this->removePlayer(packet);
+		break;
+	case TCP_type::SERVER_QUIT:
+		quit = true;
+		break;
+	case TCP_type::GAME_PAUSED:
+		//Pause the game...
+		break;
+	default:
+		break;
+	}
+}
+
+void Client::addPlayer(sf::Packet &packet)
+{
+	std::string id;
+	std::string cLocalIp;
+	sf::Vector2f pos;
+	sf::Int32 r, g, b;
+	packet >> id >> cLocalIp >>
+			  pos.x >> pos.y >>
+	          r >> g >> b;
+
+	Client* p = new Client();
+	sf::Color color(r, g, b);
+	p->id = id;
+	p->localIp = sf::IpAddress(cLocalIp);
+	p->player->rect.setPosition(pos);
+	p->player->rect.setFillColor(color);
+	this->globalMutex.lock();
+	this->players[id] = p;
+	this->globalMutex.unlock();
+}
+
+void Client::removePlayer(sf::Packet &packet)
 {
 
 }
@@ -49,7 +142,7 @@ void Client::connectToServer()
 	recievePacket >> serverSize;
 	for (size_t i = 0; i < (size_t)serverSize; i++)
 	{
-		Network* n = new Network();
+		Client* n = new Client();
 		sf::Int32 r, g, b;
 		sf::Vector2f pos;
 		recievePacket >> n->id >>
@@ -63,4 +156,3 @@ void Client::connectToServer()
 
 	TCP_Socket.setBlocking(false);
 }
-

@@ -11,7 +11,7 @@ Server::~Server()
 
 }
 
-void Server::listenConnections()
+void Server::connectClient()
 {
 	if(this->selector.isReady(this->TCP_listener))
 	{
@@ -83,28 +83,66 @@ void Server::listenConnections()
 		//Add player to the server
 		this->globalMutex.lock();
 		this->players[client->id] = client;
-		clients[client->localIp.toString()] = client;
 		this->globalMutex.unlock();
 	}
 }
 
+void Server::UDP_send(sf::Packet &packet, sf::IpAddress &address)
+{
+	this->globalMutex.lock();
+	packet << this->players;
+	this->globalMutex.unlock();
+
+	this->UDP_Socket.send(packet, address, this->port);
+}
+
+void Server::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
+{
+	//Receive packet
+	this->UDP_Socket.receive(packet, address, this->port);
+	std::string id;
+	Vector2f pos;
+	if (packet >> id >> pos.x >> pos.y)
+	{
+		this->globalMutex.lock();
+		players[id]->player->p2Pos = pos;
+		this->player->prevPos = this->player->rect.getPosition();
+		this->globalMutex.unlock();
+	}
+}
+
+
+void Server::TCP_send(sf::Packet &packet)
+{
+	//Send data to the all the clients about serverstates
+}
+
+
+void Server::TCP_recieve(sf::Packet &packet)
+{
+	//Receive data from all the clients about their state
+}
+
+
 void Server::update(Server* server)
 {
+	server->clock.restart().asMilliseconds();
 	if(!server->selector.isReady(server->TCP_listener))
 	{
-		for(auto i: server->clients)
+		while(!server->quit)
 		{
-			sf::Packet recievePacket, sendPacket;
+			sf::Packet recievePacket;
 			sf::IpAddress clientAdress;
-			server->UDP_send(server->id, sendPacket, i.second->localIp);
-			if(server->UDP_recieve(recievePacket, clientAdress))
+			sf::Packet packet;
+			if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
 			{
-				for(auto j: server->clients)
+				server->clock.restart().asMilliseconds();
+				for(auto i: server->players)
 				{
-					if(j.second != i.second)
-						server->UDP_send(server->clients[clientAdress.toString()]->id, recievePacket, j.second->localSendIp);
+					server->UDP_send(packet, i.second->localIp);
 				}
 			}
+			server->UDP_recieve(packet, clientAdress);
 		}
 	}
 }
@@ -138,9 +176,9 @@ void Server::run(Server* server)
 {
 	while(!server->quit)
 	{
-		if(server->selector.wait(server->tickRate))
+		if(server->selector.wait())
 		{
-			server->listenConnections();
+			server->connectClient();
 			server->update(server);
 		}
 	}
