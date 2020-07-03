@@ -28,8 +28,8 @@ public:
 	void TCP_init();
 	void init();
 
-	void connectClient();
-	void disconnectClient();
+	void checkNewClientConnection();
+	void disconnectClient(Network* client);
 	static void update(Server* server);
 	static void run(Server* server);
 };

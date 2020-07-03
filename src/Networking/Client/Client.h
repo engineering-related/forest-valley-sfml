@@ -27,7 +27,6 @@ class Client: public Network
 		void addPlayer(sf::Packet &packet);
 		void removePlayer(sf::Packet &packet);
 		void connectToServer();
-		void disconnectFromServer();
 };
 
 #endif

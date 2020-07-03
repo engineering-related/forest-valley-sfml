@@ -11,7 +11,7 @@ Server::~Server()
 
 }
 
-void Server::connectClient()
+void Server::checkNewClientConnection()
 {
 	if(this->selector.isReady(this->TCP_listener))
 	{
@@ -52,11 +52,10 @@ void Server::connectClient()
 		this->selector.add(client->TCP_Socket);
 
 		sf::Packet sendPacket;
-		std::unordered_map<std::string, Network*> allPlayers = players;
-		allPlayers[this->id] = this;
-		sendPacket << (int)allPlayers.size();
+		sendPacket << (int)players.size() + 1;
 		//Send back the serverstate to the connected player
-		for (auto p : allPlayers)
+		sendPacket << id << this->player->rect.getPosition().x << this->player->rect.getPosition().y;
+		for (auto p : players)
 		{
 			sendPacket << p.first << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
 			(sf::Int32)p.second->player->rect.getFillColor().r <<
@@ -69,7 +68,7 @@ void Server::connectClient()
 		//Update for the rest of the server
 		sf::Packet serverSendPacket;
 		serverSendPacket << (int)TCP_type::PLAYER_CONNECTED <<
-		client->id << client->localIp.toString() <<
+		client->id  <<
 		pos.x << pos.y <<
 		r << g << b;
 
@@ -84,6 +83,23 @@ void Server::connectClient()
 		this->globalMutex.lock();
 		this->players[client->id] = client;
 		this->globalMutex.unlock();
+	}
+}
+
+void Server::disconnectClient(Network* client)
+{
+	this->players.erase(client->id);
+	delete client;
+	//Update for the rest of the server
+	sf::Packet serverSendPacket;
+	serverSendPacket << (int)TCP_type::PLAYER_LEFT << client->id;
+
+	for (auto p : players)
+	{
+		if(selector.isReady(p.second->TCP_Socket))
+		{
+			p.second->TCP_Socket.send(serverSendPacket);
+		}
 	}
 }
 
@@ -144,8 +160,16 @@ void Server::update(Server* server)
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				server->UDP_send(i.second, packet, i.second->localIp);
-				server->UDP_recieve(packet, clientAdress);
+				//Check if a client disconnected
+				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
+				{
+					server->disconnectClient(i.second);
+				}
+				else
+				{
+					server->UDP_send(i.second, packet, i.second->localIp);
+					server->UDP_recieve(packet, clientAdress);
+				}
 			}
 		}
 	}
@@ -183,7 +207,7 @@ void Server::run(Server* server)
 	{
 		if(server->selector.wait())
 		{
-			server->connectClient();
+			server->checkNewClientConnection();
 			server->update(server);
 		}
 	}

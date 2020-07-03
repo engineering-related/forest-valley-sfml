@@ -29,6 +29,7 @@ void Client::traffic(Client* client)
 			client->clock.restart().asMilliseconds();
 			client->UDP_send(client, packet, client->localSendIp);
 			client->UDP_recieve(packet, client->publicSendIp);
+			client->TCP_recieve(packet);
 		}
 	}
 }
@@ -52,8 +53,8 @@ void Client::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 	{
 		std::string id;
 		Vector2f pos;
-		packet >> id >> pos.x >> pos.y;
-		players[id]->player->p2Pos = pos;
+		if(packet >> id >> pos.x >> pos.y)
+			players[id]->player->p2Pos = pos;
 	}
 	this->globalMutex.unlock();
 }
@@ -96,14 +97,13 @@ void Client::addPlayer(sf::Packet &packet)
 	std::string cLocalIp;
 	sf::Vector2f pos;
 	sf::Int32 r, g, b;
-	packet >> id >> cLocalIp >>
+	packet >> id >>
 			  pos.x >> pos.y >>
 	          r >> g >> b;
 
 	Client* p = new Client();
 	sf::Color color(r, g, b);
 	p->id = id;
-	p->localIp = sf::IpAddress(cLocalIp);
 	p->player->rect.setPosition(pos);
 	p->player->rect.setFillColor(color);
 	this->globalMutex.lock();
@@ -113,7 +113,12 @@ void Client::addPlayer(sf::Packet &packet)
 
 void Client::removePlayer(sf::Packet &packet)
 {
-
+	std::string id;
+	packet >> id;
+	Network* client;
+	client = this->players[id];
+	this->players.erase(id);
+	delete client;
 }
 
 void Client::UDP_connect()
