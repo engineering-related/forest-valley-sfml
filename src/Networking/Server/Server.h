@@ -17,10 +17,10 @@ public:
 	Server();
 	virtual ~Server();
 	
-	virtual void UDP_send(sf::Packet &packet, sf::IpAddress &address);
-	virtual void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
-	virtual void TCP_send(sf::Packet &packet);
-	virtual void TCP_recieve(sf::Packet&packet);
+	void UDP_send(sf::Packet &packet, sf::IpAddress &address);
+	void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
+	void TCP_send(sf::Packet &packet);
+	void TCP_recieve(sf::Packet&packet);
 
 	sf::Time tickRate;
 

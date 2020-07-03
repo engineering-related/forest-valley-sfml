@@ -126,24 +126,22 @@ void Server::TCP_recieve(sf::Packet &packet)
 
 void Server::update(Server* server)
 {
-	server->clock.restart().asMilliseconds();
 	if(!server->selector.isReady(server->TCP_listener))
 	{
-		while(!server->quit)
+		server->clock.restart().asMilliseconds();
+		sf::Packet recievePacket;
+		sf::IpAddress clientAdress;
+		sf::Packet packet;
+		if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
 		{
-			sf::Packet recievePacket;
-			sf::IpAddress clientAdress;
-			sf::Packet packet;
-			if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
+			server->clock.restart().asMilliseconds();
+			for(auto i: server->players)
 			{
-				server->clock.restart().asMilliseconds();
-				for(auto i: server->players)
-				{
-					server->UDP_send(packet, i.second->localIp);
-				}
+				server->UDP_send(packet, i.second->localIp);
+				server->UDP_recieve(packet, clientAdress);
 			}
-			server->UDP_recieve(packet, clientAdress);
 		}
+		std::cout << "asdrf" << std::endl;
 	}
 }
 

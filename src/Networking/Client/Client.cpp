@@ -28,8 +28,8 @@ void Client::traffic(Client* client)
 		{
 			client->clock.restart().asMilliseconds();
 			client->UDP_send(packet, client->localSendIp);
+			client->UDP_recieve(packet, client->publicSendIp);
 		}
-		client->UDP_recieve(packet, client->publicSendIp);
 	}
 }
 
@@ -114,7 +114,7 @@ void Client::removePlayer(sf::Packet &packet)
 void Client::UDP_connect()
 {
 	UDP_Socket.bind(port);
-	//UDP_Socket.setBlocking(false);
+	UDP_Socket.setBlocking(false);
 	std::string message = "Hi, I am " + id;
 	UDP_Socket.send(message.c_str(), message.size() + 1, localSendIp , port);
 }
