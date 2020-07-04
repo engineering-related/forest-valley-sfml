@@ -16,71 +16,77 @@ void Server::checkNewClientConnection()
 	if(this->selector.isReady(this->TCP_listener))
 	{
 		Client *client = new Client;
-		this->TCP_listener.accept(client->TCP_Socket);
-		sf::Packet packet;
-		sf::Int32 r, g, b;
-		sf::Vector2f pos;
-		//Receve packet about the new player information
-		if(client->TCP_Socket.receive(packet) == sf::Socket::Done)
+		if(this->TCP_listener.accept(client->TCP_Socket) == sf::Socket::Done)
 		{
-			packet >> client->id >> pos.x >> pos.y >>
-			r >> g >> b;
-		}
-		sf::Color color(r, g, b);
-
-		bool receviedIp = false;
-		while (!receviedIp)
-		{
-			// Receive a message from anyone
-			char buffer[1024];
-			std::size_t received = 0;
-			sf::IpAddress sender;
-			unsigned short port;
-			UDP_Socket.receive(buffer, sizeof(buffer), received, sender, port);
-			if (received > 0)
+			sf::Packet packet;
+			sf::Int32 r, g, b;
+			sf::Vector2f pos;
+			//Receve packet about the new player information
+			if(client->TCP_Socket.receive(packet) == sf::Socket::Done)
 			{
-				std::cout << "(UDP) connected with message: " << buffer << std::endl;
-				receviedIp = true;
-				client->localIp = sender;
+				packet >> client->id >> pos.x >> pos.y >>
+				r >> g >> b;
 			}
+			sf::Color color(r, g, b);
+
+			bool receviedIp = false;
+			while (!receviedIp)
+			{
+				// Receive a message from anyone
+				char buffer[1024];
+				std::size_t received = 0;
+				sf::IpAddress sender;
+				unsigned short port;
+				UDP_Socket.receive(buffer, sizeof(buffer), received, sender, port);
+				if (received > 0)
+				{
+					std::cout << "(UDP) connected with message: " << buffer << std::endl;
+					receviedIp = true;
+					client->localIp = sender;
+				}
+			}
+			client->player->rect.setPosition(pos);
+			client->player->rect.setFillColor(color);
+
+			std::cout << "(TCP) connected with ip: " << client->localIp << std::endl;
+
+			this->selector.add(client->TCP_Socket);
+
+			sf::Packet sendPacket;
+			std::unordered_map<std::string, Network*> allPlayers = players;
+			allPlayers[id] = this;
+			sendPacket << (int)allPlayers.size();
+			//Send back the serverstate to the connected player
+			for (auto p : allPlayers)
+			{
+				sendPacket << p.first << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
+				(sf::Int32)p.second->player->rect.getFillColor().r <<
+				(sf::Int32)p.second->player->rect.getFillColor().g <<
+				(sf::Int32)p.second->player->rect.getFillColor().b;
+			}
+
+			client->TCP_Socket.send(sendPacket);
+
+			//Update for the rest of the server
+			sf::Packet serverSendPacket;
+			serverSendPacket << (sf::Int32)TCP_type::PLAYER_CONNECTED <<
+			client->id  <<
+			pos.x << pos.y <<
+			r << g << b;
+
+			for (auto p : players)
+			{
+				p.second->TCP_Socket.send(serverSendPacket);
+			}
+			//Add player to the server
+			this->globalMutex.lock();
+			this->players[client->id] = client;
+			this->globalMutex.unlock();
 		}
-		client->player->rect.setPosition(pos);
-		client->player->rect.setFillColor(color);
-
-		std::cout << "(TCP) connected with ip: " << client->localIp << std::endl;
-
-		this->selector.add(client->TCP_Socket);
-
-		sf::Packet sendPacket;
-		std::unordered_map<std::string, Network*> allPlayers = players;
-		allPlayers[id] = this;
-		sendPacket << (int)allPlayers.size();
-		//Send back the serverstate to the connected player
-		for (auto p : allPlayers)
+		else
 		{
-			sendPacket << p.first << p.second->player->rect.getPosition().x << p.second->player->rect.getPosition().y <<
-			(sf::Int32)p.second->player->rect.getFillColor().r <<
-			(sf::Int32)p.second->player->rect.getFillColor().g <<
-			(sf::Int32)p.second->player->rect.getFillColor().b;
+			delete client;
 		}
-
-		client->TCP_Socket.send(sendPacket);
-
-		//Update for the rest of the server
-		sf::Packet serverSendPacket;
-		serverSendPacket << (int)TCP_type::PLAYER_CONNECTED <<
-		client->id  <<
-		pos.x << pos.y <<
-		r << g << b;
-
-		for (auto p : players)
-		{
-			p.second->TCP_Socket.send(serverSendPacket);
-		}
-		//Add player to the server
-		this->globalMutex.lock();
-		this->players[client->id] = client;
-		this->globalMutex.unlock();
 	}
 }
 
@@ -90,7 +96,7 @@ void Server::disconnectClient(Network* client)
 	delete client;
 	//Update for the rest of the server
 	sf::Packet serverSendPacket;
-	serverSendPacket << (int)TCP_type::PLAYER_LEFT << client->id;
+	serverSendPacket << (sf::Int32)TCP_type::PLAYER_LEFT << client->id;
 
 	for (auto p : players)
 	{
@@ -156,6 +162,10 @@ void Server::update(Server* server)
 			for(auto i: server->players)
 			{
 				server->UDP_send(i.second, packet, i.second->localIp);
+				//Testing with TCP
+				sf::Packet TCP_packet;
+				TCP_packet << (sf::Int32)TCP_type::SERVER_QUIT;
+				i.second->TCP_Socket.send(TCP_packet);
 			}
 		}
 		server->UDP_recieve(packet, clientAdress);
