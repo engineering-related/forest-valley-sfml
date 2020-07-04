@@ -138,9 +138,12 @@ void Server::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 }
 
 
-void Server::TCP_send(sf::Packet &packet)
+void Server::TCP_send(Network* n, sf::Packet &packet)
 {
-	//Send data to the all the clients about serverstates
+	//Testing with TCP
+	sf::Packet TCP_packet;
+	TCP_packet << (sf::Int32)TCP_type::SERVER_QUIT;
+	n->TCP_Socket.send(TCP_packet);
 }
 
 
@@ -161,11 +164,15 @@ void Server::update(Server* server)
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				server->UDP_send(i.second, packet, i.second->localIp);
-				//Testing with TCP
-				sf::Packet TCP_packet;
-				TCP_packet << (sf::Int32)TCP_type::SERVER_QUIT;
-				i.second->TCP_Socket.send(TCP_packet);
+				//Check if a client disconnectd
+				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
+				{
+					server->disconnectClient(i.second);
+				}
+				else
+				{
+					server->UDP_send(i.second, packet, i.second->localIp);
+				}
 			}
 		}
 		server->UDP_recieve(packet, clientAdress);
@@ -196,6 +203,15 @@ void Server::init()
 	this->id = id;
 }
 
+void Server::done()
+{
+	for(auto i: this->players)
+	{
+		sf::Packet packet;
+		this->TCP_send(i.second, packet);
+	}
+}
+
 void Server::run(Server* server)
 {
 	server->clock.restart().asMilliseconds();
@@ -207,4 +223,5 @@ void Server::run(Server* server)
 			server->update(server);
 		}
 	}
+	server->done();
 }

@@ -50,7 +50,7 @@ public:
 	
 	virtual void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address) = 0;
 	virtual void UDP_recieve(sf::Packet& packet, sf::IpAddress &address) = 0;
-	virtual void TCP_send(sf::Packet &packet) = 0;
+	virtual void TCP_send(Network* n, sf::Packet &packet) = 0;
 	virtual void TCP_recieve(sf::Packet&packet) = 0;
 	enum class TCP_type{PLAYER_CONNECTED, PLAYER_LEFT, SERVER_QUIT, GAME_PAUSED};
 };

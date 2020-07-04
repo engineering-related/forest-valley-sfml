@@ -60,7 +60,7 @@ void Client::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 }
 
 
-void Client::TCP_send(sf::Packet &packet)
+void Client::TCP_send(Network* n, sf::Packet &packet)
 {
 	this->globalMutex.lock();
 
@@ -71,7 +71,6 @@ void Client::TCP_send(sf::Packet &packet)
 void Client::TCP_recieve(sf::Packet &packet)
 {
 	this->TCP_Socket.receive(packet);
-	std::cout << "recieve" << std::endl;
 	sf::Int32 type;
 	if(packet >> type)
 	{

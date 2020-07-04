@@ -19,9 +19,6 @@ Network::~Network()
 	for (auto p : players)
 		delete p.second;
 	delete player;
-
-	this->TCP_Socket.disconnect();
-	this->UDP_Socket.unbind();
 }
 
 void Network::updatePlayers(const float &dt)
@@ -101,4 +98,6 @@ void Network::start()
 		thread->wait();
 		delete thread;
 	}
+	this->TCP_Socket.disconnect();
+	this->UDP_Socket.unbind();
 }

@@ -19,7 +19,7 @@ public:
 	
 	void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address);
 	void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
-	void TCP_send(sf::Packet &packet);
+	void TCP_send(Network* n, sf::Packet &packet);
 	void TCP_recieve(sf::Packet&packet);
 
 	sf::Time tickRate;
@@ -27,6 +27,7 @@ public:
 	void UDP_init();
 	void TCP_init();
 	void init();
+	void done();
 
 	void checkNewClientConnection();
 	void disconnectClient(Network* client);
