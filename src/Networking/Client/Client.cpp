@@ -119,9 +119,11 @@ void Client::removePlayer(sf::Packet &packet)
 	std::string id;
 	packet >> id;
 	Network* client;
+	globalMutex.lock();
 	client = this->players[id];
 	this->players.erase(id);
 	delete client;
+	globalMutex.unlock();
 }
 
 void Client::UDP_connect()

@@ -92,8 +92,10 @@ void Server::checkNewClientConnection()
 
 void Server::disconnectClient(Network* client)
 {
+	globalMutex.lock();
 	this->players.erase(client->id);
-	delete client;
+	globalMutex.unlock();
+
 	//Update for the rest of the server
 	sf::Packet serverSendPacket;
 	serverSendPacket << (sf::Int32)TCP_type::PLAYER_LEFT << client->id;
@@ -102,6 +104,10 @@ void Server::disconnectClient(Network* client)
 	{
 		p.second->TCP_Socket.send(serverSendPacket);
 	}
+
+	globalMutex.lock();
+	delete client;
+	globalMutex.unlock();
 }
 
 void Server::UDP_send(Network* n, Packet &packet, sf::IpAddress &address)
@@ -137,7 +143,6 @@ void Server::UDP_recieve(sf::Packet& packet, sf::IpAddress &address)
 	}
 }
 
-
 void Server::TCP_send(Network* n, sf::Packet &packet)
 {
 	//Testing with TCP
@@ -146,12 +151,10 @@ void Server::TCP_send(Network* n, sf::Packet &packet)
 	n->TCP_Socket.send(TCP_packet);
 }
 
-
 void Server::TCP_recieve(sf::Packet &packet)
 {
 	//Receive data from all the clients about their state
 }
-
 
 void Server::update(Server* server)
 {
@@ -159,20 +162,24 @@ void Server::update(Server* server)
 	{
 		sf::IpAddress clientAdress;
 		sf::Packet packet;
+		//Check connection
+		for(auto i: server->players)
+		{
+			if (server->selector.isReady(i.second->TCP_Socket))
+            {
+				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
+				{
+					server->disconnectClient(i.second);
+				}
+			}
+		}
+
 		if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
 		{
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				//Check if a client disconnectd
-				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
-				{
-					server->disconnectClient(i.second);
-				}
-				else
-				{
-					server->UDP_send(i.second, packet, i.second->localIp);
-				}
+				server->UDP_send(i.second, packet, i.second->localIp);
 			}
 		}
 		server->UDP_recieve(packet, clientAdress);
