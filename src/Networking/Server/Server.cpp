@@ -106,6 +106,7 @@ void Server::disconnectClient(Network* client)
 		p.second->TCP_Socket.send(serverSendPacket);
 	}
 	//Delete the client from memory
+	std::cout << "(TCP) " << client->id << " disconnected with ip: " + client->localIp.toString() << std::endl;
 	delete client;
 	globalMutex.unlock();
 }
@@ -181,8 +182,6 @@ void Server::update(Server* server)
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
-				static int runs = 0;
-				std::cout << ++runs << std::endl;
 				server->UDP_send(i.second, packet, i.second->localIp);
 			}
 		}
