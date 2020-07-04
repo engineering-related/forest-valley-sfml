@@ -29,7 +29,7 @@ void Client::traffic(Client* client)
 			client->clock.restart().asMilliseconds();
 			client->UDP_send(client, packet, client->localSendIp);
 			client->UDP_recieve(packet, client->publicSendIp);
-			//client->TCP_recieve(packet);
+			client->TCP_recieve(packet);
 		}
 	}
 }
@@ -70,6 +70,7 @@ void Client::TCP_send(sf::Packet &packet)
 
 void Client::TCP_recieve(sf::Packet &packet)
 {
+	std::cout << "recieve" << std::endl;
 	int type;
 	packet >> type;
 	switch ((TCP_type)type)

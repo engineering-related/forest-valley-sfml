@@ -173,6 +173,7 @@ void Server::TCP_init()
 {
 	this->TCP_listener.listen(port);
 	this->selector.add(TCP_listener);
+	this->TCP_Socket.setBlocking(false);
 }
 
 
