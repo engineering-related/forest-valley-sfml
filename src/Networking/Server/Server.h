@@ -6,7 +6,7 @@
 class Server: public Network
 {
 private:
-	Thread* tickThread;
+	
 protected:
 	
 public:

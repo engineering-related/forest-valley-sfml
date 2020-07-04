@@ -93,8 +93,9 @@ void Server::checkNewClientConnection()
 void Server::disconnectClient(Network* client)
 {
 	globalMutex.lock();
+	//Remove client for map
 	this->players.erase(client->id);
-	globalMutex.unlock();
+	this->selector.remove(client->TCP_Socket);
 
 	//Update for the rest of the server
 	sf::Packet serverSendPacket;
@@ -104,8 +105,7 @@ void Server::disconnectClient(Network* client)
 	{
 		p.second->TCP_Socket.send(serverSendPacket);
 	}
-
-	globalMutex.lock();
+	//Delete the client from memory
 	delete client;
 	globalMutex.unlock();
 }
@@ -165,20 +165,24 @@ void Server::update(Server* server)
 		//Check connection
 		for(auto i: server->players)
 		{
+			//Check client connection
 			if (server->selector.isReady(i.second->TCP_Socket))
             {
 				if(i.second->TCP_Socket.receive(packet) == sf::Socket::Disconnected)
 				{
 					server->disconnectClient(i.second);
+					break;
 				}
 			}
 		}
 
-		if (server->clock.getElapsedTime().asMilliseconds() >= server->delay)
+		if(server->clock.getElapsedTime().asMilliseconds() >= server->delay)
 		{
 			server->clock.restart().asMilliseconds();
 			for(auto i: server->players)
 			{
+				static int runs = 0;
+				std::cout << ++runs << std::endl;
 				server->UDP_send(i.second, packet, i.second->localIp);
 			}
 		}
