@@ -403,8 +403,6 @@ void Map::addNatureToChunks()
 			if (this->interactableGrid[x][y] != nullptr)
 			{
 				this->chunks[chunkX][chunkY]->dynamicEntites.push_back(this->interactableGrid[x][y]);
-				std::cout << x << " " << chunkX << std::endl;
-				std::cout << y << " " << chunkY << std::endl;
 			}
 		}
 		chunkY = -1;
@@ -414,9 +412,9 @@ void Map::addNatureToChunks()
 void Map::updateTexture()
 {
 	//Init rendertexture
-	this->renderTexture.clear();
-	this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
-	this->renderTexture.create(this->textureSize.x, this->textureSize.y);
+	//this->renderTexture.clear();
+	//this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
+	//this->renderTexture.create(this->textureSize.x, this->textureSize.y);
 
 	//The container for the drawing information stored in a tuple
 	std::vector<std::pair<int, Vector2i>> grid1D;
@@ -527,6 +525,7 @@ void Map::updateTexture()
 		}
 	}
 
+	addNatureToChunks();
 	//Set the texture to the sprite
 	//this->renderTexture.display();
 	//this->sprite.setTexture(this->renderTexture.getTexture());

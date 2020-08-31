@@ -12,7 +12,8 @@ LINK_LIBRARIES := \
 	sfml-audio \
 	sfml-network \
 	sfml-window \
-	sfml-system
+	sfml-system \
+	enet
 
 PRECOMPILED_HEADER := PCH
 

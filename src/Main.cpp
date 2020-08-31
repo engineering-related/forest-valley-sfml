@@ -37,15 +37,13 @@ int main()
 
 	if (connectionType == 's')
 	{
-		Server server;
-		server.init();
-		server.start();
-		//server.UDP_run();
+		ENetServer server;
+		server.run();
 	}
 	else
 	{
-		Client client;
-		client.connectToServer();
-		client.start();
+		ENetClient client;
+		if(client.connect() < 1)
+			client.run();
 	}
 }

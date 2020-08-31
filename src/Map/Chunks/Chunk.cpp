@@ -21,15 +21,11 @@ void Chunk::init()
 void Chunk::drawTiles(RenderTarget *window)
 {
 	window->draw(this->sprite);
-
 }
 
 void Chunk::update(const float& dt, const float& multiplier)
 {
-	for (Object* object : this->dynamicEntites)
-	{
-		object->update(dt, multiplier);
-	}
+
 }
 
 void Chunk::setTexture()

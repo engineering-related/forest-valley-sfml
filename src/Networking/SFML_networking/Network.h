@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-#include "TestPlayer.h"
+#include "Networking/SFML_networking/TestPlayer.h"
 #include "Entity/Creature/Humans/Player.h"
 
 class Network
@@ -40,14 +40,14 @@ public:
 	sf::Clock clock;
 
 	//Traffic
-	
+
 	//Players
 	TestPlayer* player;
 	std::unordered_map<std::string, Network*> players;
 	void updatePlayers(const float & dt);
 	void drawPlayers(sf::RenderTarget* target);
 	void start();
-	
+
 	virtual void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address) = 0;
 	virtual void UDP_recieve(sf::Packet& packet, sf::IpAddress &address) = 0;
 	virtual void TCP_send(Network* n, sf::Packet &packet) = 0;

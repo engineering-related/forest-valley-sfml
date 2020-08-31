@@ -1,7 +1,7 @@
 #ifndef NETWORK_CLIENT
 #define NETWORK_CLIENT
 
-#include "Networking/Network.h"
+#include "Networking/SFML_networking/Network.h"
 
 class Client: public Network
 {

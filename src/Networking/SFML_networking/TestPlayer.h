@@ -15,18 +15,6 @@ struct EntityState
 	std::vector<unsigned int> equippedItems;
 };
 
-/*sf::Packet& operator <<(sf::Packet& packet, const EntityState& s)
-{
-    return packet << s.action << s.chunkID.x << s.chunkID.y
-				  << s.chunkObjectID << s.objectID << s.HP;
-}
-
-sf::Packet& operator >>(sf::Packet& packet, EntityState& s)
-{
-    return packet >> s.action >> s.chunkID.x >> s.chunkID.y
-				  >> s.chunkObjectID >> s.objectID >> s.HP;
-}*/
-
 class TestPlayer
 {
 public:

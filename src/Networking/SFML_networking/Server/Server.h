@@ -1,14 +1,14 @@
 #ifndef NETWORK_SERVER
 #define NETWORK_SERVER
 
-#include "Networking/Client/Client.h"
+#include "Networking/SFML_networking/Client/Client.h"
 
 class Server: public Network
 {
 private:
-	
+
 protected:
-	
+
 public:
 	//TCP
 	sf::SocketSelector selector;
@@ -16,7 +16,7 @@ public:
 
 	Server();
 	virtual ~Server();
-	
+
 	void UDP_send(Network* n, sf::Packet &packet, sf::IpAddress &address);
 	void UDP_recieve(sf::Packet& packet, sf::IpAddress &address);
 	void TCP_send(Network* n, sf::Packet &packet);

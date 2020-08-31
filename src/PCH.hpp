@@ -14,6 +14,9 @@
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 
+//Enet (if !installed -> install enet)
+#include <enet/enet.h>
+
 // Raspberry Pi
 #ifdef SFML_SYSTEM_LINUX
 	#ifdef __arm__
@@ -39,6 +42,7 @@
 #include <climits>
 #include <bitset>
 #include <array>
+#include <cstring>
 
 // Additional C/C++ libs
 #include <atomic>
