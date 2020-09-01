@@ -6,22 +6,24 @@
 class ENetServer: public ENetwork
 {
 private:
-	virtual bool init();
+	virtual int init();
 	const size_t MaxNumberOfPlayers = 32;
 	std::unordered_map<ENetPeer* /*peers*/, ENetTestPlayer* /*player*/> peers;
 
+	const int tickRate = 64/*hz*/; //sends to clients at most 64 packages/second
+								   //Tickduration = 1000/64 = 15,645ms
 protected:
-	virtual void receiveEvents();
+	virtual void* receiveEventsLoop(void);
+	virtual void* sendPacketsLoop(void);
+
+	//Send a packet to all peers
 	void brodcastPacket(const char* data);
 
 public:
 	ENetServer(/* args */);
 	virtual ~ENetServer();
 
-	virtual bool disconnect();
+	virtual int disconnect();
 };
-
-
-
 
 #endif //ENET_SERVER

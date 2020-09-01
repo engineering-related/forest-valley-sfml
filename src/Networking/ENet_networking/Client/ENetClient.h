@@ -6,17 +6,21 @@
 class ENetClient : public ENetwork
 {
 private:
-	virtual bool init();
+	virtual int init();
 	ENetPeer* peer;
+	void sendRequestToServer();
 
+	const int requestTickRate = 64/*hz*/; //sends to server at most 64 packages/second
+								   //Tickduration = 1000/64 = 15,645ms
 protected:
-	virtual void receiveEvents();
+	virtual void* receiveEventsLoop(void);
+	virtual void* sendPacketsLoop(void);
 
 public:
 	ENetClient(/* args */);
 	virtual ~ENetClient();
-	bool connect();
-	virtual bool disconnect();
+	int connect();
+	virtual int disconnect();
 };
 
 
