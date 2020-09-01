@@ -24,6 +24,12 @@ ENetClient::~ENetClient()
 
 /*virtual*/ void ENetClient::receiveEvents()
 {
+   if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
+   {
+       int random = rand() % 100000;
+       std::string str = std::to_string(random);
+       sendPacket(peer, 0, str.c_str());
+   }
 	while(enet_host_service(host, &event, delay) > 0)
 	{
 		switch (event.type)
@@ -65,7 +71,7 @@ bool ENetClient::connect()
     enet_address_set_host(&address, "192.168.1.104");
 
     //Connect to the peer/server
-    peer = enet_host_connect(host, &address, 1, 0);
+    peer = enet_host_connect(host, &address, channels, 0);
     if(peer == NULL)
     {
         fprintf(stderr, "No available peers for initiating an Enet connection!\n");

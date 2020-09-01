@@ -15,9 +15,8 @@ protected:
     ENetHost* host;
     ENetEvent event;
 	enet_uint32 delay;
-	size_t channels;
+	const size_t channels = 3;
 	//Game
-	bool gameLoopRunning;
 	sf::RenderWindow* window;
 	float dt;
 	sf::Clock gameClock;

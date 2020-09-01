@@ -4,8 +4,7 @@ ENetwork::ENetwork(/* args */)
 {
 	initENet();
 	address.port = 24474;
-	delay = 1000;
-	channels = 2;
+	delay = 0;
 	this->window = new sf::RenderWindow();
 }
 

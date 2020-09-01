@@ -1,0 +1,44 @@
+Tickrates (https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking)
+---------------------------------------------------------
+Client tickraet should be?
+Server tickrate should be around 20-30 packets sent per second (50-30ms interval)
+
+
+Client-Server-Architecture (https://www.gabrielgambetta.com/client-server-game-architecture.html)
+----------------------------------------------------------
+1. Client-side prediction
+2. Entity interpolation
+3. Lag compensation
+
+
+														IMPLEMENTATION
+---------------------------------------------------------------------------------------------------------------------
+|
+|
+|		1. Clients request
+|		--------------------
+|		1 - The clients inputs commands which moves their player instantly (as the client sees it)
+|		2 - The clients sends a request to the server with a timestamp
+|
+|		2. Server response
+|		---------------------
+|		3 - The server gets the requests from all the clients in a short time interval (tickrate)
+|		4 - The server validates the request and updates the server-gamestate
+|		5 - The server creates "snapshots" with timestamps of the gamestate (Hold 3 in memory #1, #2, #3)
+|	    6 - After a server tick, the server sends back a final snapshot of the latest gamestate to each client
+|
+|		3. Clients update
+|		------------------------
+|		7 - The clients recieves the latest server-snapshot of the world, from the server, at a previous state
+|		8 - The clients save the snapshot (Hold 3 in memory, #1, #2, #3)
+|		9 - The clients interpolate between snapshot "#3" and "#2" of the world to change the other players state
+|	   10 - The clients update world changes with the "#2" snapshot
+|
+|		4. Lag compensation (Probalby not neccesary, but could be cool to implement)
+|	   11 - A client sends a request to the server with a timestamp, for example I hit an enemy player with my sword
+|      12 - The server finds the first smaller timestamp and first larger timestamp (#-1(last), 0(curret), 1(next));		-
+|	   13 - Server checks if you actually hit the other player
+|	   14 - server does (2.6)
+|
+|
+----------------------------------------------------------------------------------------------------------------------

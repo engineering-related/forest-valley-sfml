@@ -33,6 +33,12 @@ void ENetServer::brodcastPacket(const char* data)
 
 /*virtual*/ void ENetServer::receiveEvents()
 {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+   {
+       int random = rand() % 100000;
+       std::string str = std::to_string(random);
+       brodcastPacket(str.c_str());
+   }
 	while(enet_host_service(host, &event, delay) > 0)
 	{
 		switch (event.type)

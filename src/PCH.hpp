@@ -59,6 +59,7 @@
 #include <thread>
 #include <type_traits>
 #include <typeinfo>
+#include <pthread.h>
 
 // Windows
 #ifdef _WIN32
