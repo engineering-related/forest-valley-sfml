@@ -50,6 +50,56 @@ void ENetwork::initTestPlayer()
 		playerColor);
 }
 
+const char* ENetwork::extractData(enet_uint8* data)
+{
+	return reinterpret_cast<const char*>(data);
+}
+
+void ENetwork::handleReceiveEvent(ENetEvent* event)
+{
+	//Extract data to c_string
+	const char* receivedData = extractData(event->packet->data);
+
+	//Split the string into a vector
+	std::vector<std::string> dataVec = util::fn::stringSplitSpace(receivedData);
+
+	//The first sequence in the data-string is always the type of the received packet
+	PacketType recievedPacketType = (PacketType)std::stoi(dataVec[0]);
+
+	//Perform action based on the given packet-type
+	switch (recievedPacketType)
+	{
+	case PacketType::SERVER_DATA:
+		puts("0");
+		break;
+	case PacketType::CLIENT_DATA:
+		puts("1");
+		break;
+	case PacketType::PLAYER_CONNECTED:
+
+		break;
+	case PacketType::PLAYER_DISCONNECTED:
+
+		break;
+	case PacketType::HOST_DISCONNECTED:
+
+		break;
+	case PacketType::GAME_START:
+
+		break;
+	case PacketType::GAME_PAUSED:
+
+		break;
+	case PacketType::GAME_QUIT:
+
+		break;
+	default:
+		break;
+	}
+	//Destory packet
+	enet_packet_destroy(event->packet);
+}
+
 void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data)
 {
 	//When sending packets use multiple channels. Data from players->server are sent -
@@ -104,7 +154,7 @@ int ENetwork::run()
 	setGameLoopRunning(true);
 
 	//Game loop
-	while (gameLoopRunning)
+	while (getGameLoopRunning())
 	{
 		//SFML-events
 		sf::Event event;

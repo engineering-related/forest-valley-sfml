@@ -12,7 +12,12 @@ private:
 
 	const int tickRate = 64/*hz*/; //sends to clients at most 64 packages/second
 								   //Tickduration = 1000/64 = 15,645ms
+	void addPlayer(ENetPeer* peer);
+
 protected:
+	void handleConnectionEvent(ENetEvent* event);
+	virtual void handleDisconnectEvent(ENetEvent* event);
+
 	virtual void receiveEvents();
 	virtual void sendPackets();
 

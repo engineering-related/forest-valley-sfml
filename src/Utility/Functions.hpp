@@ -69,7 +69,14 @@ namespace util
 			);
 			return ms;
 		}
-
+		static std::vector<std::string> stringSplitSpace(std::string s)
+		{
+			std::stringstream ss(s);
+			std::istream_iterator<std::string> begin(ss);
+			std::istream_iterator<std::string> end;
+			std::vector<std::string> vstrings(begin, end);
+			return vstrings;
+		}
 		template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
 		static T most_common(InputIt begin, InputIt end)
 		{

@@ -8,7 +8,7 @@ class ENetClient : public ENetwork
 private:
 	virtual int init();
 	ENetPeer* peer;
-	const char* getDataFromRequest(const Request &request);
+	const char* buildDataFromRequest(const Request &request);
 	void sendRequestToServer(const Request& request);
 	std::vector<Request> requestQueue;
 	void checkPlayerState();
@@ -18,6 +18,7 @@ private:
 								   //Tickduration = 1000/64 = 15,645ms
 
 protected:
+	virtual void handleDisconnectEvent(ENetEvent* event);
 	virtual void receiveEvents();
 	virtual void sendPackets();
 

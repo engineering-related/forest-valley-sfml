@@ -8,6 +8,7 @@ class ENetTestPlayer
 public:
 	//states
 	enum StateType {IDLE, MOVE, DELETE, PICK_UP, DROP, CREATE, CRAFT, ATTACK};
+	StateType currentStateType, lastStateType;
 
 	struct State {
 		int id;
@@ -38,8 +39,6 @@ public:
 			id = totalPerformed++;
 		}
 	}; State state;
-
-	StateType currentStateType, lastStateType;
 
 	//Attributes
 	std::string id;

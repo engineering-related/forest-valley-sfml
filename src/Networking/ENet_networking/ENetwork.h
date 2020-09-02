@@ -31,6 +31,7 @@ protected:
 	sf::RenderWindow* window;
 	float dt;
 	sf::Clock gameClock;
+
 	inline void setGameLoopRunning(const bool &state){gameLoopRunning = state;}
 	inline const bool& getGameLoopRunning()const{return gameLoopRunning;}
 
@@ -41,6 +42,14 @@ protected:
 	//Handle packet-traffic
 	typedef ENetTestPlayer::StateType RequestType;
 	typedef ENetTestPlayer::State Request;
+
+	enum PacketType { SERVER_DATA, CLIENT_DATA, PLAYER_CONNECTED,
+					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
+					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
+
+	const char* extractData(enet_uint8* data);
+	void handleReceiveEvent(ENetEvent* event);
+	virtual void handleDisconnectEvent(ENetEvent* event) = 0;
 
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data);
 

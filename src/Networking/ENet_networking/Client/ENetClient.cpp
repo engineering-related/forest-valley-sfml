@@ -23,12 +23,12 @@ ENetClient::~ENetClient()
 }
 
 
-const char* ENetClient::getDataFromRequest(const Request &request)
+const char* ENetClient::buildDataFromRequest(const Request &request)
 {
     std::string data;
-
     //Always send essential data about the player
     //Player and request data
+    data += std::to_string(PacketType::CLIENT_DATA);
     data += player->id + " ";
     data += std::to_string(request.id) + " ";
     data += std::to_string(request.time) + " ";
@@ -62,7 +62,7 @@ const char* ENetClient::getDataFromRequest(const Request &request)
 
 void ENetClient::sendRequestToServer(const Request& request)
 {
-    sendPacket(peer, 0, getDataFromRequest(request));
+    sendPacket(peer, 0, buildDataFromRequest(request));
 }
 
 void ENetClient::addRequest(const Request& request)
@@ -79,6 +79,19 @@ void ENetClient::checkPlayerState()
     }
 }
 
+/*virtual*/ void ENetClient::handleDisconnectEvent(ENetEvent* event)
+{
+    printf("Lost connection to host %x:%u.\n",
+            event->peer->address.host,
+            event->peer->address.port);
+
+    setThreadsLoopRunning(false);
+    setGameLoopRunning(false);
+
+    /*Reset the peer's host information. */
+    event->peer->data = NULL;
+}
+
 /*virtual*/ void ENetClient::receiveEvents()
 {
     //Recieve data
@@ -86,32 +99,14 @@ void ENetClient::checkPlayerState()
     {
         switch (event.type)
         {
-            case ENET_EVENT_TYPE_CONNECT:
-                printf("A new client connected from %x:%u.\n",
-                        event.peer -> address.host,
-                        event.peer -> address.port);
-                break;
-
             case ENET_EVENT_TYPE_RECEIVE:
-                printf("A packet of length %lu containing %s was received from %x:%u on channel %u.\n",
-                    event.packet->dataLength,
-                    event.packet->data,
-                    event.peer->address.host,
-                    event.peer->address.port,
-                    event.channelID);
-                    /* Clean up the packet now that we're done using it. */
-                    enet_packet_destroy(event.packet);
+                handleReceiveEvent(&event);
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
-                printf("Host %x:%u disconnected.\n",
-                        event.peer ->address.host,
-                        event.peer ->address.port);
-                setThreadsLoopRunning(false);
-                setGameLoopRunning(false);
-                /*Reset the peer's client information. */
-                event.peer -> data = NULL;
+                handleDisconnectEvent(&event);
                 break;
+
             default:
                 break;
         }
