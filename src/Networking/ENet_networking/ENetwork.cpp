@@ -68,25 +68,28 @@ void ENetwork::drawPlayers(sf::RenderTarget* target)
 	player->draw(target);
 }
 
+void* ENetwork::traffic(void)
+{
+	clock.restart().asMilliseconds();
+    while (getTheadsLoopRunning())
+	{
+		receiveEvents();
+		sendPackets();
+	}
+	return NULL;
+}
+
 int ENetwork::run()
 {
 	//Create window
 	window->create(sf::VideoMode(800, 600, 32), "ENet Testing");
 	window->setFramerateLimit(300);
 
-	//Create recieve thread
-	if (pthread_create(&recieveThread, NULL, &recieveEventsHelper, this) != 0)
+	//Create network thread
+	if (pthread_create(&networkThread, NULL, &trafficHelper, this) != 0)
 	{
 		printf("\nReceive-Thread can't be created :[%s]",
-			strerror(pthread_create(&recieveThread, NULL, &recieveEventsHelper, this)));
-		return EXIT_FAILURE;
-	}
-
-	//Create send thread
-	if(pthread_create(&sendThread, NULL, &sendPacketsHelper, this) != 0)
-	{
-		printf("\nSend-Thread can't be created :[%s]",
-				strerror(pthread_create(&sendThread, NULL, &sendPacketsHelper, this)));
+			strerror(pthread_create(&networkThread, NULL, &trafficHelper, this)));
 		return EXIT_FAILURE;
 	}
 
@@ -139,16 +142,15 @@ int ENetwork::run()
 		//Rendering
 		window->clear();
 		/////////////////
-		pthread_mutex_lock(&lock);
+		//pthread_mutex_lock(&lock);
 		player->handleMouse(window);
 		updatePlayers(dt);
 		this->drawPlayers(window);
-		pthread_mutex_unlock(&lock);
+		//pthread_mutex_unlock(&lock);
 		//////////////////
 		window->display();
 	}
-	pthread_join(recieveThread, NULL);
-	pthread_join(sendThread, NULL);
+	pthread_join(networkThread, NULL);
 	pthread_mutex_destroy(&lock);
 	return EXIT_SUCCESS;
 }

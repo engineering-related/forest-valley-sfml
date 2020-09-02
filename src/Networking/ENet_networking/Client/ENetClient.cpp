@@ -23,74 +23,115 @@ ENetClient::~ENetClient()
 }
 
 
-void ENetClient::sendRequestToServer()
+const char* ENetClient::getDataFromRequest(const Request &request)
 {
-    static ENetTestPlayer::State previousState;
+    std::string data;
 
-    //If the playerstate has changed we want to send data to the server
-    sendPacket(peer, 0, player->state.getData());
+    //Always send essential data about the player
+    //Player and request data
+    data += player->id + " ";
+    data += std::to_string(request.id) + " ";
+    data += std::to_string(request.time) + " ";
+    data += std::to_string(request.playerSnapshot.type) + " ";
+    //StartPosition
+    data += std::to_string(request.playerSnapshot.rect.getPosition().x) + " ";
+    data += std::to_string(request.playerSnapshot.rect.getPosition().y) + " ";
+    //Velocity
+    data += std::to_string(request.playerSnapshot.velocity.x) + " ";
+    data += std::to_string(request.playerSnapshot.velocity.y) + " ";
+    //Endpos
+    data += std::to_string(request.playerSnapshot.endPos.x) + " ";
+    data += std::to_string(request.playerSnapshot.endPos.y) + " ";
 
-    if(player->state != previousState)
+    //Evaluate the type of request and send the appropriate packet
+    switch (request.playerSnapshot.type)
     {
-        sendPacket(peer, 0, player->state.getData());
+    case RequestType::IDLE:
+        //No more data needs to be added
+        break;
+    case RequestType::MOVE:
+        //No more data needs to be added
+        break;
+    case RequestType::DELETE:
+        //Data about what objects the player wants to delete needs to be added!
+    default:
+        break;
     }
-    previousState = player->state;
+    return strdup(data.c_str());
 }
 
-/*virtual*/ void* ENetClient::receiveEventsLoop(void)
+void ENetClient::sendRequestToServer(const Request& request)
 {
-    while (getTheadsLoopRunning())
+    sendPacket(peer, 0, getDataFromRequest(request));
+}
+
+void ENetClient::addRequest(const Request& request)
+{
+    requestQueue.push_back(request);
+    player->changedState = false;
+}
+
+void ENetClient::checkPlayerState()
+{
+    if(player->changedState)
     {
-        while(enet_host_service(host, &event, NONE_BLOCKING) > 0)
+        addRequest(player->state);
+    }
+}
+
+/*virtual*/ void ENetClient::receiveEvents()
+{
+    //Recieve data
+    while(enet_host_service(host, &event, NONE_BLOCKING) > 0)
+    {
+        switch (event.type)
         {
-            switch (event.type)
-            {
-                case ENET_EVENT_TYPE_CONNECT:
-                    printf("A new client connected from %x:%u.\n",
-                            event.peer -> address.host,
-                            event.peer -> address.port);
-                    break;
+            case ENET_EVENT_TYPE_CONNECT:
+                printf("A new client connected from %x:%u.\n",
+                        event.peer -> address.host,
+                        event.peer -> address.port);
+                break;
 
-                case ENET_EVENT_TYPE_RECEIVE:
-                    printf("A packet of length %lu containing %s was received from %x:%u on channel %u.\n",
-                        event.packet->dataLength,
-                        event.packet->data,
-                        event.peer->address.host,
-                        event.peer->address.port,
-                        event.channelID);
-                        /* Clean up the packet now that we're done using it. */
-                        enet_packet_destroy(event.packet);
-                    break;
+            case ENET_EVENT_TYPE_RECEIVE:
+                printf("A packet of length %lu containing %s was received from %x:%u on channel %u.\n",
+                    event.packet->dataLength,
+                    event.packet->data,
+                    event.peer->address.host,
+                    event.peer->address.port,
+                    event.channelID);
+                    /* Clean up the packet now that we're done using it. */
+                    enet_packet_destroy(event.packet);
+                break;
 
-                case ENET_EVENT_TYPE_DISCONNECT:
-                    setThreadsLoopRunning(false);
-                    setGameLoopRunning(false);
-                    printf("Host %x:%u disconnected.\n",
-                            event.peer ->address.host,
-                            event.peer ->address.port);
-                    /*Reset the peer's client information. */
-                    event.peer -> data = NULL;
-                    break;
-                default:
-                    break;
-            }
+            case ENET_EVENT_TYPE_DISCONNECT:
+                printf("Host %x:%u disconnected.\n",
+                        event.peer ->address.host,
+                        event.peer ->address.port);
+                setThreadsLoopRunning(false);
+                setGameLoopRunning(false);
+                /*Reset the peer's client information. */
+                event.peer -> data = NULL;
+                break;
+            default:
+                break;
         }
     }
-    return NULL;
 }
 
-/*virtual*/ void* ENetClient::sendPacketsLoop(void)
+/*virtual*/ void ENetClient::sendPackets()
 {
-    clock.restart().asMilliseconds();
-	while (getTheadsLoopRunning())
+    checkPlayerState();
+    if(clock.getElapsedTime().asMilliseconds() >= 1000/requestTickRate)
     {
-		if(clock.getElapsedTime().asMilliseconds() >= 1000/requestTickRate)
-		{
-			clock.restart().asMilliseconds();
-            sendRequestToServer();
-		}
-	}
-    return NULL;
+        clock.restart().asMilliseconds();
+        //Send the first request int he queue to the server
+        if(requestQueue.size() > 0)
+        {
+            sendRequestToServer(requestQueue[0]);
+            //Remove the request from queue once it's been sent
+            requestQueue.erase(requestQueue.begin());
+        }
+    }
 }
 
 int ENetClient::connect()

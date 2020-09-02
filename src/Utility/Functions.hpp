@@ -62,6 +62,14 @@ namespace util
 				constSize.y / window->getDefaultView().getSize().y * window->getView().getSize().y);
 		}
 
+		static std::chrono::milliseconds getTimeInMsSinceEpoch()
+		{
+			std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(
+    			std::chrono::system_clock::now().time_since_epoch()
+			);
+			return ms;
+		}
+
 		template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
 		static T most_common(InputIt begin, InputIt end)
 		{

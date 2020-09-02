@@ -1,52 +1,54 @@
 #ifndef ENET_TEST_PLAYER
 #define ENET_TEST_PLAYER
 
+#include "Entity/Object.h"
 
 class ENetTestPlayer
 {
 public:
-	enum Action {NONE, MOVE, DEL, PICK_UP, DROP, CREATE, CRAFT};
+	//states
+	enum StateType {IDLE, MOVE, DELETE, PICK_UP, DROP, CREATE, CRAFT, ATTACK};
+
+	struct State {
+		int id;
+		int64_t time;
+
+		struct PlayerSnapshot{
+			StateType type;
+			sf::RectangleShape rect;
+			sf::Vector2f endPos;
+			sf::Vector2f velocity;
+			PlayerSnapshot(ENetTestPlayer* context = NULL)
+			{
+				if(context != NULL)
+				{
+					this->type = context->currentStateType;
+					this->rect = context->rect;
+					this->endPos = context->endPos;
+					this->velocity = context->velocity;
+				}
+			}
+		}; PlayerSnapshot playerSnapshot;
+
+		State(PlayerSnapshot playerSnapshot = PlayerSnapshot())
+		{
+			static int totalPerformed = 0;
+			this->playerSnapshot = playerSnapshot;
+			this->time = util::fn::getTimeInMsSinceEpoch().count();
+			id = totalPerformed++;
+		}
+	}; State state;
+
+	StateType currentStateType, lastStateType;
+
 	//Attributes
-	Action action;
 	std::string id;
 	sf::RectangleShape rect;
 	sf::Vector2f endPos;
 	sf::Vector2f velocity;
-	sf::Vector2f prevPos;
-	sf::Vector2f p2Pos;
 	bool mouseClicked;
+	bool changedState;
 	float speedMagnitude;
-	struct State
-	{
-		const ENetTestPlayer* cpPtr;
-
-		State(const ENetTestPlayer* const p = NULL){ this->cpPtr = p; }
-
-		const char * getData() const
-		{
-
-			std::string dataString = " " + cpPtr->id + " " +
-							   std::to_string((int)cpPtr->action) + " " +
-							   std::to_string(cpPtr->rect.getPosition().x) + " " +
-							   std::to_string(cpPtr->rect.getPosition().y) + " ";
-
-			return strdup(dataString.c_str());
-		}
-		const Action& getAction() const
-		{
-			return cpPtr->action;
-		}
-
-		bool operator != (const State &s2)
-		{
-			if(s2.cpPtr == NULL || this->cpPtr == NULL)
-				return false;
-			else
-				return !(s2.cpPtr->action == this->getAction() &&
-						 s2.cpPtr->rect.getPosition().x == this->cpPtr->rect.getPosition().x &&
-						 s2.cpPtr->rect.getPosition().y == this->cpPtr->rect.getPosition().y);
-		}
-	}; State state;
 
 	ENetTestPlayer(std::string id, sf::Vector2f spawnPos, sf::Color color)
 	{
@@ -60,6 +62,7 @@ public:
 		this->endPos = this->rect.getPosition();
 		this->velocity = sf::Vector2f(0.f, 0.f);
 		this->state = State(this);
+		this->changedState = false;
 	}
 	~ENetTestPlayer(){}
 
@@ -68,22 +71,39 @@ public:
 		target->draw(rect);
 	}
 
+	void refreshState()
+	{
+		state = State(State::PlayerSnapshot(this));
+		lastStateType = currentStateType;
+		changedState = true;
+	}
+
+	void idle(const float &dt)
+	{
+		this->velocity = sf::Vector2f(0.f*dt, 0.f*dt);
+		currentStateType = StateType::IDLE;
+	}
+
 	void update(const float &dt)
 	{
-		bool move = false;
+		bool shouldMove = false;
 		if ((this->velocity.x >= 0 && this->rect.getPosition().x < endPos.x) ||
 			(this->velocity.x <= 0 && this->rect.getPosition().x > endPos.x) ||
 			(this->velocity.y >= 0 && this->rect.getPosition().y < endPos.y) ||
 			(this->velocity.y <= 0 && this->rect.getPosition().y > endPos.y))
-				move = true;
-		if(move)
-		{
-			this->action = Action::MOVE;
+				shouldMove = true;
+
+		if(shouldMove)
 			this->rect.move(this->velocity*dt);
-		}
 		else
-			this->action = Action::NONE;
+			idle(dt);
+
+		if(lastStateType != currentStateType)
+		{
+			refreshState();
+		}
 	}
+
 	void handleMouse(sf::RenderWindow* window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
@@ -93,6 +113,8 @@ public:
 			endPos = (sf::Vector2f)mousePos;
 			float angle = atan2f(endPos.y - this->rect.getPosition().y, endPos.x - this->rect.getPosition().x);
 			velocity = sf::Vector2f(speedMagnitude*cos(angle), speedMagnitude*sin(angle));
+			currentStateType = StateType::MOVE;
+			refreshState();
 		}
 		else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			mouseClicked = false;

@@ -8,7 +8,6 @@ private:
 	int initENet();
 	void initTestPlayer();
 	virtual int init() = 0;
-
 	bool threadsLoopRunning;
 	bool gameLoopRunning;
 
@@ -23,8 +22,7 @@ protected:
 
 	//Threads
 	pthread_mutex_t lock;
-	pthread_t recieveThread;
-	pthread_t sendThread;
+	pthread_t networkThread;
 
 	inline void setThreadsLoopRunning(const bool &state){threadsLoopRunning = state;}
 	inline const bool& getTheadsLoopRunning()const{return threadsLoopRunning;}
@@ -41,23 +39,19 @@ protected:
 	std::unordered_map<std::string /*key-id*/, ENetTestPlayer* /*players*/> players;
 
 	//Handle packet-traffic
-	typedef ENetTestPlayer::Action Request;
+	typedef ENetTestPlayer::StateType RequestType;
+	typedef ENetTestPlayer::State Request;
 
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data);
 
 	//Network loops in threads
-	virtual void* receiveEventsLoop(void) = 0;
-	static void* recieveEventsHelper(void *context)
+	virtual void receiveEvents() = 0;
+	virtual void sendPackets() = 0;
+	void* traffic(void);
+	static void* trafficHelper(void *context)
 	{
-		return ((ENetwork *)context)->receiveEventsLoop();
+		return ((ENetwork *)context)->traffic();
 	}
-
-	virtual void* sendPacketsLoop(void) = 0;
-	static void* sendPacketsHelper(void *context)
-	{
-		return ((ENetwork *)context)->sendPacketsLoop();
-	}
-
 
 public:
 	ENetwork(/* args */);

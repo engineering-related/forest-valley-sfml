@@ -13,8 +13,8 @@ private:
 	const int tickRate = 64/*hz*/; //sends to clients at most 64 packages/second
 								   //Tickduration = 1000/64 = 15,645ms
 protected:
-	virtual void* receiveEventsLoop(void);
-	virtual void* sendPacketsLoop(void);
+	virtual void receiveEvents();
+	virtual void sendPackets();
 
 	//Send a packet to all peers
 	void brodcastPacket(const char* data);
