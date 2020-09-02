@@ -79,10 +79,24 @@ void ENetServer::brodcastPacket(const char* data)
 	{
 		clock.restart().asMilliseconds();
 
-		std::string serverData = std::to_string(PacketType::SERVER_DATA) + " " +
-								 std::to_string(++packetsSent) + " " +
-								 std::to_string(player->rect.getPosition().x) + " " +
-								 std::to_string(player->rect.getPosition().y);
+		std::string serverData;
+
+		//Player and request data
+		serverData += std::to_string(PacketType::CLIENT_DATA) + " ";
+		serverData += player->id + " ";
+		serverData += std::to_string(packetsSent++) + " ";
+		serverData += std::to_string(util::fn::getTimeInMsSinceEpoch().count()) + " ";
+		serverData += std::to_string(player->currentStateType) + " ";
+		//StartPosition
+		serverData += std::to_string(player->rect.getPosition().x) + " ";
+		serverData += std::to_string(player->rect.getPosition().y) + " ";
+		//Velocity
+		serverData += std::to_string(player->velocity.x) + " ";
+		serverData += std::to_string(player->velocity.y) + " ";
+		//Endpos
+		serverData += std::to_string(player->endPos.x) + " ";
+		serverData += std::to_string(player->endPos.y) + " ";
+
 		brodcastPacket(serverData.c_str());
 	}
 }

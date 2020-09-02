@@ -25,23 +25,23 @@ ENetClient::~ENetClient()
 
 const char* ENetClient::buildDataFromRequest(const Request &request)
 {
-    std::string data;
+    std::string clientData;
     //Always send essential data about the player
     //Player and request data
-    data += std::to_string(PacketType::CLIENT_DATA);
-    data += player->id + " ";
-    data += std::to_string(request.id) + " ";
-    data += std::to_string(request.time) + " ";
-    data += std::to_string(request.playerSnapshot.type) + " ";
+    clientData += std::to_string(PacketType::CLIENT_DATA) + " ";
+    clientData += player->id + " ";
+    clientData += std::to_string(request.id) + " ";
+    clientData += std::to_string(request.time) + " ";
+    clientData += std::to_string(request.playerSnapshot.type) + " ";
     //StartPosition
-    data += std::to_string(request.playerSnapshot.rect.getPosition().x) + " ";
-    data += std::to_string(request.playerSnapshot.rect.getPosition().y) + " ";
+    clientData += std::to_string(request.playerSnapshot.rect.getPosition().x) + " ";
+    clientData += std::to_string(request.playerSnapshot.rect.getPosition().y) + " ";
     //Velocity
-    data += std::to_string(request.playerSnapshot.velocity.x) + " ";
-    data += std::to_string(request.playerSnapshot.velocity.y) + " ";
+    clientData += std::to_string(request.playerSnapshot.velocity.x) + " ";
+    clientData += std::to_string(request.playerSnapshot.velocity.y) + " ";
     //Endpos
-    data += std::to_string(request.playerSnapshot.endPos.x) + " ";
-    data += std::to_string(request.playerSnapshot.endPos.y) + " ";
+    clientData += std::to_string(request.playerSnapshot.endPos.x) + " ";
+    clientData += std::to_string(request.playerSnapshot.endPos.y) + " ";
 
     //Evaluate the type of request and send the appropriate packet
     switch (request.playerSnapshot.type)
@@ -57,7 +57,7 @@ const char* ENetClient::buildDataFromRequest(const Request &request)
     default:
         break;
     }
-    return strdup(data.c_str());
+    return strdup(clientData.c_str());
 }
 
 void ENetClient::sendRequestToServer(const Request& request)

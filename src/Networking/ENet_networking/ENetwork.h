@@ -61,6 +61,7 @@ protected:
 	{
 		return ((ENetwork *)context)->traffic();
 	}
+	static void printPacketData(const char* data);
 
 public:
 	ENetwork(/* args */);

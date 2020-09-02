@@ -70,10 +70,10 @@ void ENetwork::handleReceiveEvent(ENetEvent* event)
 	switch (recievedPacketType)
 	{
 	case PacketType::SERVER_DATA:
-		puts("0");
+		printPacketData(receivedData);
 		break;
 	case PacketType::CLIENT_DATA:
-		puts("1");
+		printPacketData(receivedData);
 		break;
 	case PacketType::PLAYER_CONNECTED:
 
@@ -127,6 +127,19 @@ void* ENetwork::traffic(void)
 		sendPackets();
 	}
 	return NULL;
+}
+
+void ENetwork::printPacketData(const char* data)
+{
+	//Split the string into a vector
+	std::vector<std::string> dataVec = util::fn::stringSplitSpace(data);
+	puts("-----------------------");
+	for (size_t i = 0; i < dataVec.size(); i++)
+	{
+		dataVec[i].insert(0, std::to_string(i)+". ");
+		puts(dataVec[i].c_str());
+	}
+	puts("-----------------------\n");
 }
 
 int ENetwork::run()
