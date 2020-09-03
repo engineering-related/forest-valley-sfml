@@ -23,25 +23,14 @@ ENetClient::~ENetClient()
 }
 
 
-const char* ENetClient::buildDataFromRequest(const Request &request)
+const char* ENetClient::getDataFromRequest(const Request &request)
 {
     std::string clientData;
     //Always send essential data about the player
     //Player and request data
-    clientData += std::to_string(PacketType::CLIENT_DATA) + " ";
-    clientData += player->id + " ";
-    clientData += std::to_string(request.id) + " ";
-    clientData += std::to_string(request.time) + " ";
-    clientData += std::to_string(request.playerSnapshot.type) + " ";
-    //StartPosition
-    clientData += std::to_string(request.playerSnapshot.rect.getPosition().x) + " ";
-    clientData += std::to_string(request.playerSnapshot.rect.getPosition().y) + " ";
-    //Velocity
-    clientData += std::to_string(request.playerSnapshot.velocity.x) + " ";
-    clientData += std::to_string(request.playerSnapshot.velocity.y) + " ";
-    //Endpos
-    clientData += std::to_string(request.playerSnapshot.endPos.x) + " ";
-    clientData += std::to_string(request.playerSnapshot.endPos.y) + " ";
+    clientData += std::to_string(PacketType::PLAYER_STATE) + " ";
+    clientData += ID + " ";
+    clientData += game->players[ID]->getData();
 
     //Evaluate the type of request and send the appropriate packet
     switch (request.playerSnapshot.type)
@@ -52,7 +41,7 @@ const char* ENetClient::buildDataFromRequest(const Request &request)
     case RequestType::MOVE:
         //No more data needs to be added
         break;
-    case RequestType::DELETE:
+    case RequestType::DEL:
         //Data about what objects the player wants to delete needs to be added!
     default:
         break;
@@ -62,20 +51,20 @@ const char* ENetClient::buildDataFromRequest(const Request &request)
 
 void ENetClient::sendRequestToServer(const Request& request)
 {
-    sendPacket(peer, 0, buildDataFromRequest(request));
+    sendPacket(peer, 0, getDataFromRequest(request));
 }
 
 void ENetClient::addRequest(const Request& request)
 {
     requestQueue.push_back(request);
-    player->changedState = false;
+    game->players[ID]->changedState = false;
 }
 
 void ENetClient::checkPlayerState()
 {
-    if(player->changedState)
+    if(game->players[ID]->changedState)
     {
-        addRequest(player->state);
+        addRequest(game->players[ID]->state);
     }
 }
 
@@ -85,8 +74,8 @@ void ENetClient::checkPlayerState()
             event->peer->address.host,
             event->peer->address.port);
 
-    setThreadsLoopRunning(false);
-    setGameLoopRunning(false);
+    setThreadLoopRunning(false);
+    game->setGameLoopRunning(false);
 
     /*Reset the peer's host information. */
     event->peer->data = NULL;

@@ -82,20 +82,20 @@ void ENetServer::brodcastPacket(const char* data)
 		std::string serverData;
 
 		//Player and request data
-		serverData += std::to_string(PacketType::CLIENT_DATA) + " ";
-		serverData += player->id + " ";
+		serverData += std::to_string(PacketType::PLAYER_STATE) + " ";
+		serverData += ID + " ";
 		serverData += std::to_string(packetsSent++) + " ";
 		serverData += std::to_string(util::fn::getTimeInMsSinceEpoch().count()) + " ";
-		serverData += std::to_string(player->currentStateType) + " ";
+		serverData += std::to_string(game->players[ID]->currentStateType) + " ";
 		//StartPosition
-		serverData += std::to_string(player->rect.getPosition().x) + " ";
-		serverData += std::to_string(player->rect.getPosition().y) + " ";
+		serverData += std::to_string(game->players[ID]->rect.getPosition().x) + " ";
+		serverData += std::to_string(game->players[ID]->rect.getPosition().y) + " ";
 		//Velocity
-		serverData += std::to_string(player->velocity.x) + " ";
-		serverData += std::to_string(player->velocity.y) + " ";
+		serverData += std::to_string(game->players[ID]->velocity.x) + " ";
+		serverData += std::to_string(game->players[ID]->velocity.y) + " ";
 		//Endpos
-		serverData += std::to_string(player->endPos.x) + " ";
-		serverData += std::to_string(player->endPos.y) + " ";
+		serverData += std::to_string(game->players[ID]->endPos.x) + " ";
+		serverData += std::to_string(game->players[ID]->endPos.y) + " ";
 
 		brodcastPacket(serverData.c_str());
 	}

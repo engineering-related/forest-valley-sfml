@@ -22,7 +22,7 @@ Client-Server-Architecture (https://www.gabrielgambetta.com/client-server-game-a
 |		2. Server response
 |		---------------------
 |		3 - The server gets the requests from all the clients in a short time interval (tickrate)
-|		4 - The server validates the request and updates the server-gamestate
+|		4 - The server validates the requests and updates the server-gamestate
 |		5 - The server creates "snapshots" with timestamps of the gamestate (Hold 3 in memory #1, #2, #3)
 |	        6 - After a server tick, the server sends back a final snapshot of the latest gamestate to each client
 |

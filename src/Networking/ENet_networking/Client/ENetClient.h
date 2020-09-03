@@ -8,7 +8,7 @@ class ENetClient : public ENetwork
 private:
 	virtual int init();
 	ENetPeer* peer;
-	const char* buildDataFromRequest(const Request &request);
+	const char* getDataFromRequest(const Request &request);
 	void sendRequestToServer(const Request& request);
 	std::vector<Request> requestQueue;
 	void checkPlayerState();

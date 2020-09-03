@@ -1,6 +1,7 @@
 #ifndef ENETWORK
 #define ENETWORK
-#include "ENetTestPlayer.h"
+
+#include "ENetTestGame.h"
 
 class ENetwork
 {
@@ -9,9 +10,9 @@ private:
 	void initTestPlayer();
 	virtual int init() = 0;
 	bool threadsLoopRunning;
-	bool gameLoopRunning;
 
 protected:
+	std::string ID;
 	//ENet
 	ENetAddress address;
     ENetHost* host;
@@ -21,29 +22,16 @@ protected:
 	sf::Clock clock;
 
 	//Threads
-	pthread_mutex_t lock;
 	pthread_t networkThread;
 
-	inline void setThreadsLoopRunning(const bool &state){threadsLoopRunning = state;}
-	inline const bool& getTheadsLoopRunning()const{return threadsLoopRunning;}
-
 	//Game
-	sf::RenderWindow* window;
-	float dt;
-	sf::Clock gameClock;
-
-	inline void setGameLoopRunning(const bool &state){gameLoopRunning = state;}
-	inline const bool& getGameLoopRunning()const{return gameLoopRunning;}
-
-	//Players
-	ENetTestPlayer* player;
-	std::unordered_map<std::string /*key-id*/, ENetTestPlayer* /*players*/> players;
+	ENetTestGame* game;
 
 	//Handle packet-traffic
 	typedef ENetTestPlayer::StateType RequestType;
 	typedef ENetTestPlayer::State Request;
 
-	enum PacketType { SERVER_DATA, CLIENT_DATA, PLAYER_CONNECTED,
+	enum PacketType { PLAYER_STATE, GAME_STATE, PLAYER_CONNECTED,
 					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
 					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
 
@@ -66,10 +54,13 @@ protected:
 public:
 	ENetwork(/* args */);
 	virtual ~ENetwork();
-	void updatePlayers(const float & dt);
-	void drawPlayers(sf::RenderTarget* target);
 	int run();
 	virtual int disconnect() = 0;
+
+	//Setters
+	inline void setThreadLoopRunning(const bool &state){threadsLoopRunning = state;}
+	//Getters
+	inline const bool& getTheadLoopRunning()const{return threadsLoopRunning;}
 };
 
 

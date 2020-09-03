@@ -7,14 +7,15 @@ class ENetTestPlayer
 {
 public:
 	//states
-	enum StateType {IDLE, MOVE, DELETE, PICK_UP, DROP, CREATE, CRAFT, ATTACK};
+	enum StateType {IDLE, MOVE, DEL, PICK_UP, DROP, CREATE, CRAFT, ATTACK};
 	StateType currentStateType, lastStateType;
 
 	struct State {
-		int id;
+		int ID;
 		int64_t time;
 
 		struct PlayerSnapshot{
+			std::string playerId;
 			StateType type;
 			sf::RectangleShape rect;
 			sf::Vector2f endPos;
@@ -23,6 +24,7 @@ public:
 			{
 				if(context != NULL)
 				{
+					this->playerId = context->ENetID;
 					this->type = context->currentStateType;
 					this->rect = context->rect;
 					this->endPos = context->endPos;
@@ -36,12 +38,12 @@ public:
 			static int totalPerformed = 0;
 			this->playerSnapshot = playerSnapshot;
 			this->time = util::fn::getTimeInMsSinceEpoch().count();
-			id = totalPerformed++;
+			ID = totalPerformed++;
 		}
 	}; State state;
 
 	//Attributes
-	std::string id;
+	std::string ENetID;
 	sf::RectangleShape rect;
 	sf::Vector2f endPos;
 	sf::Vector2f velocity;
@@ -49,13 +51,15 @@ public:
 	bool changedState;
 	float speedMagnitude;
 
-	ENetTestPlayer(std::string id, sf::Vector2f spawnPos, sf::Color color)
+	ENetTestPlayer(std::string ENetID = "",
+				   sf::Vector2f spawnPos = sf::Vector2f(0.f, 0.f),
+	               sf::Color color = sf::Color(255, 255, 255))
 	{
-		this->id = id;
-		rect.setSize(sf::Vector2f(20, 20));
-		rect.setFillColor(color);
-		rect.setPosition(spawnPos);
-		rect.setOrigin(rect.getSize()*0.5f);
+		this->ENetID = ENetID;
+		this->rect.setSize(sf::Vector2f(20, 20));
+		this->rect.setFillColor(color);
+		this->rect.setPosition(spawnPos);
+		this->rect.setOrigin(rect.getSize()*0.5f);
 		this->speedMagnitude = 200.f;
 		this->mouseClicked = false;
 		this->endPos = this->rect.getPosition();
@@ -79,21 +83,21 @@ public:
 
 	void idle(const float &dt)
 	{
-		this->velocity = sf::Vector2f(0.f*dt, 0.f*dt);
+		velocity = sf::Vector2f(0.f*dt, 0.f*dt);
 		currentStateType = StateType::IDLE;
 	}
 
 	void update(const float &dt)
 	{
 		bool shouldMove = false;
-		if ((this->velocity.x >= 0 && this->rect.getPosition().x < endPos.x) ||
-			(this->velocity.x <= 0 && this->rect.getPosition().x > endPos.x) ||
-			(this->velocity.y >= 0 && this->rect.getPosition().y < endPos.y) ||
-			(this->velocity.y <= 0 && this->rect.getPosition().y > endPos.y))
+		if ((velocity.x >= 0 && rect.getPosition().x < endPos.x) ||
+			(velocity.x <= 0 && rect.getPosition().x > endPos.x) ||
+			(velocity.y >= 0 && rect.getPosition().y < endPos.y) ||
+			(velocity.y <= 0 && rect.getPosition().y > endPos.y))
 				shouldMove = true;
 
 		if(shouldMove)
-			this->rect.move(this->velocity*dt);
+			rect.move(velocity*dt);
 		else
 			idle(dt);
 
@@ -103,21 +107,38 @@ public:
 		}
 	}
 
-	void handleMouse(sf::RenderWindow* window)
+	static void handleMouse(ENetTestPlayer* player, sf::RenderWindow* window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos) && !mouseClicked)
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos) && !player->mouseClicked)
 		{
-			mouseClicked = true;
-			endPos = (sf::Vector2f)mousePos;
-			float angle = atan2f(endPos.y - this->rect.getPosition().y, endPos.x - this->rect.getPosition().x);
-			velocity = sf::Vector2f(speedMagnitude*cos(angle), speedMagnitude*sin(angle));
-			currentStateType = StateType::MOVE;
-			refreshState();
+			player->mouseClicked = true;
+			player->endPos = (sf::Vector2f)mousePos;
+			float angle = atan2f(player->endPos.y - player->rect.getPosition().y, player->endPos.x - player->rect.getPosition().x);
+			player->velocity = sf::Vector2f(player->speedMagnitude*cos(angle), player->speedMagnitude*sin(angle));
+			player->currentStateType = StateType::MOVE;
+			player->refreshState();
 		}
 		else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
-			mouseClicked = false;
+			player->mouseClicked = false;
+	}
+	const char* getData()
+	{
+		std::string playerData;
+		playerData += std::to_string(state.ID) + " ";
+		playerData += std::to_string(state.time) + " ";
+		playerData += std::to_string(state.playerSnapshot.type) + " ";
+		//StartPosition
+		playerData += std::to_string(state.playerSnapshot.rect.getPosition().x) + " ";
+		playerData += std::to_string(state.playerSnapshot.rect.getPosition().y) + " ";
+		//Velocity
+		playerData += std::to_string(state.playerSnapshot.velocity.x) + " ";
+		playerData += std::to_string(state.playerSnapshot.velocity.y) + " ";
+		//Endpos
+		playerData += std::to_string(state.playerSnapshot.endPos.x) + " ";
+		playerData += std::to_string(state.playerSnapshot.endPos.y) + " ";
+		return strdup(playerData.c_str());
 	}
 };
 
-#endif
+#endif //ENET_TEST_PLAYER
