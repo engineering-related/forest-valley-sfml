@@ -25,6 +25,7 @@ protected:
 public:
 	ENetClient(/* args */);
 	virtual ~ENetClient();
+
 	int connect();
 	virtual int disconnect();
 };

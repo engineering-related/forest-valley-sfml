@@ -7,9 +7,8 @@ class ENetwork
 {
 private:
 	int initENet();
-	void initTestPlayer();
 	virtual int init() = 0;
-	bool threadsLoopRunning;
+	bool threadLoopRunning;
 
 protected:
 	std::string ID;
@@ -36,32 +35,42 @@ protected:
 					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
 
 	const char* extractData(enet_uint8* data);
+
+	//Receive events are the same for client & server
 	void handleReceiveEvent(ENetEvent* event);
+
+	//Player disconnection are not similar for client & server
 	virtual void handleDisconnectEvent(ENetEvent* event) = 0;
 
+	//Sending a packet to peer are the same for client & server
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data);
 
 	//Network loops in threads
 	virtual void receiveEvents() = 0;
 	virtual void sendPackets() = 0;
 	void* traffic(void);
+
+	//Helper function to "void* traffic(void) needed for threading"
 	static void* trafficHelper(void *context)
 	{
 		return ((ENetwork *)context)->traffic();
 	}
+
 	static void printPacketData(const char* data);
 
 public:
 	ENetwork(/* args */);
 	virtual ~ENetwork();
+
 	int run();
+	//Disconnection are not similar for client & server
 	virtual int disconnect() = 0;
 
 	//Setters
-	inline void setThreadLoopRunning(const bool &state){threadsLoopRunning = state;}
+	inline void setThreadLoopRunning(const bool &state){threadLoopRunning = state;}
 
 	//Getters
-	inline const bool& getTheadLoopRunning()const{return threadsLoopRunning;}
+	inline const bool& getTheadLoopRunning()const{return threadLoopRunning;}
 };
 
 

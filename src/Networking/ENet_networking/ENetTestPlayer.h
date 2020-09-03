@@ -40,6 +40,24 @@ public:
 			this->time = util::fn::getTimeInMsSinceEpoch().count();
 			ID = totalPerformed++;
 		}
+
+		const char* getData()
+		{
+			std::string playerData;
+			playerData += std::to_string(ID) + " ";
+			playerData += std::to_string(time) + " ";
+			playerData += std::to_string(playerSnapshot.type) + " ";
+			//StartPosition
+			playerData += std::to_string(playerSnapshot.rect.getPosition().x) + " ";
+			playerData += std::to_string(playerSnapshot.rect.getPosition().y) + " ";
+			//Velocity
+			playerData += std::to_string(playerSnapshot.velocity.x) + " ";
+			playerData += std::to_string(playerSnapshot.velocity.y) + " ";
+			//Endpos
+			playerData += std::to_string(playerSnapshot.endPos.x) + " ";
+			playerData += std::to_string(playerSnapshot.endPos.y) + " ";
+			return strdup(playerData.c_str());
+		}
 	}; State state;
 
 	//Attributes
@@ -121,23 +139,6 @@ public:
 		}
 		else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			player->mouseClicked = false;
-	}
-	const char* getData()
-	{
-		std::string playerData;
-		playerData += std::to_string(state.ID) + " ";
-		playerData += std::to_string(state.time) + " ";
-		playerData += std::to_string(state.playerSnapshot.type) + " ";
-		//StartPosition
-		playerData += std::to_string(state.playerSnapshot.rect.getPosition().x) + " ";
-		playerData += std::to_string(state.playerSnapshot.rect.getPosition().y) + " ";
-		//Velocity
-		playerData += std::to_string(state.playerSnapshot.velocity.x) + " ";
-		playerData += std::to_string(state.playerSnapshot.velocity.y) + " ";
-		//Endpos
-		playerData += std::to_string(state.playerSnapshot.endPos.x) + " ";
-		playerData += std::to_string(state.playerSnapshot.endPos.y) + " ";
-		return strdup(playerData.c_str());
 	}
 };
 

@@ -57,13 +57,13 @@ void ENetServer::brodcastPacket(const char* data)
 		switch (event.type)
 		{
 			case ENET_EVENT_TYPE_CONNECT:
-				handleConnectionEvent(&event);
+				this->handleConnectionEvent(&event);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
-				handleReceiveEvent(&event);
+				ENetwork::handleReceiveEvent(&event);
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
-				handleDisconnectEvent(&event);
+				this->handleDisconnectEvent(&event);
 				break;
 
 			default:
@@ -98,6 +98,7 @@ void ENetServer::brodcastPacket(const char* data)
 		serverData += std::to_string(game->players[ID]->endPos.x) + " ";
 		serverData += std::to_string(game->players[ID]->endPos.y) + " ";
 		pthread_mutex_unlock(&game->ENetMutex);
+
 		brodcastPacket(serverData.c_str());
 	}
 }

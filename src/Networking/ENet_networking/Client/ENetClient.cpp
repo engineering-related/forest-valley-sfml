@@ -22,7 +22,6 @@ ENetClient::~ENetClient()
 	return EXIT_SUCCESS;
 }
 
-
 const char* ENetClient::getDataFromRequest(const Request &request)
 {
     std::string clientData;
@@ -32,7 +31,7 @@ const char* ENetClient::getDataFromRequest(const Request &request)
     clientData += ID + " ";
 
     pthread_mutex_lock(&game->ENetMutex);
-    clientData += game->players[ID]->getData();
+    clientData += game->players[ID]->state.getData();
     pthread_mutex_unlock(&game->ENetMutex);
 
     //Evaluate the type of request and send the appropriate packet
@@ -60,6 +59,7 @@ void ENetClient::sendRequestToServer(const Request& request)
 void ENetClient::addRequest(const Request& request)
 {
     requestQueue.push_back(request);
+
     pthread_mutex_lock(&game->ENetMutex);
     game->players[ID]->changedState = false;
     pthread_mutex_unlock(&game->ENetMutex);
@@ -97,11 +97,11 @@ void ENetClient::checkPlayerState()
         switch (event.type)
         {
             case ENET_EVENT_TYPE_RECEIVE:
-                handleReceiveEvent(&event);
+                ENetwork::handleReceiveEvent(&event);
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
-                handleDisconnectEvent(&event);
+                this->handleDisconnectEvent(&event);
                 break;
 
             default:

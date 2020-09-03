@@ -11,6 +11,7 @@ ENetTestGame::ENetTestGame(const ENetwork  *  const context)
 
 ENetTestGame::~ENetTestGame()
 {
+	//Delete players
 	pthread_mutex_lock(&ENetMutex);
 	for (auto p : players)
 	{

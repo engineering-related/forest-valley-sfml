@@ -90,6 +90,7 @@ void* ENetwork::traffic(void)
 	clock.restart().asMilliseconds();
     while (getTheadLoopRunning())
 	{
+		//Evetents are rec
 		receiveEvents();
 		sendPackets();
 	}
@@ -131,6 +132,7 @@ int ENetwork::run()
 	setThreadLoopRunning(false);
 
 	disconnect();
+
 	pthread_join(networkThread, NULL);
 	return EXIT_SUCCESS;
 }
