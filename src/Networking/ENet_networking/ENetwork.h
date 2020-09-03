@@ -59,6 +59,7 @@ public:
 
 	//Setters
 	inline void setThreadLoopRunning(const bool &state){threadsLoopRunning = state;}
+
 	//Getters
 	inline const bool& getTheadLoopRunning()const{return threadsLoopRunning;}
 };

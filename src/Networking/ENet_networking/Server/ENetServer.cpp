@@ -82,6 +82,7 @@ void ENetServer::brodcastPacket(const char* data)
 		std::string serverData;
 
 		//Player and request data
+		pthread_mutex_lock(&game->ENetMutex);
 		serverData += std::to_string(PacketType::PLAYER_STATE) + " ";
 		serverData += ID + " ";
 		serverData += std::to_string(packetsSent++) + " ";
@@ -96,7 +97,7 @@ void ENetServer::brodcastPacket(const char* data)
 		//Endpos
 		serverData += std::to_string(game->players[ID]->endPos.x) + " ";
 		serverData += std::to_string(game->players[ID]->endPos.y) + " ";
-
+		pthread_mutex_unlock(&game->ENetMutex);
 		brodcastPacket(serverData.c_str());
 	}
 }

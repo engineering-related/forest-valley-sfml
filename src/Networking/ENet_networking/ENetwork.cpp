@@ -11,6 +11,7 @@ ENetwork::ENetwork(/* args */)
 ENetwork::~ENetwork()
 {
 	enet_host_destroy(host);
+	delete game;
 }
 
 int ENetwork::initENet()
@@ -118,11 +119,11 @@ int ENetwork::run()
 		return EXIT_FAILURE;
 	}
 
-	/*//Create mutex
+	//Create mutex
 	if (pthread_mutex_init(&game->ENetMutex, NULL) != 0) {
     	fprintf(stderr, "\n mutex init has failed\n");
     	return EXIT_FAILURE;
-    }*/
+    }
 
 	//Game loop
 	setThreadLoopRunning(true);
@@ -131,7 +132,5 @@ int ENetwork::run()
 
 	disconnect();
 	pthread_join(networkThread, NULL);
-	//pthread_mutex_destroy(&game->ENetMutex);
-	delete game;
 	return EXIT_SUCCESS;
 }

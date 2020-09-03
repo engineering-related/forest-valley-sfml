@@ -17,7 +17,9 @@ public:
 	std::unordered_map<std::string, ENetTestPlayer*> players;
 	sf::Clock clock;
 	std::string* ENetID;
-	//pthread_mutex_t ENetMutex;
+
+	//Network and game mutex-lock
+	pthread_mutex_t ENetMutex;
 
 	ENetTestGame(const ENetwork * const context);
 	~ENetTestGame();

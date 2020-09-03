@@ -30,7 +30,10 @@ const char* ENetClient::getDataFromRequest(const Request &request)
     //Player and request data
     clientData += std::to_string(PacketType::PLAYER_STATE) + " ";
     clientData += ID + " ";
+
+    pthread_mutex_lock(&game->ENetMutex);
     clientData += game->players[ID]->getData();
+    pthread_mutex_unlock(&game->ENetMutex);
 
     //Evaluate the type of request and send the appropriate packet
     switch (request.playerSnapshot.type)
@@ -57,14 +60,19 @@ void ENetClient::sendRequestToServer(const Request& request)
 void ENetClient::addRequest(const Request& request)
 {
     requestQueue.push_back(request);
+    pthread_mutex_lock(&game->ENetMutex);
     game->players[ID]->changedState = false;
+    pthread_mutex_unlock(&game->ENetMutex);
 }
 
 void ENetClient::checkPlayerState()
 {
-    if(game->players[ID]->changedState)
+    //Make sure game is still running
+    if(game != NULL && game->getGameLoopRunning() && getTheadLoopRunning())
     {
-        addRequest(game->players[ID]->state);
+        //If the player changed state, then send a request to the server
+        if(game->players[ID]->changedState)
+            addRequest(game->players[ID]->state);
     }
 }
 

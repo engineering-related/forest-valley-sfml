@@ -4,19 +4,21 @@ ENetTestGame::ENetTestGame(const ENetwork  *  const context)
 {
 	//Set context
 	this->context = context;
-
 	//Create window
 	window = new sf::RenderWindow();
-	window->setFramerateLimit(300);
 }
 
 
 ENetTestGame::~ENetTestGame()
 {
+	pthread_mutex_lock(&ENetMutex);
 	for (auto p : players)
 	{
     	delete p.second;
 	}
+	pthread_mutex_unlock(&ENetMutex);
+
+	pthread_mutex_destroy(&ENetMutex);
 	delete window;
 }
 
@@ -60,6 +62,7 @@ void ENetTestGame::loop()
 {
 	//Create the window
 	window->create(sf::VideoMode(800, 600, 32), "ENet Testing");
+	window->setFramerateLimit(200);
 	//Start the loop
 	setGameLoopRunning(true);
 	while (getGameLoopRunning())
@@ -97,11 +100,11 @@ void ENetTestGame::loop()
 		//Rendering
 		window->clear();
 		/////////////////
-		//pthread_mutex_lock(&lock);
+		pthread_mutex_lock(&ENetMutex);
 		ENetTestPlayer::handleMouse(players[*ENetID], window);
 		updatePlayers(dt);
 		drawPlayers(window);
-		//pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&ENetMutex);
 		//////////////////
 		window->display();
 	}
