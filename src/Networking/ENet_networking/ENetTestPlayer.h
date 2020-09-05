@@ -6,16 +6,17 @@
 class ENetTestPlayer
 {
 public:
-	//states
+	//Player States
+	///////////////////////////////////////////////////////////////////////////////////
 	enum StateType {IDLE, MOVE, DEL, PICK_UP, DROP, CREATE, CRAFT, ATTACK};
 	StateType currentStateType, lastStateType;
 
 	struct State {
-		int ID;
-		int64_t time;
+		int playerStateID;
+		int64_t timeStamp;
 
 		struct PlayerSnapshot{
-			std::string playerId;
+			std::string playerID;
 			StateType type;
 			sf::RectangleShape rect;
 			sf::Vector2f endPos;
@@ -24,7 +25,7 @@ public:
 			{
 				if(context != NULL)
 				{
-					this->playerId = context->ENetID;
+					this->playerID = context->playerID;
 					this->type = context->currentStateType;
 					this->rect = context->rect;
 					this->endPos = context->endPos;
@@ -37,31 +38,36 @@ public:
 		{
 			static int totalPerformed = 0;
 			this->playerSnapshot = playerSnapshot;
-			this->time = util::fn::getTimeInMsSinceEpoch().count();
-			ID = totalPerformed++;
+			this->timeStamp = util::fn::getTimeInMsSinceEpoch().count();
+			playerStateID = totalPerformed++;
 		}
 
-		const char* getData()
+		const char* getStateData(const std::string& ENetID,  const unsigned int &packetType)
 		{
-			std::string playerData;
-			playerData += std::to_string(ID) + " ";
-			playerData += std::to_string(time) + " ";
-			playerData += std::to_string(playerSnapshot.type) + " ";
+			std::string playerStateData;
+			playerStateData += std::to_string(packetType) + " ";
+			playerStateData += ENetID + " ";
+			playerStateData += playerSnapshot.playerID + " ";
+			playerStateData += std::to_string(playerStateID) + " ";
+			playerStateData += std::to_string(timeStamp) + " ";
+			playerStateData += std::to_string(playerSnapshot.type) + " ";
 			//StartPosition
-			playerData += std::to_string(playerSnapshot.rect.getPosition().x) + " ";
-			playerData += std::to_string(playerSnapshot.rect.getPosition().y) + " ";
+			playerStateData += std::to_string(playerSnapshot.rect.getPosition().x) + " ";
+			playerStateData += std::to_string(playerSnapshot.rect.getPosition().y) + " ";
 			//Velocity
-			playerData += std::to_string(playerSnapshot.velocity.x) + " ";
-			playerData += std::to_string(playerSnapshot.velocity.y) + " ";
+			playerStateData += std::to_string(playerSnapshot.velocity.x) + " ";
+			playerStateData += std::to_string(playerSnapshot.velocity.y) + " ";
 			//Endpos
-			playerData += std::to_string(playerSnapshot.endPos.x) + " ";
-			playerData += std::to_string(playerSnapshot.endPos.y) + " ";
-			return strdup(playerData.c_str());
+			playerStateData += std::to_string(playerSnapshot.endPos.x) + " ";
+			playerStateData += std::to_string(playerSnapshot.endPos.y) + " ";
+			return strdup(playerStateData.c_str());
 		}
-	}; State state;
+
+	}; State playerState;
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//Attributes
-	std::string ENetID;
+	std::string playerID;
 	sf::RectangleShape rect;
 	sf::Vector2f endPos;
 	sf::Vector2f velocity;
@@ -69,24 +75,32 @@ public:
 	bool changedState;
 	float speedMagnitude;
 
-	ENetTestPlayer(std::string ENetID = "",
+	//Constructor
+	ENetTestPlayer(std::string playerID = "",
 				   sf::Vector2f spawnPos = sf::Vector2f(0.f, 0.f),
-	               sf::Color color = sf::Color(255, 255, 255))
+				   sf::Color color = sf::Color(255, 255, 255),
+				   StateType stateType = StateType::IDLE,
+				   sf::Vector2f velocity = sf::Vector2f(0.f, 0.f),
+				   sf::Vector2f endPos = sf::Vector2f(0.f, 0.f))
+
 	{
-		this->ENetID = ENetID;
+		this->playerID = playerID;
 		this->rect.setSize(sf::Vector2f(20, 20));
 		this->rect.setFillColor(color);
 		this->rect.setPosition(spawnPos);
 		this->rect.setOrigin(rect.getSize()*0.5f);
 		this->speedMagnitude = 200.f;
 		this->mouseClicked = false;
-		this->endPos = this->rect.getPosition();
-		this->velocity = sf::Vector2f(0.f, 0.f);
-		this->state = State(this);
+		this->endPos = endPos;
+		this->currentStateType = stateType;
+		this->velocity = velocity;
+		this->playerState = State(this);
 		this->changedState = false;
 	}
+	//Destructor
 	~ENetTestPlayer(){}
 
+	//Functions
 	void draw(sf::RenderTarget* target)
 	{
 		target->draw(rect);
@@ -94,7 +108,7 @@ public:
 
 	void refreshState()
 	{
-		state = State(State::PlayerSnapshot(this));
+		playerState = State(State::PlayerSnapshot(this));
 		lastStateType = currentStateType;
 		changedState = true;
 	}
@@ -125,6 +139,44 @@ public:
 		}
 	}
 
+	const char* getPlayerData(const std::string &ENetID, const unsigned int &packetType)
+	{
+		std::string playerData;
+		playerData += std::to_string(packetType) + " ";
+		playerData += ENetID + " ";
+		playerData += playerID + " ";
+		playerData += std::to_string(util::fn::getTimeInMsSinceEpoch().count()) + " ";
+		playerData += std::to_string(currentStateType) + " ";
+		//Color
+		playerData += std::to_string(rect.getFillColor().r) + " ";
+		playerData += std::to_string(rect.getFillColor().g) + " ";
+		playerData += std::to_string(rect.getFillColor().b) + " ";
+		//StartPosition
+		playerData += std::to_string(rect.getPosition().x) + " ";
+		playerData += std::to_string(rect.getPosition().y) + " ";
+		//Velocity
+		playerData += std::to_string(velocity.x) + " ";
+		playerData += std::to_string(velocity.y) + " ";
+		//Endpos
+		playerData += std::to_string(endPos.x) + " ";
+		playerData += std::to_string(endPos.y) + " ";
+		return strdup(playerData.c_str());
+	}
+
+	void setPlayerData(const std::vector<std::string> &playerDataVec)
+	{
+		//std::string pENetID = playerDataVec[1];
+		playerID = playerDataVec[2];
+		playerState.playerSnapshot.playerID = playerDataVec[3];
+		playerState.timeStamp = (int64_t)std::stoll(playerDataVec[4]);
+		currentStateType = (StateType)std::stoi(playerDataVec[5]);
+		rect.setPosition(sf::Vector2f(std::stof(playerDataVec[6]), std::stof(playerDataVec[7])));
+		velocity = sf::Vector2f(std::stof(playerDataVec[8]), std::stof(playerDataVec[9]));
+		endPos = sf::Vector2f(std::stof(playerDataVec[10]), std::stof(playerDataVec[11]));
+		refreshState();
+	}
+
+	//Static functions
 	static void handleMouse(ENetTestPlayer* player, sf::RenderWindow* window)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
@@ -139,6 +191,23 @@ public:
 		}
 		else if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			player->mouseClicked = false;
+	}
+
+	static ENetTestPlayer* buildPlayerFromData(const std::vector<std::string> &playerDataVec)
+	{
+		//std::string pENetID = playerDataVec[1];
+		std::string pPlayerID = playerDataVec[2];
+		int64_t pTimeStamp = (int64_t)std::stoll(playerDataVec[3]);
+		ENetTestPlayer::StateType statetype = (ENetTestPlayer::StateType)std::stoi(playerDataVec[4]);
+		sf::Color pfillcolor = sf::Color(
+				(Uint8)std::stoi(playerDataVec[5]),
+				(Uint8)std::stoi(playerDataVec[6]),
+				(Uint8)std::stoi(playerDataVec[7]));
+		sf::Vector2f pPos = sf::Vector2f((float)std::stof(playerDataVec[8]), (float)std::stof(playerDataVec[9]));
+		sf::Vector2f pVel = sf::Vector2f((float)std::stof(playerDataVec[10]), (float)std::stof(playerDataVec[11]));
+		sf::Vector2f pEndPos = sf::Vector2f((float)std::stof(playerDataVec[12]), (float)std::stof(playerDataVec[13]));
+
+		return new ENetTestPlayer(pPlayerID, pPos, pfillcolor, statetype, pVel, pEndPos);
 	}
 };
 

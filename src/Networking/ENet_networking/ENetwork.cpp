@@ -3,9 +3,11 @@
 ENetwork::ENetwork(/* args */)
 {
 	initENet();
+	ENetID = util::fn::random_string(keyCharacterLength);
 	address.port = 24474;
 	game = new ENetTestGame(this);
-	game->initTestPlayer(&ID);
+	game->initTestPlayer(&ENetID);
+	shouldDissconnect = true;
 }
 
 ENetwork::~ENetwork()
@@ -27,60 +29,30 @@ int ENetwork::initENet()
 	return EXIT_SUCCESS;
 }
 
-const char* ENetwork::extractData(enet_uint8* data)
+ENetwork::DataVec ENetwork::extractData(enet_uint8* data)
 {
-	return reinterpret_cast<const char*>(data);
-}
-
-void ENetwork::handleReceiveEvent(ENetEvent* event)
-{
-	//Extract data to c_string
-	const char* receivedData = extractData(event->packet->data);
+	//Conver data to c-string
+	DataString* convertedData = reinterpret_cast<DataString*>(data);
 
 	//Split the string into a vector
-	std::vector<std::string> dataVec = util::fn::stringSplitSpace(receivedData);
-
-	//The first sequence in the data-string is always the type of the received packet
-	PacketType recievedPacketType = (PacketType)std::stoi(dataVec[0]);
-
-	//Perform action based on the given packet-type
-	switch (recievedPacketType)
-	{
-	case PacketType::GAME_STATE:
-		printPacketData(receivedData);
-		break;
-	case PacketType::PLAYER_STATE:
-		printPacketData(receivedData);
-		break;
-	case PacketType::PLAYER_CONNECTED:
-
-		break;
-	case PacketType::PLAYER_DISCONNECTED:
-
-		break;
-	case PacketType::HOST_DISCONNECTED:
-
-		break;
-	case PacketType::GAME_START:
-
-		break;
-	case PacketType::GAME_PAUSED:
-
-		break;
-	case PacketType::GAME_QUIT:
-
-		break;
-	default:
-		break;
-	}
-	//Destory packet
-	enet_packet_destroy(event->packet);
+	return util::fn::stringSplitSpace(std::string(convertedData));
 }
 
-void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data)
+
+ENetwork::DataString* ENetwork::compressData(const DataVec& dataVec)
+{
+	std::string data;
+	for(auto s: dataVec)
+	{
+		data += s + " ";
+	}
+	return strdup(data.c_str());
+}
+
+void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data)
 {
 	/*WARNING: When sending packets use multiple channels. Data from players->server are sent -
-	  on 0. Data from server->players are sent on 1. Chat and messages are on 2*/
+	  on 0. Data from server->players are sent on 1. Other types of data are send on 2*/
 	ENetPacket* packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peer, channel, packet);
 }
@@ -97,10 +69,8 @@ void* ENetwork::traffic(void)
 	return NULL;
 }
 
-void ENetwork::printPacketData(const char* data)
+void ENetwork::printPacketData(DataVec dataVec)
 {
-	//Split the string into a vector
-	std::vector<std::string> dataVec = util::fn::stringSplitSpace(data);
 	puts("-----------------------");
 	for (size_t i = 0; i < dataVec.size(); i++)
 	{

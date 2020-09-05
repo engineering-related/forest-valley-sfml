@@ -26,11 +26,11 @@ void Network::updatePlayers(const float &dt)
 {
 	for (auto p : players)
 	{
-		sf::Vector2f d(p.second->player->p2Pos.x - p.second->player->rect.getPosition().x,
+		sf::Vector2f ds(p.second->player->p2Pos.x - p.second->player->rect.getPosition().x,
 					   p.second->player->p2Pos.y - p.second->player->rect.getPosition().y);
-		if(abs(d.x) >= 1 && abs(d.y) >= 1)
+		if(abs(ds.x) >= 1 && abs(ds.y) >= 1)
 		{
-			float angle = atan2f(d.y, d.x);
+			float angle = atan2f(ds.y, ds.x);
 			p.second->player->velocity = sf::Vector2f(p.second->player->speedMagnitude * cos(angle),
 													  p.second->player->speedMagnitude * sin(angle));
 			p.second->player->rect.move(p.second->player->velocity * dt);

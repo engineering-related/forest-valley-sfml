@@ -8,16 +8,21 @@ class ENetClient : public ENetwork
 private:
 	virtual int init();
 	ENetPeer* peer;
-	const char* getDataFromRequest(const Request &request);
+	DataString* getDataFromRequest(const Request &request);
 	void sendRequestToServer(const Request& request);
 	std::vector<Request> requestQueue;
 	void checkPlayerState();
 	void addRequest(const Request &request);
 
-	const int requestTickRate = 64/*hz*/; //sends to server at most 64 packages/second
-								   //Tickduration = 1000/64 = 15,645ms
+	const int requestTickRate = 64/*hz*/; //sends to server at most N packages/second
+								   //Tickduration = 1000/N = Xms
+
+	void addPlayer(const DataVec& playerDataVec);
+	void removePlayer(const DataVec& playerDataVec);
+	void hostDisconnected(const DataVec& hostDataVec);
 
 protected:
+	virtual void handleReceiveEvent(ENetEvent* event);
 	virtual void handleDisconnectEvent(ENetEvent* event);
 	virtual void receiveEvents();
 	virtual void sendPackets();

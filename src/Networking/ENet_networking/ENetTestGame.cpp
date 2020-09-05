@@ -6,8 +6,8 @@ ENetTestGame::ENetTestGame(const ENetwork  *  const context)
 	this->context = context;
 	//Create window
 	window = new sf::RenderWindow();
+	this->gameState = State(this);
 }
-
 
 ENetTestGame::~ENetTestGame()
 {
@@ -24,20 +24,155 @@ ENetTestGame::~ENetTestGame()
 }
 
 
-void ENetTestGame::initTestPlayer(std::string *ENetID)
+ENetTestGame::State::State(ENetTestGame* context)
 {
-	//Decale empty string
-	std::string playerId;
+	if(context != NULL)
+	{
+		static int totalPerformed = 0;
+
+		for(auto p: context->players)
+		{
+			//Set the ENetID as key and the state of the player as value
+			playerStates[p.second->playerState.playerStateID] = p.second->playerState;
+			//Set the ENetID as key and changed state as value (bool)
+		}
+		timeStamp = util::fn::getTimeInMsSinceEpoch().count();
+		gameStateID = totalPerformed++;
+	}
+}
+
+const char* ENetTestGame::getChangedStateData(const std::string& ENetID,  const unsigned int &packetType)
+{
+	//Send data about the the host
+	std::string gameStateData;
+	gameStateData += std::to_string(packetType) + " ";
+	gameStateData += ENetID + " ";
+	gameStateData += std::to_string(gameState.gameStateID) + " ";
+	gameStateData += std::to_string(gameState.timeStamp) + " ";
+
+	//WARNING: Need to add information about the map etc.
+
+	//Add data about the players if the state was changed
+	unsigned int nrOfChangedPlayerStates = 0;
+	for(auto p: players)
+	{
+		//If a player changed add it to the list
+		if(p.second->changedState)
+		{
+			gameStateData += gameState.playerStates[p.second->playerState.playerStateID].getStateData(p.first, packetType);
+			p.second->changedState = false;
+			nrOfChangedPlayerStates++;
+		}
+	}
+	gameStateData += std::to_string(nrOfChangedPlayerStates) + " ";
+	return strdup(gameStateData.c_str());
+}
+
+void ENetTestGame::setChangedStateData(const std::vector<std::string> &gameStateDataVec)
+{
+	//std::string pENetID = gameStateDataVec[1];
+	//Set the state data
+	//gameState.gameStateID = std::stoi(gameStateDataVec[2]);
+	//gameState.timeStamp = (int64_t)std::stoll(gameStateDataVec[3]);
+
+	//WARNING: Need to add information about the map etc.
+
+	//The length of the server data (data before playerdata)
+	const size_t serverDataLength = 4;
+
+	const size_t nrOfChangedPlayerStates = (size_t)std::stoi(gameStateDataVec[gameStateDataVec.size() - 1]);
+
+	//The length of data for each player
+	const int playerDataLength = 12;
+
+	unsigned int dataIndex = serverDataLength;
+	for (size_t i = 0; i < nrOfChangedPlayerStates; i++)
+	{
+		std::vector<std::string> playerStateDataVec;
+		std::string pENetID = gameStateDataVec[dataIndex+1];
+
+		if(pENetID == *ENetID) continue; //Dont set your own state
+
+		for(size_t j = 0; j < playerDataLength; j++)
+		{
+			playerStateDataVec.push_back(gameStateDataVec[dataIndex++]);
+		}
+
+		players[pENetID]->setPlayerData(playerStateDataVec);
+	}
+	refreshState();
+}
+
+const char* ENetTestGame::getGameData(const std::string& ENetID,  const unsigned int &packetType)
+{
+	//Send data about the the host
+	std::string gameData;
+	gameData += std::to_string(packetType) + " ";
+	gameData += ENetID + " ";
+	gameData += std::to_string(gameState.gameStateID) + " ";
+	gameData += std::to_string(gameState.timeStamp) + " ";
+	gameData += std::to_string(players.size()) + " ";
+
+	//Add data about the players
+	for(auto p: players)
+	{
+		gameData += p.second->getPlayerData(p.first, packetType);
+	}
+	return strdup(gameData.c_str());
+}
+
+void ENetTestGame::setGameData(const std::vector<std::string> &gameDataVec)
+{
+	//std::string pENetID = playerDataVec[1];
+	//Set the state data
+	gameState.gameStateID = std::stoi(gameDataVec[2]);
+	gameState.timeStamp = (int64_t)std::stoull(gameDataVec[3]);
+	size_t playersOnServer = (size_t)std::stoi(gameDataVec[4]);
+
+	//WARNING: Need to add information about the map etc.
+
+	//The length of the server data (data before playerdata)
+	const size_t serverDataLength = 5;
+
+	//The length of data for each player
+	const size_t playerDataLength = 14;
+
+	puts(std::to_string(playerDataLength).c_str());
+
+	unsigned int dataIndex = serverDataLength;
+	for(size_t i = 0; i < playersOnServer; i++)
+	{
+		std::vector<std::string> playerDataVec;
+
+		for(size_t j = 0; j < playerDataLength; j++)
+		{
+			playerDataVec.push_back(gameDataVec[dataIndex++]);
+		}
+		std::string pENetID = playerDataVec[1];
+		ENetTestPlayer* player = ENetTestPlayer::buildPlayerFromData(playerDataVec);
+		addPlayer(pENetID, player);
+	}
+}
+
+void ENetTestGame::refreshState()
+{
+	lastGameState = gameState;
+	gameState = State(this);
+}
+
+void ENetTestGame::initTestPlayer(const std::string *ENetID)
+{
+	std::string playerID;
 
 	//Player enters an ID
 	std::cout << "ID: ";
-	std::cin >> *ENetID;
+	std::cin >> playerID;
 	std::cout << "\n";
 
 	//Creates a player from the ID
 	srand(time(NULL));
 	sf::Color playerColor = sf::Color(rand() % 255, rand() % 255, rand() % 255);
-	ENetTestPlayer* player = new ENetTestPlayer(playerId, sf::Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2),
+	ENetTestPlayer* player = new ENetTestPlayer(playerID, sf::Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2),
 		playerColor);
 	players[*ENetID] = player;
 	this->ENetID = ENetID;
@@ -57,6 +192,37 @@ void ENetTestGame::drawPlayers(sf::RenderTarget* target)
 	{
 		p.second->draw(target);
 	}
+}
+
+void ENetTestGame::addPlayer(std::string ENetID, ENetTestPlayer* player)
+{
+	pthread_mutex_lock(&ENetMutex);
+		players[ENetID] = player;
+	pthread_mutex_unlock(&ENetMutex);
+}
+
+void ENetTestGame::removePlayer(const std::string& ENetID)
+{
+	pthread_mutex_lock(&ENetMutex);
+		players.erase(ENetID);
+		delete players[ENetID];
+	pthread_mutex_unlock(&ENetMutex);
+}
+
+void ENetTestGame::update(const float &dt)
+{
+	//Update game
+	pthread_mutex_lock(&ENetMutex);
+		ENetTestPlayer::handleMouse(players[*ENetID], window);
+		updatePlayers(dt);
+	pthread_mutex_unlock(&ENetMutex);
+}
+
+void ENetTestGame::draw(RenderTarget* target)
+{
+	pthread_mutex_lock(&ENetMutex);
+		drawPlayers(target);
+	pthread_mutex_unlock(&ENetMutex);
 }
 
 void ENetTestGame::loop()
@@ -100,13 +266,10 @@ void ENetTestGame::loop()
 		}
 		//Rendering
 		window->clear();
-		/////////////////
-		pthread_mutex_lock(&ENetMutex);
-		ENetTestPlayer::handleMouse(players[*ENetID], window);
-		updatePlayers(dt);
-		drawPlayers(window);
-		pthread_mutex_unlock(&ENetMutex);
-		//////////////////
+
+		update(dt);
+		draw(window);
+
 		window->display();
 	}
 }

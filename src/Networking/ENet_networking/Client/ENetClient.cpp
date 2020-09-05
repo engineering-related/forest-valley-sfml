@@ -22,16 +22,12 @@ ENetClient::~ENetClient()
 	return EXIT_SUCCESS;
 }
 
-const char* ENetClient::getDataFromRequest(const Request &request)
+ENetClient::DataString* ENetClient::getDataFromRequest(const Request &request)
 {
     std::string clientData;
-    //Always send essential data about the player
-    //Player and request data
-    clientData += std::to_string(PacketType::PLAYER_STATE) + " ";
-    clientData += ID + " ";
 
     pthread_mutex_lock(&game->ENetMutex);
-    clientData += game->players[ID]->state.getData();
+        clientData += game->players[ENetID]->playerState.getStateData(ENetID, PacketType::PLAYER_STATE);
     pthread_mutex_unlock(&game->ENetMutex);
 
     //Evaluate the type of request and send the appropriate packet
@@ -59,10 +55,6 @@ void ENetClient::sendRequestToServer(const Request& request)
 void ENetClient::addRequest(const Request& request)
 {
     requestQueue.push_back(request);
-
-    pthread_mutex_lock(&game->ENetMutex);
-    game->players[ID]->changedState = false;
-    pthread_mutex_unlock(&game->ENetMutex);
 }
 
 void ENetClient::checkPlayerState()
@@ -71,9 +63,94 @@ void ENetClient::checkPlayerState()
     if(game != NULL && game->getGameLoopRunning() && getTheadLoopRunning())
     {
         //If the player changed state, then send a request to the server
-        if(game->players[ID]->changedState)
-            addRequest(game->players[ID]->state);
+        if(game->players[ENetID]->changedState)
+        {
+            pthread_mutex_lock(&game->ENetMutex);
+                game->players[ENetID]->changedState = false;
+                addRequest(game->players[ENetID]->playerState);
+            pthread_mutex_unlock(&game->ENetMutex);
+        }
     }
+}
+
+void ENetClient::addPlayer(const DataVec& playerDataVec)
+{
+    //Print message
+    std::string playerConnectedMessage = "Player " + playerDataVec[2] + " connected to the server.";
+    puts(playerConnectedMessage.c_str());
+
+    //Build player from data
+	ENetTestPlayer* pPlayer = ENetTestPlayer::buildPlayerFromData(playerDataVec);
+    std::string pENetID = playerDataVec[1];
+
+    //Add player to game
+	game->addPlayer(pENetID, pPlayer);
+}
+
+void ENetClient::removePlayer(const DataVec& playerDataVec)
+{
+    //Print message
+    std::string playerDisconnectedMessage = "Player " + playerDataVec[2] + " disconnected.";
+    puts(playerDisconnectedMessage.c_str());
+
+    std::string pENetID = playerDataVec[1];
+
+    //remove player from game
+    game->removePlayer(pENetID);
+}
+
+void ENetClient::hostDisconnected(const DataVec& hostDataVec)
+{
+    //Print message
+    std::string playerDisconnectedMessage = "Host " + hostDataVec[2] + " disconnected.";
+    puts(playerDisconnectedMessage.c_str());
+
+    game->setGameLoopRunning(false);
+}
+
+/*virtual*/ void ENetClient::handleReceiveEvent(ENetEvent* event)
+{
+    //Extract data to a vector of strings
+	DataVec receivedDataVec = extractData(event->packet->data);
+
+	//The first sequence in the data-string is always the type of the received packet
+	PacketType recievedPacketType = (PacketType)std::stoi(receivedDataVec[0]);
+
+	//Perform action based on the given packet-type
+	switch (recievedPacketType)
+	{
+        case PacketType::GAME_STATE:
+            game->setChangedStateData(receivedDataVec);
+            break;
+
+        case PacketType::PLAYER_CONNECTED:
+            addPlayer(receivedDataVec);
+            break;
+
+        case PacketType::GAME_DATA:
+            game->setGameData(receivedDataVec);
+            break;
+
+        case PacketType::PLAYER_DISCONNECTED:
+            removePlayer(receivedDataVec);
+            break;
+        case PacketType::HOST_DISCONNECTED:
+            hostDisconnected(receivedDataVec);
+            break;
+        case PacketType::GAME_START:
+
+            break;
+        case PacketType::GAME_PAUSED:
+
+            break;
+        case PacketType::GAME_QUIT:
+
+            break;
+        default:
+            break;
+	}
+	//Destory packet
+	enet_packet_destroy(event->packet);
 }
 
 /*virtual*/ void ENetClient::handleDisconnectEvent(ENetEvent* event)
@@ -97,11 +174,11 @@ void ENetClient::checkPlayerState()
         switch (event.type)
         {
             case ENET_EVENT_TYPE_RECEIVE:
-                ENetwork::handleReceiveEvent(&event);
+                handleReceiveEvent(&event);
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
-                this->handleDisconnectEvent(&event);
+                handleDisconnectEvent(&event);
                 break;
 
             default:
@@ -144,6 +221,7 @@ int ENetClient::connect()
         event.type == ENET_EVENT_TYPE_CONNECT)
     {
         puts("Connection to 192.168.1.104:24474 established.");
+        sendPacket(peer, 2, game->players[ENetID]->getPlayerData(ENetID, PacketType::PLAYER_CONNECTED));
         return EXIT_SUCCESS;
     }
     else

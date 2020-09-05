@@ -7,6 +7,8 @@
 	#endif
 #endif // _DEBUG
 
+#define d() (puts("HERE"))
+
 // SFML
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>

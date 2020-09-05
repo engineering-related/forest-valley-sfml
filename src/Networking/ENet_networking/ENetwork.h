@@ -9,9 +9,17 @@ private:
 	int initENet();
 	virtual int init() = 0;
 	bool threadLoopRunning;
+	const size_t keyCharacterLength = 8;
+	bool shouldDissconnect;
 
 protected:
-	std::string ID;
+	//Typedefs
+	typedef ENetTestPlayer::StateType RequestType;
+	typedef ENetTestPlayer::State Request;
+	typedef std::vector<std::string> DataVec;
+	typedef const char DataString;
+
+	std::string ENetID;
 	//ENet
 	ENetAddress address;
     ENetHost* host;
@@ -27,23 +35,20 @@ protected:
 	ENetTestGame* game;
 
 	//Handle packet-traffic
-	typedef ENetTestPlayer::StateType RequestType;
-	typedef ENetTestPlayer::State Request;
 
-	enum PacketType { PLAYER_STATE, GAME_STATE, PLAYER_CONNECTED,
+	enum PacketType { PLAYER_STATE, GAME_STATE, GAME_DATA, PLAYER_CONNECTED,
 					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
 					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
 
-	const char* extractData(enet_uint8* data);
+	DataVec extractData(enet_uint8* data);
+	DataString* compressData(const DataVec& dataVec);
 
-	//Receive events are the same for client & server
-	void handleReceiveEvent(ENetEvent* event);
+	virtual void handleReceiveEvent(ENetEvent* event) = 0;
 
-	//Player disconnection are not similar for client & server
 	virtual void handleDisconnectEvent(ENetEvent* event) = 0;
 
-	//Sending a packet to peer are the same for client & server
-	void sendPacket(ENetPeer* peer, enet_uint8 channel, const char* data);
+	//WARNING: Huffman coding
+	void sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data);
 
 	//Network loops in threads
 	virtual void receiveEvents() = 0;
@@ -56,14 +61,14 @@ protected:
 		return ((ENetwork *)context)->traffic();
 	}
 
-	static void printPacketData(const char* data);
+	static void printPacketData(DataVec dataVec);
 
 public:
 	ENetwork(/* args */);
 	virtual ~ENetwork();
 
 	int run();
-	//Disconnection are not similar for client & server
+
 	virtual int disconnect() = 0;
 
 	//Setters
