@@ -21,9 +21,9 @@ public:
 	{
 		int gameStateID;
 		int64_t timeStamp;
-		std::unordered_map<int /*playerStateID*/, ENetTestPlayer::State/*playerState*/> playerStates;
+		std::unordered_map<int /*playerStateID*/, ENetTestPlayer::State /*playerState*/> playerStates;
 
-		//Need more info about the map and saves etc. later
+		//WARNING: Need more info about the map and saves etc.
 
 		//Constructor
 		State(ENetTestGame* context = NULL);
@@ -47,7 +47,7 @@ public:
 	const ENetwork * context;
 	float dt;
 	sf::RenderWindow* window;
-	std::unordered_map<std::string, ENetTestPlayer*> players;
+	std::unordered_map<std::string /*ENetID*/, ENetTestPlayer* /*Players*/> players;
 	sf::Clock clock;
 	const std::string* ENetID;
 

@@ -101,10 +101,21 @@ void ENetClient::removePlayer(const DataVec& playerDataVec)
 
 void ENetClient::hostDisconnected(const DataVec& hostDataVec)
 {
-    //Print message
+    //Print message 1
     std::string playerDisconnectedMessage = "Host " + hostDataVec[2] + " disconnected.";
     puts(playerDisconnectedMessage.c_str());
 
+    //Dont need to dissconect if host quit the session
+    setShouldDisconnect(false);
+
+    //Print message 2
+    playerDisconnectedMessage = "Exiting session.";
+    puts(playerDisconnectedMessage.c_str());
+
+    //Clean up resources
+    event.peer->data = NULL;
+
+    //Exit the game
     game->setGameLoopRunning(false);
 }
 
@@ -134,9 +145,12 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
         case PacketType::PLAYER_DISCONNECTED:
             removePlayer(receivedDataVec);
             break;
+
         case PacketType::HOST_DISCONNECTED:
             hostDisconnected(receivedDataVec);
             break;
+
+        //WARNING: Undefined, could be useful later
         case PacketType::GAME_START:
 
             break;
@@ -155,6 +169,7 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
 
 /*virtual*/ void ENetClient::handleDisconnectEvent(ENetEvent* event)
 {
+    //Print message
     printf("Lost connection to host %x:%u.\n",
             event->peer->address.host,
             event->peer->address.port);
@@ -168,17 +183,12 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
 
 /*virtual*/ void ENetClient::receiveEvents()
 {
-    //Recieve data
     while(enet_host_service(host, &event, NONE_BLOCKING) > 0)
     {
         switch (event.type)
         {
             case ENET_EVENT_TYPE_RECEIVE:
                 handleReceiveEvent(&event);
-                break;
-
-            case ENET_EVENT_TYPE_DISCONNECT:
-                handleDisconnectEvent(&event);
                 break;
 
             default:
@@ -193,10 +203,11 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
     if(clock.getElapsedTime().asMilliseconds() >= 1000/requestTickRate)
     {
         clock.restart().asMilliseconds();
-        //Send the first request int he queue to the server
         if(requestQueue.size() > 0)
         {
+             //Send the first request in queue to the server
             sendRequestToServer(requestQueue[0]);
+
             //Remove the request from queue once it's been sent
             requestQueue.erase(requestQueue.begin());
         }
@@ -206,7 +217,7 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
 int ENetClient::connect()
 {
 	//Set the host to local IP-addres
-    enet_address_set_host(&address, "192.168.1.104");
+    enet_address_set_host(&address, SERVER_IP);
 
     //Connect to the peer/server
     peer = enet_host_connect(host, &address, channels, 0);
@@ -215,26 +226,30 @@ int ENetClient::connect()
         fprintf(stderr, "No available peers for initiating an Enet connection!\n");
         return EXIT_FAILURE;
     }
-
     //Check if the server has contacted us back
+    std::string message = "Connection to " + (std::string)SERVER_IP + ":" + std::to_string(PORT);
+
     if(enet_host_service(host, &event, 5000) > 0 &&
         event.type == ENET_EVENT_TYPE_CONNECT)
     {
-        puts("Connection to 192.168.1.104:24474 established.");
+        message += " established.";
+        puts(message.c_str());
         sendPacket(peer, 2, game->players[ENetID]->getPlayerData(ENetID, PacketType::PLAYER_CONNECTED));
         return EXIT_SUCCESS;
     }
     else
     {
-        enet_peer_reset(peer);
-        puts("Connection to 192.168.1.104:24474 failed.");
+        message += " failed.";
+        puts(message.c_str());
         return EXIT_FAILURE;
     }
 }
 
 /*virtual*/ int ENetClient::disconnect()
 {
+    setThreadLoopRunning(false);
     enet_peer_disconnect(peer, 0);
+
     while(enet_host_service(host, &event, 3000) > 0)
     {
         switch (event.type)

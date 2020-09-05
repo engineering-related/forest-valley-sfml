@@ -4,10 +4,10 @@ ENetwork::ENetwork(/* args */)
 {
 	initENet();
 	ENetID = util::fn::random_string(keyCharacterLength);
-	address.port = 24474;
+	address.port = PORT;
 	game = new ENetTestGame(this);
 	game->initTestPlayer(&ENetID);
-	shouldDissconnect = true;
+	setShouldDisconnect(true);
 }
 
 ENetwork::~ENetwork()
@@ -36,17 +36,6 @@ ENetwork::DataVec ENetwork::extractData(enet_uint8* data)
 
 	//Split the string into a vector
 	return util::fn::stringSplitSpace(std::string(convertedData));
-}
-
-
-ENetwork::DataString* ENetwork::compressData(const DataVec& dataVec)
-{
-	std::string data;
-	for(auto s: dataVec)
-	{
-		data += s + " ";
-	}
-	return strdup(data.c_str());
 }
 
 void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data)
@@ -96,13 +85,19 @@ int ENetwork::run()
     	return EXIT_FAILURE;
     }
 
-	//Game loop
+	//Game loop started
 	setThreadLoopRunning(true);
 	game->loop();
+	//Game loop ended
+
+	//Check if we need to disconnect from the server
+	if(shouldDissconnect)
+		disconnect();
+
+	//Exit network-thread
 	setThreadLoopRunning(false);
 
-	disconnect();
-
+	//Join thread to main
 	pthread_join(networkThread, NULL);
 	return EXIT_SUCCESS;
 }

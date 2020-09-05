@@ -197,7 +197,7 @@ public:
 	{
 		//std::string pENetID = playerDataVec[1];
 		std::string pPlayerID = playerDataVec[2];
-		int64_t pTimeStamp = (int64_t)std::stoll(playerDataVec[3]);
+		//int64_t pTimeStamp = (int64_t)std::stoll(playerDataVec[3]);
 		ENetTestPlayer::StateType statetype = (ENetTestPlayer::StateType)std::stoi(playerDataVec[4]);
 		sf::Color pfillcolor = sf::Color(
 				(Uint8)std::stoi(playerDataVec[5]),

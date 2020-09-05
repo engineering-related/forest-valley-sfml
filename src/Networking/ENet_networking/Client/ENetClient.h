@@ -17,11 +17,15 @@ private:
 	const int requestTickRate = 64/*hz*/; //sends to server at most N packages/second
 								   //Tickduration = 1000/N = Xms
 
+	const int connectionTimeout = 5000; //ms
+	const int disconnectionTimeout = 3000; //ms
+
 	void addPlayer(const DataVec& playerDataVec);
 	void removePlayer(const DataVec& playerDataVec);
 	void hostDisconnected(const DataVec& hostDataVec);
 
 protected:
+	//Virtual protected functions
 	virtual void handleReceiveEvent(ENetEvent* event);
 	virtual void handleDisconnectEvent(ENetEvent* event);
 	virtual void receiveEvents();

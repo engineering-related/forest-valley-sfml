@@ -47,6 +47,7 @@ int main()
 	else
 	{
 		ENetClient client;
+
 		if(client.connect() < 1)
 			client.run();
 	}

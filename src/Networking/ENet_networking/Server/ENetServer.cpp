@@ -57,9 +57,12 @@ void ENetServer::addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer)
 	ENetTestPlayer* pPlayer = ENetTestPlayer::buildPlayerFromData(playerDataVec);
 	std::string pENetID = playerDataVec[1];
 
+
 	//Send to all other peers that a player has been added (use channel 2)
 	brodcastPacket(pPlayer->getPlayerData(pENetID, PLAYER_CONNECTED), 2);
 
+	//Refresh the gameState
+	game->refreshState();
 
 	//Send back to the new connect client the Game-Data (use channel 2)
 	sendPacket(peer, 2, game->getGameData(ENetID, PacketType::GAME_DATA));
@@ -67,22 +70,27 @@ void ENetServer::addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer)
 	//Add peer to server
 	peers[peer] = pENetID;
 
-	//Add player to game
+	//Add player to the game
 	game->addPlayer(pENetID, pPlayer);
 }
 
 void ENetServer::removePlayerFromServer(ENetPeer* peer)
 {
-	DataVec diconnectedDataVec;
-	diconnectedDataVec.push_back(std::to_string(PacketType::PLAYER_DISCONNECTED));
-	diconnectedDataVec.push_back(ENetID);
-	diconnectedDataVec.push_back(peers[peer]);
+	std::string playerDiconnectedString;
+	playerDiconnectedString += std::to_string(PacketType::PLAYER_DISCONNECTED) + " ";
+	playerDiconnectedString += peers[peer] + " ";
 
-	brodcastPacket(compressData(diconnectedDataVec), 2);
-	/*Reset the peer's client information. */
-	peer->data = NULL;
+	pthread_mutex_lock(&game->ENetMutex);
+		playerDiconnectedString += game->players[peers[peer]]->playerID + " ";
+	pthread_mutex_unlock(&game->ENetMutex);
+
+	brodcastPacket(playerDiconnectedString.c_str(), 2);
+
 	game->removePlayer(peers[peer]);
+
+	/*Reset the peer's client information. */
 	peers.erase(peer);
+	peer->data = NULL;
 }
 
 /*virtual*/ void ENetServer::handleReceiveEvent(ENetEvent* event)
@@ -126,7 +134,7 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 			event->peer->address.host,
 			event->peer->address.port);
 
-	removePlayerFromServer(event->peer); //CHECK
+	removePlayerFromServer(event->peer);
 }
 
 /*virtual*/ void ENetServer::receiveEvents()
@@ -177,15 +185,14 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 	}
 }
 
-
 /*virtual*/ int ENetServer::disconnect()
 {
-	DataVec diconnectedDataVec;
-	diconnectedDataVec.push_back(std::to_string(PacketType::HOST_DISCONNECTED));
-	diconnectedDataVec.push_back(ENetID);
-	diconnectedDataVec.push_back(game->players[ENetID]->playerID);
+	std::string diconnectedString;
+	diconnectedString += std::to_string(PacketType::HOST_DISCONNECTED) + " ";
+	diconnectedString += ENetID + " ";
+	diconnectedString += game->players[ENetID]->playerID + " ";
 
-	brodcastPacket(compressData(diconnectedDataVec), 2);
+	brodcastPacket(diconnectedString.c_str(), 2);
 	puts("Disconnection succeeded.");
 	return EXIT_SUCCESS;
 }

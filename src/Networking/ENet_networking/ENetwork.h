@@ -1,6 +1,11 @@
 #ifndef ENETWORK
 #define ENETWORK
 
+///////////////////////////////////
+#define SERVER_IP "192.168.1.104"
+#define PORT 24474
+///////////////////////////////////
+
 #include "ENetTestGame.h"
 
 class ENetwork
@@ -8,6 +13,7 @@ class ENetwork
 private:
 	int initENet();
 	virtual int init() = 0;
+
 	bool threadLoopRunning;
 	const size_t keyCharacterLength = 8;
 	bool shouldDissconnect;
@@ -19,8 +25,13 @@ protected:
 	typedef std::vector<std::string> DataVec;
 	typedef const char DataString;
 
-	std::string ENetID;
+	//Package types
+	enum PacketType { PLAYER_STATE, GAME_STATE, GAME_DATA, PLAYER_CONNECTED,
+					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
+					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
+
 	//ENet
+	std::string ENetID;
 	ENetAddress address;
     ENetHost* host;
     ENetEvent event;
@@ -34,25 +45,21 @@ protected:
 	//Game
 	ENetTestGame* game;
 
-	//Handle packet-traffic
-
-	enum PacketType { PLAYER_STATE, GAME_STATE, GAME_DATA, PLAYER_CONNECTED,
-					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
-					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
-
+	//Packets
 	DataVec extractData(enet_uint8* data);
-	DataString* compressData(const DataVec& dataVec);
 
+	//Events
 	virtual void handleReceiveEvent(ENetEvent* event) = 0;
-
 	virtual void handleDisconnectEvent(ENetEvent* event) = 0;
 
-	//WARNING: Huffman coding
+	//WARNING: Should convert to bytes later
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data);
 
 	//Network loops in threads
 	virtual void receiveEvents() = 0;
 	virtual void sendPackets() = 0;
+
+	//Packet traffic
 	void* traffic(void);
 
 	//Helper function to "void* traffic(void) needed for threading"
@@ -60,7 +67,6 @@ protected:
 	{
 		return ((ENetwork *)context)->traffic();
 	}
-
 	static void printPacketData(DataVec dataVec);
 
 public:
@@ -68,8 +74,8 @@ public:
 	virtual ~ENetwork();
 
 	int run();
-
 	virtual int disconnect() = 0;
+	inline void setShouldDisconnect(const bool& state) {shouldDissconnect = state;}
 
 	//Setters
 	inline void setThreadLoopRunning(const bool &state){threadLoopRunning = state;}

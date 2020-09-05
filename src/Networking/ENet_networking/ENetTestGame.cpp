@@ -34,7 +34,6 @@ ENetTestGame::State::State(ENetTestGame* context)
 		{
 			//Set the ENetID as key and the state of the player as value
 			playerStates[p.second->playerState.playerStateID] = p.second->playerState;
-			//Set the ENetID as key and changed state as value (bool)
 		}
 		timeStamp = util::fn::getTimeInMsSinceEpoch().count();
 		gameStateID = totalPerformed++;
@@ -56,7 +55,7 @@ const char* ENetTestGame::getChangedStateData(const std::string& ENetID,  const 
 	unsigned int nrOfChangedPlayerStates = 0;
 	for(auto p: players)
 	{
-		//If a player changed add it to the list
+		//If a player-state changed add it to the list
 		if(p.second->changedState)
 		{
 			gameStateData += gameState.playerStates[p.second->playerState.playerStateID].getStateData(p.first, packetType);
@@ -137,8 +136,6 @@ void ENetTestGame::setGameData(const std::vector<std::string> &gameDataVec)
 	//The length of data for each player
 	const size_t playerDataLength = 14;
 
-	puts(std::to_string(playerDataLength).c_str());
-
 	unsigned int dataIndex = serverDataLength;
 	for(size_t i = 0; i < playersOnServer; i++)
 	{
@@ -204,8 +201,9 @@ void ENetTestGame::addPlayer(std::string ENetID, ENetTestPlayer* player)
 void ENetTestGame::removePlayer(const std::string& ENetID)
 {
 	pthread_mutex_lock(&ENetMutex);
+		ENetTestPlayer* deletePlayer = players[ENetID];
 		players.erase(ENetID);
-		delete players[ENetID];
+		delete deletePlayer;
 	pthread_mutex_unlock(&ENetMutex);
 }
 
