@@ -9,7 +9,8 @@ INCLUDE_DIRS := \
 
 BUILD_FLAGS := \
 	$(BUILD_FLAGS) \
-	-pthread
+	-pthread  \
+	-lX11
 
 LINK_LIBRARIES := \
 	$(LINK_LIBRARIES) \

@@ -7,7 +7,7 @@ class ENetTestPlayer
 {
 private:
 	sf::Text text;
-	const unsigned int textSize = 16;
+	const unsigned int textSize = 20;
 	Player* player;
 
 public:
@@ -126,10 +126,10 @@ public:
 	void updateTextPos(const float & dt)
 	{
 		static float time;
-		time += dt;
+		time += 5*dt;
 		text.setPosition(rect.getPosition().x - text.getGlobalBounds().width/2,
 			rect.getPosition().y - rect.getGlobalBounds().height -
-			text.getGlobalBounds().height + sin(time) * text.getGlobalBounds().height/8);
+			1.2*text.getGlobalBounds().height + sin(time) * text.getGlobalBounds().height/20);
 	}
 
 	void drawText(RenderTarget* target)
