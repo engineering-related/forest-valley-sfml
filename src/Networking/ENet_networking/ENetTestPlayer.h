@@ -1,7 +1,7 @@
 #ifndef ENET_TEST_PLAYER
 #define ENET_TEST_PLAYER
 
-#include "Entity/Creature/Humans/Player.h";
+#include "Entity/Creature/Humans/Player.h"
 
 class ENetTestPlayer
 {
@@ -120,7 +120,6 @@ public:
 		text.setCharacterSize(textSize);
 		text.setFillColor(rect.getFillColor());
 		text.setOutlineColor(rect.getFillColor());
-		updateTextPos(0.f);
 	}
 
 	void updateTextPos(const float & dt)

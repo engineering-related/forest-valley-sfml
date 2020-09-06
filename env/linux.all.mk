@@ -1,5 +1,5 @@
 CC := g++
-CFLAGS := $(CFLAGS) -fpic -lX11
+CFLAGS := $(CFLAGS) -fpic
 
 LIB_DIRS := \
 	/usr/local/lib
@@ -9,8 +9,7 @@ INCLUDE_DIRS := \
 
 BUILD_FLAGS := \
 	$(BUILD_FLAGS) \
-	-pthread  \
-	-lX11
+	-pthread
 
 LINK_LIBRARIES := \
 	$(LINK_LIBRARIES) \
