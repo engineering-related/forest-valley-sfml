@@ -28,6 +28,8 @@ ENetServer::~ENetServer()
 //Send a packet to all peers
 void ENetServer::brodcastPacket(DataString* data, const size_t& channel)
 {
+	std::cout << sizeof(data) *  strlen(data) + 1 << std::endl;
+
 	ENetPacket* packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
 	enet_host_broadcast(host, channel, packet);
 }
@@ -56,7 +58,6 @@ void ENetServer::addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer)
 	//Build player from data
 	ENetTestPlayer* pPlayer = ENetTestPlayer::buildPlayerFromData(playerDataVec);
 	std::string pENetID = playerDataVec[1];
-
 
 	//Send to all other peers that a player has been added (use channel 2)
 	brodcastPacket(pPlayer->getPlayerData(pENetID, PLAYER_CONNECTED), 2);

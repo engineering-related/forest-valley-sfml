@@ -14,7 +14,7 @@ private:
 	void checkPlayerState();
 	void addRequest(const Request &request);
 
-	const int requestTickRate = 64/*hz*/; //sends to server at most N packages/second
+	const int requestTickRate = 1000/*hz*/; //sends to server at most N packages/second
 								   //Tickduration = 1000/N = Xms
 
 	const int connectionTimeout = 5000; //ms

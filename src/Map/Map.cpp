@@ -35,12 +35,12 @@ void Map::init()
 	this->initChunks();
 	this->buildNature(this->seed);
 	this->updateTexture();
-	//this->addNatureToChunks();
+	this->addNatureToChunks();
 }
 
 void Map::initMapGenerator()
 {
-	this->chunkSize = Vector2i(4, 4);
+	this->chunkSize = Vector2i(8, 8);
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
 	this->map = new MapGenerator(this->seed, Vector2i(CHUNK_SIZE.x * this->chunkSize.x, CHUNK_SIZE.y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
@@ -49,7 +49,6 @@ void Map::initMapGenerator()
 	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
 	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
 }
-
 
 void Map::initChunks()
 {

@@ -11,7 +11,7 @@ private:
 	const size_t MaxNumberOfPlayers = 32;
 	std::unordered_map<ENetPeer* /*Peer*/, std::string /*ENetID*/> peers;
 
-	const int tickRate = 64/*hz*/; //sends to clients at most N packages/second
+	const int tickRate = 1000/*hz*/; //sends to clients at most N packages/second
 								   //Tickduration = 1000/N = Xms
 
 	//PlayerStates

@@ -181,7 +181,9 @@ public:
 			sf::Vector2f pPos = player->getComponent<PositionComponent>().getCenterPosition();
 			float a = -(atan2(pPos.y-endPos.y, pPos.x-endPos.x) * 180 / PI -180 + 45);
 
-			if(a < 90)
+			if(a < 0)
+				player->right(dt, MULTIPLIER);
+			else if(a < 90)
 				player->up(dt, MULTIPLIER);
 			else if(a < 180)
 				player->left(dt, MULTIPLIER);
