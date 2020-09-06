@@ -6,6 +6,9 @@ Creature::Creature(Vector2f pos, util::txh::Data* textureData,
 	Object(pos, textureData->getTexture())
 {
 	this->addComponent<SpriteSheetComponent>(textureData->getNrOfSheetImages(), startSheetPos, endSheetPos);
+	//WARNING: FIX THIS BUG LATER//
+	this->sprite.setTextureRect(this->getComponent<SpriteSheetComponent>().getTextureRects()[0][0]);
+	//////////////////////////////
 	this->addComponent<MovementComponent>(this->sprite, maxVelocity, acceleration, deAcceleration);
 }
 

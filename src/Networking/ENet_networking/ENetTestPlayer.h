@@ -1,10 +1,16 @@
 #ifndef ENET_TEST_PLAYER
 #define ENET_TEST_PLAYER
 
-#include "Entity/Object.h"
+#include "Entity/Creature/Humans/Player.h";
 
 class ENetTestPlayer
 {
+private:
+	Font font;
+	sf::Text text;
+	const unsigned int textSize = 16;
+	Player* player;
+
 public:
 	//Player States
 	///////////////////////////////////////////////////////////////////////////////////
@@ -81,11 +87,12 @@ public:
 				   sf::Color color = sf::Color(255, 255, 255),
 				   StateType stateType = StateType::IDLE,
 				   sf::Vector2f velocity = sf::Vector2f(0.f, 0.f),
-				   sf::Vector2f endPos = sf::Vector2f(0.f, 0.f))
+				   sf::Vector2f endPos = sf::Vector2f(WINDOW_WIDTH/2, WINDOW_WIDTH/2))
 
 	{
+		this->player = new Player(sf::Vector2f(spawnPos));
 		this->playerID = playerID;
-		this->rect.setSize(sf::Vector2f(20, 20));
+		this->rect.setSize(sf::Vector2f(30, 30));
 		this->rect.setFillColor(color);
 		this->rect.setPosition(spawnPos);
 		this->rect.setOrigin(rect.getSize()*0.5f);
@@ -96,14 +103,46 @@ public:
 		this->velocity = velocity;
 		this->playerState = State(this);
 		this->changedState = false;
+		//this->initText();
+
 	}
 	//Destructor
-	~ENetTestPlayer(){}
+	~ENetTestPlayer()
+	{
+		delete player;
+	}
 
 	//Functions
+	void initText()
+	{
+		font.loadFromFile("/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf");
+		text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
+		text.setString(playerID);
+		text.setFont(font);
+		text.setCharacterSize(textSize);
+		text.setFillColor(rect.getFillColor());
+		updateTextPos(0.f);
+	}
+
+	void updateTextPos(const float & dt)
+	{
+		static float time;
+		time += dt;
+		text.setPosition(rect.getPosition().x - text.getGlobalBounds().width/2,
+			rect.getPosition().y - rect.getGlobalBounds().height -
+			text.getGlobalBounds().height + sin(time) * text.getGlobalBounds().height/8);
+	}
+
+	void drawText(RenderTarget* target)
+	{
+		target->draw(text);
+	}
+
 	void draw(sf::RenderTarget* target)
 	{
-		target->draw(rect);
+		//target->draw(rect);
+		//drawText(target);
+		player->draw(target);
 	}
 
 	void refreshState()
@@ -137,6 +176,31 @@ public:
 		{
 			refreshState();
 		}
+
+		//WARNING: Just testing, no acc added
+		if(currentStateType == StateType::MOVE)
+		{
+			sf::Vector2f pPos = player->getComponent<PositionComponent>().getCenterPosition();
+			float a = -(atan2(pPos.y-endPos.y, pPos.x-endPos.x) * 180 / PI -180 + 45);
+
+			if(a < 90)
+				player->up(dt, MULTIPLIER);
+			else if(a < 180)
+				player->left(dt, MULTIPLIER);
+			else if(a < 270)
+				player->down(dt, MULTIPLIER);
+			else
+				player->right(dt, MULTIPLIER);
+		}
+		else
+		{
+			player->none();
+		}
+		player->update(dt, MULTIPLIER);
+		player->getComponent<PositionComponent>().setPosition(
+			sf::Vector2f(rect.getPosition().x - TILE_SIZE.x, rect.getPosition().y - TILE_SIZE.y));
+
+		//updateTextPos(dt);
 	}
 
 	const char* getPlayerData(const std::string &ENetID, const unsigned int &packetType)

@@ -216,7 +216,7 @@ void ENetTestGame::update(const float &dt)
 	pthread_mutex_unlock(&ENetMutex);
 }
 
-void ENetTestGame::draw(RenderTarget* target)
+void ENetTestGame::draw(sf::RenderTarget* target)
 {
 	pthread_mutex_lock(&ENetMutex);
 		drawPlayers(target);
