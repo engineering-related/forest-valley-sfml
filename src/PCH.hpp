@@ -82,6 +82,7 @@
 #include "Utility/Types.hpp"
 #include "Utility/Functions.hpp"
 #include "Utility/Textures.hpp"
+#include "Utility/Fonts.hpp"
 
 // Macros
 #define UNUSED(x) (void)(x)

@@ -1,5 +1,5 @@
 #ifndef UTIL_TEXTURE_HANDLER
-#define UTIL_TEXTURES_HANDLER
+#define UTIL_TEXTURE_HANDLER
 
 namespace util
 {
@@ -76,6 +76,8 @@ namespace util
 											  *const Rock = new Data("content/terrain/Rock.png", sf::Vector2i(224 / 32, 320 / 32));
 		// *const Stone = new Data("Stone.png");
 		//////////////////////////////////////////////////////////////////////////////////
+
+
 		static void deleteAllTextures()
 		{
 			for (sf::Texture* texture : *util::txh::activeTextures)

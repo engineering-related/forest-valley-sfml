@@ -6,7 +6,6 @@
 class ENetTestPlayer
 {
 private:
-	Font font;
 	sf::Text text;
 	const unsigned int textSize = 16;
 	Player* player;
@@ -103,7 +102,7 @@ public:
 		this->velocity = velocity;
 		this->playerState = State(this);
 		this->changedState = false;
-		//this->initText();
+		this->initText();
 
 	}
 	//Destructor
@@ -115,12 +114,12 @@ public:
 	//Functions
 	void initText()
 	{
-		font.loadFromFile("/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf");
 		text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
 		text.setString(playerID);
-		text.setFont(font);
+		text.setFont(*util::fnt::PixelFont->font);
 		text.setCharacterSize(textSize);
 		text.setFillColor(rect.getFillColor());
+		text.setOutlineColor(rect.getFillColor());
 		updateTextPos(0.f);
 	}
 
@@ -141,7 +140,7 @@ public:
 	void draw(sf::RenderTarget* target)
 	{
 		//target->draw(rect);
-		//drawText(target);
+		drawText(target);
 		player->draw(target);
 	}
 
@@ -200,7 +199,7 @@ public:
 		player->getComponent<PositionComponent>().setPosition(
 			sf::Vector2f(rect.getPosition().x - TILE_SIZE.x, rect.getPosition().y - TILE_SIZE.y));
 
-		//updateTextPos(dt);
+		updateTextPos(dt);
 	}
 
 	const char* getPlayerData(const std::string &ENetID, const unsigned int &packetType)
