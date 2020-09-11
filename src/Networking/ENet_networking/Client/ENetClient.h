@@ -8,7 +8,7 @@ class ENetClient : public ENetwork
 private:
 	virtual int init();
 	ENetPeer* peer;
-	DataString* getDataFromRequest(const Request &request);
+	sf::Packet getDataFromRequest(const Request &request);
 	void sendRequestToServer(const Request& request);
 	std::vector<Request> requestQueue;
 	void checkPlayerState();
@@ -20,9 +20,9 @@ private:
 	const int connectionTimeout = 5000; //ms
 	const int disconnectionTimeout = 3000; //ms
 
-	void addPlayer(const DataVec& playerDataVec);
-	void removePlayer(const DataVec& playerDataVec);
-	void hostDisconnected(const DataVec& hostDataVec);
+	void addPlayer(sf::Packet& packet);
+	void removePlayer(sf::Packet& packet);
+	void hostDisconnected(sf::Packet& packetc);
 
 protected:
 	//Virtual protected functions

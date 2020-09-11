@@ -19,9 +19,10 @@ public:
 	/////////////////////////////////////////////////////////////////
 	struct State
 	{
-		int gameStateID;
+		inline static sf::Uint32 totalStates;
+		sf::Uint32 ID;
 		int64_t timeStamp;
-		std::unordered_map<int /*playerStateID*/, ENetTestPlayer::State /*playerState*/> playerStates;
+		std::unordered_map<std::string /*ENetID*/, ENetTestPlayer::State /*playerState*/> playerStates;
 
 		//WARNING: Need more info about the map and saves etc.
 
@@ -33,14 +34,14 @@ public:
 	std::vector<State> gameStates;
 
 	//WARNING: Returns the current changed states of the game
-	const char* getChangedStateData(const std::string& ENetID,  const unsigned int &packetType);
-	void setChangedStateData(const std::vector<std::string> &gameStateDataVec);
+	sf::Packet getChangedStateData(const std::string& ENetID, const unsigned int &packetType);
+	void setChangedStateData(sf::Packet& packet);
 
 	void refreshState();
 
 	//WARNING: Returns the CURRENT frame/snapshot of the game
-	const char* getGameData(const std::string& ENetID,  const unsigned int &packetType);
-	void setGameData(const std::vector<std::string> &gameDataVec);
+	sf::Packet getGameData(const std::string& ENetID,  const unsigned int &packetType);
+	void setGameData(sf::Packet& packet);
 	/////////////////////////////////////////////////////////////////
 
 	//Attributes
@@ -64,8 +65,8 @@ public:
 	void initTestPlayer(const std::string *ENetID);
 	void updatePlayers(const float &dt);
 	void drawPlayers(sf::RenderTarget* target);
-	void addPlayer(std::string ENetID, ENetTestPlayer* player);
-	void removePlayer(const std::string &ENetID);
+	void addPlayer(std::string pENetID, ENetTestPlayer* player);
+	void removePlayer(const std::string &pENetID);
 	void setPlayerData(const char* playerData);
 	void draw(sf::RenderTarget* target);
 	void update(const float& dt);

@@ -28,127 +28,80 @@ ENetTestGame::State::State(ENetTestGame* context)
 {
 	if(context != NULL)
 	{
-		static int totalPerformed = 0;
-
 		for(auto p: context->players)
 		{
 			//Set the ENetID as key and the state of the player as value
-			playerStates[p.second->playerState.playerStateID] = p.second->playerState;
+			playerStates[p.first] = p.second->playerState;
 		}
 		timeStamp = util::fn::getTimeInMsSinceEpoch().count();
-		gameStateID = totalPerformed++;
+		this->ID = State::totalStates++;
 	}
 }
 
-const char* ENetTestGame::getChangedStateData(const std::string& ENetID,  const unsigned int &packetType)
+sf::Packet ENetTestGame::getChangedStateData(const std::string& ENetID,  const unsigned int &packetType)
 {
-	//Send data about the the host
-	std::string gameStateData;
-	gameStateData += std::to_string(packetType) + " ";
-	gameStateData += ENetID + " ";
-	gameStateData += std::to_string(gameState.gameStateID) + " ";
-	gameStateData += std::to_string(gameState.timeStamp) + " ";
-
-	//WARNING: Need to add information about the map etc.
-
+	sf::Packet gameStateData;
+	gameStateData << (sf::Uint8)packetType;
 	//Add data about the players if the state was changed
-	unsigned int nrOfChangedPlayerStates = 0;
+
 	for(auto p: players)
 	{
 		//If a player-state changed add it to the list
 		if(p.second->changedState)
 		{
-			gameStateData += gameState.playerStates[p.second->playerState.playerStateID].getStateData(p.first, packetType);
+			gameStateData << p.first << gameState.playerStates[p.first];
 			p.second->changedState = false;
-			nrOfChangedPlayerStates++;
 		}
 	}
-	gameStateData += std::to_string(nrOfChangedPlayerStates) + " ";
-	return strdup(gameStateData.c_str());
+	return gameStateData;
 }
 
-void ENetTestGame::setChangedStateData(const std::vector<std::string> &gameStateDataVec)
+void ENetTestGame::setChangedStateData(sf::Packet& packet)
 {
-	//std::string pENetID = gameStateDataVec[1];
-	//Set the state data
-	//gameState.gameStateID = std::stoi(gameStateDataVec[2]);
-	//gameState.timeStamp = (int64_t)std::stoll(gameStateDataVec[3]);
-
-	//WARNING: Need to add information about the map etc.
-
-	//The length of the server data (data before playerdata)
-	const size_t serverDataLength = 4;
-
-	const size_t nrOfChangedPlayerStates = (size_t)std::stoi(gameStateDataVec[gameStateDataVec.size() - 1]);
-
-	//The length of data for each player
-	const int playerDataLength = 12;
-
-	unsigned int dataIndex = serverDataLength;
-	for (size_t i = 0; i < nrOfChangedPlayerStates; i++)
+	while(!packet.endOfPacket())
 	{
-		std::vector<std::string> playerStateDataVec;
-		std::string pENetID = gameStateDataVec[dataIndex+1];
+		std::string pENetID;
+		ENetTestPlayer::State playerState;
 
-		if(pENetID == *ENetID) continue; //Dont set your own state
+		packet >> pENetID;
+		packet >> playerState;
 
-		for(size_t j = 0; j < playerDataLength; j++)
-		{
-			playerStateDataVec.push_back(gameStateDataVec[dataIndex++]);
-		}
-
-		players[pENetID]->setPlayerData(playerStateDataVec);
+		if(pENetID == *ENetID) continue;
+		else players[pENetID]->setPlayerState(playerState);
 	}
 	refreshState();
 }
 
-const char* ENetTestGame::getGameData(const std::string& ENetID,  const unsigned int &packetType)
+sf::Packet ENetTestGame::getGameData(const std::string& ENetID,  const unsigned int &packetType)
 {
 	//Send data about the the host
-	std::string gameData;
-	gameData += std::to_string(packetType) + " ";
-	gameData += ENetID + " ";
-	gameData += std::to_string(gameState.gameStateID) + " ";
-	gameData += std::to_string(gameState.timeStamp) + " ";
-	gameData += std::to_string(players.size()) + " ";
+	sf::Packet gameData;
+	gameData << (sf::Uint8)packetType << ENetID << (sf::Uint8)players.size();
 
 	//Add data about the players
 	for(auto p: players)
 	{
-		gameData += p.second->getPlayerData(p.first, packetType);
+		gameData << p.first << p.second;
 	}
-	return strdup(gameData.c_str());
+	return gameData;
+
+	//Need info about the map later
 }
 
-void ENetTestGame::setGameData(const std::vector<std::string> &gameDataVec)
+void ENetTestGame::setGameData(sf::Packet& packet)
 {
-	//std::string pENetID = playerDataVec[1];
-	//Set the state data
-	gameState.gameStateID = std::stoi(gameDataVec[2]);
-	gameState.timeStamp = (int64_t)std::stoull(gameDataVec[3]);
-	size_t playersOnServer = (size_t)std::stoi(gameDataVec[4]);
+	std::string hENetID;
+	sf::Uint8 playersOnServer;
+	packet >> hENetID >> playersOnServer;
 
-	//WARNING: Need to add information about the map etc.
-
-	//The length of the server data (data before playerdata)
-	const size_t serverDataLength = 5;
-
-	//The length of data for each player
-	const size_t playerDataLength = 14;
-
-	unsigned int dataIndex = serverDataLength;
-	for(size_t i = 0; i < playersOnServer; i++)
+	for(size_t i = 0; i < (size_t)playersOnServer; i++)
 	{
-		std::vector<std::string> playerDataVec;
-
-		for(size_t j = 0; j < playerDataLength; j++)
-		{
-			playerDataVec.push_back(gameDataVec[dataIndex++]);
-		}
-		std::string pENetID = playerDataVec[1];
-		ENetTestPlayer* player = ENetTestPlayer::buildPlayerFromData(playerDataVec);
-		addPlayer(pENetID, player);
+		std::string pENetID;
+		ENetTestPlayer* pPLayer = new ENetTestPlayer();
+		packet >> pENetID >> pPLayer;
+		addPlayer(pENetID, pPLayer);
 	}
+	//Need info about the map later
 }
 
 void ENetTestGame::refreshState()
@@ -191,18 +144,18 @@ void ENetTestGame::drawPlayers(sf::RenderTarget* target)
 	}
 }
 
-void ENetTestGame::addPlayer(std::string ENetID, ENetTestPlayer* player)
+void ENetTestGame::addPlayer(std::string pENetID, ENetTestPlayer* player)
 {
 	pthread_mutex_lock(&ENetMutex);
-		players[ENetID] = player;
+		players[pENetID] = player;
 	pthread_mutex_unlock(&ENetMutex);
 }
 
-void ENetTestGame::removePlayer(const std::string& ENetID)
+void ENetTestGame::removePlayer(const std::string& pENetID)
 {
 	pthread_mutex_lock(&ENetMutex);
-		ENetTestPlayer* deletePlayer = players[ENetID];
-		players.erase(ENetID);
+		ENetTestPlayer* deletePlayer = players[pENetID];
+		players.erase(pENetID);
 		delete deletePlayer;
 	pthread_mutex_unlock(&ENetMutex);
 }

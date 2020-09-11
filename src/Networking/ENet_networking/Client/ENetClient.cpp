@@ -22,12 +22,13 @@ ENetClient::~ENetClient()
 	return EXIT_SUCCESS;
 }
 
-ENetClient::DataString* ENetClient::getDataFromRequest(const Request &request)
+sf::Packet ENetClient::getDataFromRequest(const Request &request)
 {
-    std::string clientData;
+    sf::Packet clientData;
+    clientData << (sf::Uint8)PacketType::PLAYER_STATE << ENetID;
 
     pthread_mutex_lock(&game->ENetMutex);
-        clientData += game->players[ENetID]->playerState.getStateData(ENetID, PacketType::PLAYER_STATE);
+        clientData << game->players[ENetID]->playerState;
     pthread_mutex_unlock(&game->ENetMutex);
 
     //Evaluate the type of request and send the appropriate packet
@@ -44,7 +45,7 @@ ENetClient::DataString* ENetClient::getDataFromRequest(const Request &request)
     default:
         break;
     }
-    return strdup(clientData.c_str());
+    return clientData;
 }
 
 void ENetClient::sendRequestToServer(const Request& request)
@@ -73,36 +74,43 @@ void ENetClient::checkPlayerState()
     }
 }
 
-void ENetClient::addPlayer(const DataVec& playerDataVec)
+void ENetClient::addPlayer(sf::Packet& packet)
 {
-    //Print message
-    std::string playerConnectedMessage = "Player " + playerDataVec[2] + " connected to the server.";
-    puts(playerConnectedMessage.c_str());
+    std::string pENetID;
+    packet >> pENetID;
 
     //Build player from data
-	ENetTestPlayer* pPlayer = ENetTestPlayer::buildPlayerFromData(playerDataVec);
-    std::string pENetID = playerDataVec[1];
+	ENetTestPlayer* pPlayer = new ENetTestPlayer();
+    packet >> pPlayer;
+
+    //Print message
+    std::string playerConnectedMessage = "Player " + pPlayer->playerID + " connected to the server.";
+    puts(playerConnectedMessage.c_str());
 
     //Add player to game
 	game->addPlayer(pENetID, pPlayer);
 }
 
-void ENetClient::removePlayer(const DataVec& playerDataVec)
+void ENetClient::removePlayer(sf::Packet& packet)
 {
-    //Print message
-    std::string playerDisconnectedMessage = "Player " + playerDataVec[2] + " disconnected.";
-    puts(playerDisconnectedMessage.c_str());
+    std::string pENetID;
+    packet >> pENetID;
 
-    std::string pENetID = playerDataVec[1];
+    //Print message
+    std::string playerDisconnectedMessage = "Player " + game->players[pENetID]->playerID + " disconnected from the server.";
+    puts(playerDisconnectedMessage.c_str());
 
     //remove player from game
     game->removePlayer(pENetID);
 }
 
-void ENetClient::hostDisconnected(const DataVec& hostDataVec)
+void ENetClient::hostDisconnected(sf::Packet& packet)
 {
+    std::string hENetID;
+    packet >> hENetID;
+
     //Print message 1
-    std::string playerDisconnectedMessage = "Host " + hostDataVec[2] + " disconnected.";
+    std::string playerDisconnectedMessage = "Host " + game->players[ENetID]->playerID + " disconnected.";
     puts(playerDisconnectedMessage.c_str());
 
     //Dont need to dissconect if host quit the session
@@ -121,33 +129,33 @@ void ENetClient::hostDisconnected(const DataVec& hostDataVec)
 
 /*virtual*/ void ENetClient::handleReceiveEvent(ENetEvent* event)
 {
-    //Extract data to a vector of strings
-	DataVec receivedDataVec = extractData(event->packet->data);
+    sf::Packet packet;
+    sf::Uint8 recievedPacketType;
 
-	//The first sequence in the data-string is always the type of the received packet
-	PacketType recievedPacketType = (PacketType)std::stoi(receivedDataVec[0]);
+    packet.append(event->packet->data, event->packet->dataLength);
+    packet >> recievedPacketType;
 
 	//Perform action based on the given packet-type
-	switch (recievedPacketType)
+	switch ((PacketType)recievedPacketType)
 	{
         case PacketType::GAME_STATE:
-            game->setChangedStateData(receivedDataVec);
+            game->setChangedStateData(packet);
             break;
 
         case PacketType::PLAYER_CONNECTED:
-            addPlayer(receivedDataVec);
+            addPlayer(packet);
             break;
 
         case PacketType::GAME_DATA:
-            game->setGameData(receivedDataVec);
+            game->setGameData(packet);
             break;
 
         case PacketType::PLAYER_DISCONNECTED:
-            removePlayer(receivedDataVec);
+            removePlayer(packet);
             break;
 
         case PacketType::HOST_DISCONNECTED:
-            hostDisconnected(receivedDataVec);
+            hostDisconnected(packet);
             break;
 
         //WARNING: Undefined, could be useful later
@@ -234,7 +242,12 @@ int ENetClient::connect()
     {
         message += " established.";
         puts(message.c_str());
-        sendPacket(peer, 2, game->players[ENetID]->getPlayerData(ENetID, PacketType::PLAYER_CONNECTED));
+
+        sf::Packet packet;
+        packet <<
+        (sf::Uint8)PacketType::PLAYER_CONNECTED << ENetID << game->players[ENetID];
+
+        sendPacket(peer, 2, packet);
         return EXIT_SUCCESS;
     }
     else

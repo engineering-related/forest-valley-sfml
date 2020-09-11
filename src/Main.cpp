@@ -16,7 +16,10 @@
 	 IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
 
 	-TO UPPRESS WARNING "unused variable" REMOVE
-	"-Wunused"IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"
+	"-Wunused"IN THE "all.mk" FILE FROM "_CFLAGS_WARNINGS"x-special/nautilus-clipboard
+copy
+file:///home/viktor/Code/GitHub/forest-valley-experimental/forest-valley-experimental2
+
 */
 
 //Some animals?

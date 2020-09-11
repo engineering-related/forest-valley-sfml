@@ -26,41 +26,49 @@ ENetServer::~ENetServer()
 }
 
 //Send a packet to all peers
-void ENetServer::brodcastPacket(DataString* data, const size_t& channel)
+void ENetServer::brodcastPacket(const size_t& channel, const sf::Packet& packet)
 {
-	std::cout << sizeof(data) *  strlen(data) + 1 << std::endl;
-
-	ENetPacket* packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
-	enet_host_broadcast(host, channel, packet);
+	ENetPacket* eNetPacket = enet_packet_create(packet.getData(), packet.getDataSize(), ENET_PACKET_FLAG_RELIABLE);
+	enet_host_broadcast(host, channel, eNetPacket);
 }
 
-void ENetServer::handlePlayerState(const DataVec& playerDataVec)
+void ENetServer::handlePlayerState(sf::Packet& packet)
 {
-	evaluatePlayerState(playerDataVec);
-	updatePlayerState(playerDataVec);
+	std::string pENetID;
+	ENetTestPlayer::State playerState;
+	packet >> pENetID >> playerState;
+
+	evaluatePlayerState(pENetID, playerState);
+	updatePlayerState(pENetID, playerState);
 	receivedDuringTick = true;
 }
 
 //Check if the action the player perfomed is valid (saftey & anti-cheat)
-void ENetServer::evaluatePlayerState(const DataVec& playerDataVec)
+void ENetServer::evaluatePlayerState(const std::string& pENetID, ENetTestPlayer::State& pState)
 {
 	//If the playerstate is incorrect reset it to last state (client-side prediction)
 }
 
-void ENetServer::updatePlayerState(const DataVec& playerDataVec)
+void ENetServer::updatePlayerState(const std::string& pENetID, ENetTestPlayer::State& pState)
 {
-	std::string pENetID = playerDataVec[1];
-	game->players[pENetID]->setPlayerData(playerDataVec);
+	game->players[pENetID]->setPlayerState(pState);
 }
 
-void ENetServer::addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer)
+void ENetServer::addPlayerToServer(sf::Packet& packet, ENetPeer* peer)
 {
 	//Build player from data
-	ENetTestPlayer* pPlayer = ENetTestPlayer::buildPlayerFromData(playerDataVec);
-	std::string pENetID = playerDataVec[1];
+	sf::Packet sendServerPacket;
+	std::string pENetID;
+	ENetTestPlayer* pPlayer = new ENetTestPlayer();
+
+	packet >> pENetID >> pPlayer;
+	sendServerPacket << (sf::Uint8)PacketType::PLAYER_CONNECTED << pENetID << pPlayer;
 
 	//Send to all other peers that a player has been added (use channel 2)
-	brodcastPacket(pPlayer->getPlayerData(pENetID, PLAYER_CONNECTED), 2);
+	for(auto p: peers)
+	{
+		sendPacket(p.first, 2, sendServerPacket);
+	}
 
 	//Refresh the gameState
 	game->refreshState();
@@ -77,15 +85,10 @@ void ENetServer::addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer)
 
 void ENetServer::removePlayerFromServer(ENetPeer* peer)
 {
-	std::string playerDiconnectedString;
-	playerDiconnectedString += std::to_string(PacketType::PLAYER_DISCONNECTED) + " ";
-	playerDiconnectedString += peers[peer] + " ";
+	sf::Packet packet;
+	packet << (sf::Uint8)PLAYER_DISCONNECTED << peers[peer];
 
-	pthread_mutex_lock(&game->ENetMutex);
-		playerDiconnectedString += game->players[peers[peer]]->playerID + " ";
-	pthread_mutex_unlock(&game->ENetMutex);
-
-	brodcastPacket(playerDiconnectedString.c_str(), 2);
+	brodcastPacket(2, packet);
 
 	game->removePlayer(peers[peer]);
 
@@ -96,23 +99,24 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 
 /*virtual*/ void ENetServer::handleReceiveEvent(ENetEvent* event)
 {
-	//Control packet data (security and data control)
-	//evaluateReceivedPacket(event->packet);
+	sf::Packet packet;
+    sf::Uint8 recievedPacketType;
 
-	//Extract data to a vector of strings
-	DataVec receivedDataVec = extractData(event->packet->data);
+    packet.append(event->packet->data, event->packet->dataLength);
 
-	//The first sequence in the data-string is always the type of the received packet
-	PacketType recievedPacketType = (PacketType)std::stoi(receivedDataVec[0]);
+	//Control check packet
+	//evaluateReceivedPacket(packet);
+
+	packet >> recievedPacketType;
 
 	//Perform action based on the given packet-type
 	switch (recievedPacketType)
 	{
 		case PacketType::PLAYER_STATE:
-			handlePlayerState(receivedDataVec);
+			handlePlayerState(packet);
 			break;
 		case PacketType::PLAYER_CONNECTED:
-			addPlayerToServer(receivedDataVec, event->peer);
+			addPlayerToServer(packet, event->peer);
 			break;
 		default:
 			break;
@@ -176,7 +180,7 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 				game->refreshState();
 
 				//Send packet to peers
-				brodcastPacket(game->getChangedStateData(ENetID, PacketType::GAME_STATE), 1);
+				brodcastPacket(1, game->getChangedStateData(ENetID, PacketType::GAME_STATE));
 
 				//Reset send checkers
 				receivedDuringTick = false;
@@ -188,12 +192,9 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 
 /*virtual*/ int ENetServer::disconnect()
 {
-	std::string diconnectedString;
-	diconnectedString += std::to_string(PacketType::HOST_DISCONNECTED) + " ";
-	diconnectedString += ENetID + " ";
-	diconnectedString += game->players[ENetID]->playerID + " ";
-
-	brodcastPacket(diconnectedString.c_str(), 2);
+	sf::Packet packet;
+	packet << (sf::Uint8) PacketType::HOST_DISCONNECTED << ENetID;
+	brodcastPacket(2, packet);
 	puts("Disconnection succeeded.");
 	return EXIT_SUCCESS;
 }

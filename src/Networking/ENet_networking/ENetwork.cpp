@@ -29,21 +29,12 @@ int ENetwork::initENet()
 	return EXIT_SUCCESS;
 }
 
-ENetwork::DataVec ENetwork::extractData(enet_uint8* data)
-{
-	//Conver data to c-string
-	DataString* convertedData = reinterpret_cast<DataString*>(data);
-
-	//Split the string into a vector
-	return util::fn::stringSplitSpace(std::string(convertedData));
-}
-
-void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data)
+void ENetwork::sendPacket(ENetPeer* peer, enet_uint8 channel, const sf::Packet& packet)
 {
 	/*WARNING: When sending packets use multiple channels. Data from players->server are sent -
 	  on 0. Data from server->players are sent on 1. Other types of data are send on 2*/
-	ENetPacket* packet = enet_packet_create(data, strlen(data) + 1, ENET_PACKET_FLAG_RELIABLE);
-	enet_peer_send(peer, channel, packet);
+	ENetPacket* eNetPacket = enet_packet_create(packet.getData(), packet.getDataSize(), ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(peer, channel, eNetPacket);
 }
 
 void* ENetwork::traffic(void)
@@ -56,17 +47,6 @@ void* ENetwork::traffic(void)
 		sendPackets();
 	}
 	return NULL;
-}
-
-void ENetwork::printPacketData(DataVec dataVec)
-{
-	puts("-----------------------");
-	for (size_t i = 0; i < dataVec.size(); i++)
-	{
-		dataVec[i].insert(0, std::to_string(i)+". ");
-		puts(dataVec[i].c_str());
-	}
-	puts("-----------------------\n");
 }
 
 int ENetwork::run()

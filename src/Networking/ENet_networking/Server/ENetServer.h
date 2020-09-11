@@ -15,12 +15,12 @@ private:
 								   //Tickduration = 1000/N = Xms
 
 	//PlayerStates
-	void handlePlayerState(const DataVec& playerDataVec);
-	void evaluatePlayerState(const DataVec& playerDataVec);
-	void updatePlayerState(const DataVec& playerDataVec);
+	void handlePlayerState(sf::Packet& packet);
+	void evaluatePlayerState(const std::string& ENetID, ENetTestPlayer::State& state);
+	void updatePlayerState(const std::string& ENetID, ENetTestPlayer::State& state);
 
 	//Server changes
-	void addPlayerToServer(const DataVec& playerDataVec, ENetPeer* peer);
+	void addPlayerToServer(sf::Packet& packet, ENetPeer* peer);
 	void removePlayerFromServer(ENetPeer* peer);
 
 	//WARNING: Undefined, could be useful later
@@ -29,7 +29,7 @@ private:
 
 protected:
 	//WARNING: Undefined, Evaluation of packet (anit-cheat and saftey)
-	void evaluateReceivedPacket(ENetPacket* packet);
+	void evaluateReceivedPacket(sf::Packet &packet);
 
 	//Connection evetns
 	void handleConnectionEvent(ENetEvent* event);
@@ -41,7 +41,7 @@ protected:
 	virtual void sendPackets();
 
 	//Send a packet to all peers
-	void brodcastPacket(DataString* data, const size_t& channel);
+	void brodcastPacket(const size_t& channel, const sf::Packet& packet);
 
 public:
 	ENetServer(/* args */);

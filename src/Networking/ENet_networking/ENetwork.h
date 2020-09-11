@@ -22,13 +22,14 @@ protected:
 	//Typedefs
 	typedef ENetTestPlayer::StateType RequestType;
 	typedef ENetTestPlayer::State Request;
-	typedef std::vector<std::string> DataVec;
-	typedef const char DataString;
 
 	//Package types
 	enum PacketType { PLAYER_STATE, GAME_STATE, GAME_DATA, PLAYER_CONNECTED,
 					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
 					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
+
+	//WARNING: Should convert to bytes later
+	void sendPacket(ENetPeer* peer, enet_uint8 channel, const sf::Packet& packet);
 
 	//ENet
 	std::string ENetID;
@@ -45,15 +46,9 @@ protected:
 	//Game
 	ENetTestGame* game;
 
-	//Packets
-	DataVec extractData(enet_uint8* data);
-
 	//Events
 	virtual void handleReceiveEvent(ENetEvent* event) = 0;
 	virtual void handleDisconnectEvent(ENetEvent* event) = 0;
-
-	//WARNING: Should convert to bytes later
-	void sendPacket(ENetPeer* peer, enet_uint8 channel, DataString* data);
 
 	//Network loops in threads
 	virtual void receiveEvents() = 0;
@@ -67,7 +62,6 @@ protected:
 	{
 		return ((ENetwork *)context)->traffic();
 	}
-	static void printPacketData(DataVec dataVec);
 
 public:
 	ENetwork(/* args */);
