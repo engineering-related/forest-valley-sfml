@@ -56,6 +56,8 @@ public:
 	bool changedState;
 	float speedMagnitude;
 
+	std::vector<State> instructions;
+
 	//Constructor
 	ENetTestPlayer(std::string playerID = "",
 				   sf::Vector2f spawnPos = sf::Vector2f(0.f, 0.f),

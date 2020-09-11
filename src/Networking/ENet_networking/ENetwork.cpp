@@ -3,7 +3,7 @@
 ENetwork::ENetwork(/* args */)
 {
 	initENet();
-	ENetID = util::fn::random_string(keyCharacterLength);
+	ENetID = 0;
 	address.port = PORT;
 	game = new ENetTestGame(this);
 	game->initTestPlayer(&ENetID);
@@ -42,7 +42,6 @@ void* ENetwork::traffic(void)
 	clock.restart().asMilliseconds();
     while (getTheadLoopRunning())
 	{
-		//Evetents are rec
 		receiveEvents();
 		sendPackets();
 	}

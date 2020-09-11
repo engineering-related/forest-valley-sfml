@@ -15,7 +15,6 @@ private:
 	virtual int init() = 0;
 
 	bool threadLoopRunning;
-	const size_t keyCharacterLength = 8;
 	bool shouldDissconnect;
 
 protected:
@@ -25,14 +24,14 @@ protected:
 
 	//Package types
 	enum PacketType { PLAYER_STATE, GAME_STATE, GAME_DATA, PLAYER_CONNECTED,
-					  PLAYER_DISCONNECTED, HOST_DISCONNECTED, GAME_START,
+					  PLAYER_DISCONNECTED, PLAYER_CHANGED_ID, HOST_DISCONNECTED, GAME_START,
 					  GAME_PAUSED, GAME_RESTART, GAME_QUIT};
 
 	//WARNING: Should convert to bytes later
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, const sf::Packet& packet);
 
 	//ENet
-	std::string ENetID;
+	sf::Uint16 ENetID; //65,535 max objects( 2^16 - 1)
 	ENetAddress address;
     ENetHost* host;
     ENetEvent event;

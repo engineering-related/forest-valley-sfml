@@ -22,7 +22,7 @@ public:
 		inline static sf::Uint32 totalStates;
 		sf::Uint32 ID;
 		int64_t timeStamp;
-		std::unordered_map<std::string /*ENetID*/, ENetTestPlayer::State /*playerState*/> playerStates;
+		std::unordered_map<sf::Uint16  /*ENetID*/, ENetTestPlayer::State /*playerState*/> playerStates;
 
 		//WARNING: Need more info about the map and saves etc.
 
@@ -34,13 +34,13 @@ public:
 	std::vector<State> gameStates;
 
 	//WARNING: Returns the current changed states of the game
-	sf::Packet getChangedStateData(const std::string& ENetID, const unsigned int &packetType);
+	sf::Packet getChangedStateData(const sf::Uint16 & ENetID, const unsigned int &packetType);
 	void setChangedStateData(sf::Packet& packet);
 
 	void refreshState();
 
 	//WARNING: Returns the CURRENT frame/snapshot of the game
-	sf::Packet getGameData(const std::string& ENetID,  const unsigned int &packetType);
+	sf::Packet getGameData(const sf::Uint16 & ENetID,  const unsigned int &packetType);
 	void setGameData(sf::Packet& packet);
 	/////////////////////////////////////////////////////////////////
 
@@ -48,9 +48,9 @@ public:
 	const ENetwork * context;
 	float dt;
 	sf::RenderWindow* window;
-	std::unordered_map<std::string /*ENetID*/, ENetTestPlayer* /*Players*/> players;
+	std::unordered_map<sf::Uint16 /*ENetID*/, ENetTestPlayer* /*Players*/> players;
 	sf::Clock clock;
-	const std::string* ENetID;
+	const sf::Uint16* ENetID_ptr;
 
 	//Network and game mutex-lock
 	pthread_mutex_t ENetMutex;
@@ -62,12 +62,12 @@ public:
 	inline void setGameLoopRunning(const bool &state){gameLoopRunning = state;}
 
 	//Functions
-	void initTestPlayer(const std::string *ENetID);
+	void initTestPlayer(const sf::Uint16 *ENetID);
 	void updatePlayers(const float &dt);
 	void drawPlayers(sf::RenderTarget* target);
-	void addPlayer(std::string pENetID, ENetTestPlayer* player);
-	void removePlayer(const std::string &pENetID);
-	void setPlayerData(const char* playerData);
+	void addPlayer(sf::Uint16 pENetID, ENetTestPlayer* player);
+	void removePlayer(const sf::Uint16  &pENetID);
+	void changePlayerID(const sf::Uint16 &old_p_ENetID, const sf::Uint16 &new_p_ENetID);
 	void draw(sf::RenderTarget* target);
 	void update(const float& dt);
 	void loop();

@@ -34,7 +34,7 @@ void ENetServer::brodcastPacket(const size_t& channel, const sf::Packet& packet)
 
 void ENetServer::handlePlayerState(sf::Packet& packet)
 {
-	std::string pENetID;
+	sf::Uint16  pENetID;
 	ENetTestPlayer::State playerState;
 	packet >> pENetID >> playerState;
 
@@ -44,12 +44,12 @@ void ENetServer::handlePlayerState(sf::Packet& packet)
 }
 
 //Check if the action the player perfomed is valid (saftey & anti-cheat)
-void ENetServer::evaluatePlayerState(const std::string& pENetID, ENetTestPlayer::State& pState)
+void ENetServer::evaluatePlayerState(const sf::Uint16 & pENetID, ENetTestPlayer::State& pState)
 {
 	//If the playerstate is incorrect reset it to last state (client-side prediction)
 }
 
-void ENetServer::updatePlayerState(const std::string& pENetID, ENetTestPlayer::State& pState)
+void ENetServer::updatePlayerState(const sf::Uint16 & pENetID, ENetTestPlayer::State& pState)
 {
 	game->players[pENetID]->setPlayerState(pState);
 }
@@ -57,12 +57,17 @@ void ENetServer::updatePlayerState(const std::string& pENetID, ENetTestPlayer::S
 void ENetServer::addPlayerToServer(sf::Packet& packet, ENetPeer* peer)
 {
 	//Build player from data
-	sf::Packet sendServerPacket;
-	std::string pENetID;
+	sf::Packet sendServerPacket, sendClientIDPacket;
+	sf::Uint16 old_p_ENetID;
+	sf::Uint16 new_p_ENetID;
 	ENetTestPlayer* pPlayer = new ENetTestPlayer();
 
-	packet >> pENetID >> pPlayer;
-	sendServerPacket << (sf::Uint8)PacketType::PLAYER_CONNECTED << pENetID << pPlayer;
+	packet >> old_p_ENetID >> pPlayer;
+
+	//Ad new ID and Increase the ID_counter
+	new_p_ENetID = ID_Counter++;
+
+	sendServerPacket << (sf::Uint8)PacketType::PLAYER_CONNECTED << new_p_ENetID << pPlayer;
 
 	//Send to all other peers that a player has been added (use channel 2)
 	for(auto p: peers)
@@ -73,14 +78,18 @@ void ENetServer::addPlayerToServer(sf::Packet& packet, ENetPeer* peer)
 	//Refresh the gameState
 	game->refreshState();
 
+	//Send back the new ID to the connect client
+	sendClientIDPacket << (sf::Uint8)PacketType::PLAYER_CHANGED_ID << old_p_ENetID << new_p_ENetID;
+	sendPacket(peer, 2, sendClientIDPacket);
+
 	//Send back to the new connect client the Game-Data (use channel 2)
 	sendPacket(peer, 2, game->getGameData(ENetID, PacketType::GAME_DATA));
 
 	//Add peer to server
-	peers[peer] = pENetID;
+	peers[peer] = new_p_ENetID;
 
 	//Add player to the game
-	game->addPlayer(pENetID, pPlayer);
+	game->addPlayer(new_p_ENetID, pPlayer);
 }
 
 void ENetServer::removePlayerFromServer(ENetPeer* peer)

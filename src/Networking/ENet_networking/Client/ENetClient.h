@@ -23,6 +23,7 @@ private:
 	void addPlayer(sf::Packet& packet);
 	void removePlayer(sf::Packet& packet);
 	void hostDisconnected(sf::Packet& packetc);
+	void changePlayerID(sf::Packet& packet);
 
 protected:
 	//Virtual protected functions

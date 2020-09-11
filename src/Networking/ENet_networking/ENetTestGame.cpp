@@ -1,6 +1,6 @@
 #include "ENetTestGame.h"
 
-ENetTestGame::ENetTestGame(const ENetwork  *  const context)
+ENetTestGame::ENetTestGame(const ENetwork * const context)
 {
 	//Set context
 	this->context = context;
@@ -38,7 +38,7 @@ ENetTestGame::State::State(ENetTestGame* context)
 	}
 }
 
-sf::Packet ENetTestGame::getChangedStateData(const std::string& ENetID,  const unsigned int &packetType)
+sf::Packet ENetTestGame::getChangedStateData(const sf::Uint16 & ENetID,  const unsigned int &packetType)
 {
 	sf::Packet gameStateData;
 	gameStateData << (sf::Uint8)packetType;
@@ -60,19 +60,19 @@ void ENetTestGame::setChangedStateData(sf::Packet& packet)
 {
 	while(!packet.endOfPacket())
 	{
-		std::string pENetID;
+		sf::Uint16 pENetID;
 		ENetTestPlayer::State playerState;
 
 		packet >> pENetID;
 		packet >> playerState;
 
-		if(pENetID == *ENetID) continue;
+		if(pENetID == *ENetID_ptr) continue;
 		else players[pENetID]->setPlayerState(playerState);
 	}
 	refreshState();
 }
 
-sf::Packet ENetTestGame::getGameData(const std::string& ENetID,  const unsigned int &packetType)
+sf::Packet ENetTestGame::getGameData(const sf::Uint16 & ENetID,  const unsigned int &packetType)
 {
 	//Send data about the the host
 	sf::Packet gameData;
@@ -90,13 +90,13 @@ sf::Packet ENetTestGame::getGameData(const std::string& ENetID,  const unsigned 
 
 void ENetTestGame::setGameData(sf::Packet& packet)
 {
-	std::string hENetID;
+	sf::Uint16 hENetID;
 	sf::Uint8 playersOnServer;
 	packet >> hENetID >> playersOnServer;
 
 	for(size_t i = 0; i < (size_t)playersOnServer; i++)
 	{
-		std::string pENetID;
+		sf::Uint16  pENetID;
 		ENetTestPlayer* pPLayer = new ENetTestPlayer();
 		packet >> pENetID >> pPLayer;
 		addPlayer(pENetID, pPLayer);
@@ -110,7 +110,7 @@ void ENetTestGame::refreshState()
 	gameState = State(this);
 }
 
-void ENetTestGame::initTestPlayer(const std::string *ENetID)
+void ENetTestGame::initTestPlayer(const sf::Uint16 *ENetID)
 {
 	std::string playerID;
 
@@ -125,7 +125,8 @@ void ENetTestGame::initTestPlayer(const std::string *ENetID)
 	ENetTestPlayer* player = new ENetTestPlayer(playerID, sf::Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2),
 		playerColor);
 	players[*ENetID] = player;
-	this->ENetID = ENetID;
+
+	ENetID_ptr = ENetID;
 }
 
 void ENetTestGame::updatePlayers(const float &dt)
@@ -144,14 +145,14 @@ void ENetTestGame::drawPlayers(sf::RenderTarget* target)
 	}
 }
 
-void ENetTestGame::addPlayer(std::string pENetID, ENetTestPlayer* player)
+void ENetTestGame::addPlayer(sf::Uint16 pENetID, ENetTestPlayer* player)
 {
 	pthread_mutex_lock(&ENetMutex);
 		players[pENetID] = player;
 	pthread_mutex_unlock(&ENetMutex);
 }
 
-void ENetTestGame::removePlayer(const std::string& pENetID)
+void ENetTestGame::removePlayer(const sf::Uint16 & pENetID)
 {
 	pthread_mutex_lock(&ENetMutex);
 		ENetTestPlayer* deletePlayer = players[pENetID];
@@ -160,11 +161,20 @@ void ENetTestGame::removePlayer(const std::string& pENetID)
 	pthread_mutex_unlock(&ENetMutex);
 }
 
+void ENetTestGame::changePlayerID(const sf::Uint16 &old_p_ENetID, const sf::Uint16 &new_p_ENetID)
+{
+	pthread_mutex_lock(&ENetMutex);
+		ENetTestPlayer* playerPtr = players[old_p_ENetID];
+		players.erase(old_p_ENetID);
+		players[new_p_ENetID] = playerPtr;
+	pthread_mutex_unlock(&ENetMutex);
+}
+
 void ENetTestGame::update(const float &dt)
 {
 	//Update game
 	pthread_mutex_lock(&ENetMutex);
-		ENetTestPlayer::handleMouse(players[*ENetID], window);
+		ENetTestPlayer::handleMouse(players[*ENetID_ptr], window);
 		updatePlayers(dt);
 	pthread_mutex_unlock(&ENetMutex);
 }

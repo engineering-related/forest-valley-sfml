@@ -6,18 +6,19 @@
 class ENetServer: public ENetwork
 {
 private:
+	sf::Uint16 ID_Counter = 1;
 	bool receivedDuringTick;
 	virtual int init();
 	const size_t MaxNumberOfPlayers = 32;
-	std::unordered_map<ENetPeer* /*Peer*/, std::string /*ENetID*/> peers;
+	std::unordered_map<ENetPeer* /*Peer*/, sf::Uint16 /*ENetID*/> peers;
 
 	const int tickRate = 1000/*hz*/; //sends to clients at most N packages/second
 								   //Tickduration = 1000/N = Xms
 
 	//PlayerStates
 	void handlePlayerState(sf::Packet& packet);
-	void evaluatePlayerState(const std::string& ENetID, ENetTestPlayer::State& state);
-	void updatePlayerState(const std::string& ENetID, ENetTestPlayer::State& state);
+	void evaluatePlayerState(const sf::Uint16 & ENetID, ENetTestPlayer::State& state);
+	void updatePlayerState(const sf::Uint16 & ENetID, ENetTestPlayer::State& state);
 
 	//Server changes
 	void addPlayerToServer(sf::Packet& packet, ENetPeer* peer);

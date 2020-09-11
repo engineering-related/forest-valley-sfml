@@ -81,7 +81,7 @@ void ENetClient::checkPlayerState()
 
 void ENetClient::addPlayer(sf::Packet& packet)
 {
-    std::string pENetID;
+    sf::Uint16 pENetID;
     packet >> pENetID;
 
     //Build player from data
@@ -98,7 +98,7 @@ void ENetClient::addPlayer(sf::Packet& packet)
 
 void ENetClient::removePlayer(sf::Packet& packet)
 {
-    std::string pENetID;
+    sf::Uint16 pENetID;
     packet >> pENetID;
 
     //Print message
@@ -111,7 +111,7 @@ void ENetClient::removePlayer(sf::Packet& packet)
 
 void ENetClient::hostDisconnected(sf::Packet& packet)
 {
-    std::string hENetID;
+    sf::Uint16 hENetID;
     packet >> hENetID;
 
     //Print message 1
@@ -130,6 +130,19 @@ void ENetClient::hostDisconnected(sf::Packet& packet)
 
     //Exit the game
     game->setGameLoopRunning(false);
+}
+
+void ENetClient::changePlayerID(sf::Packet& packet)
+{
+    sf::Uint16 old_p_ENetID, new_p_ENetID;
+    packet >> old_p_ENetID >> new_p_ENetID;
+
+    //Change ID of player
+    game->changePlayerID(old_p_ENetID, new_p_ENetID);
+
+    //Update your own ENetID if the target was you
+    if(old_p_ENetID == ENetID)
+        ENetID = new_p_ENetID;
 }
 
 /*virtual*/ void ENetClient::handleReceiveEvent(ENetEvent* event)
@@ -162,7 +175,9 @@ void ENetClient::hostDisconnected(sf::Packet& packet)
         case PacketType::HOST_DISCONNECTED:
             hostDisconnected(packet);
             break;
-
+        case PacketType::PLAYER_CHANGED_ID:
+            changePlayerID(packet);
+            break;
         //WARNING: Undefined, could be useful later
         case PacketType::GAME_START:
 
