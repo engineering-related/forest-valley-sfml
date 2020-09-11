@@ -1,6 +1,7 @@
 #ifndef ENET_TEST_GAME
 #define ENET_TEST_GAME
 
+#include "Game/Camera/Camera.h"
 #include "ENetTestPlayer.h"
 
 class ENetwork;
@@ -48,6 +49,7 @@ public:
 	const ENetwork * context;
 	float dt;
 	sf::RenderWindow* window;
+	Camera* camera;
 	std::unordered_map<sf::Uint16 /*ENetID*/, ENetTestPlayer* /*Players*/> players;
 	sf::Clock clock;
 	const sf::Uint16* ENetID_ptr;

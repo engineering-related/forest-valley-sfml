@@ -58,8 +58,16 @@ namespace util
 		{
 			//Sprite
 			sprite->setPosition(sf::Vector2f(window->mapPixelToCoords(sf::Vector2i(constPos))));
-			sprite->setScale(constSize.x / window->getDefaultView().getSize().x * window->getView().getSize().x,
-				constSize.y / window->getDefaultView().getSize().y * window->getView().getSize().y);
+			sprite->setScale(constSize.x / window->getViewport(window->getView()).width * window->getView().getSize().x,
+				constSize.y / window->getViewport(window->getView()).height * window->getView().getSize().y);
+		}
+
+		static void mapTextToWindowCoords(sf::RenderTarget* window, sf::Text* text, const sf::Vector2f& constPos, const sf::Vector2f& constSize)
+		{
+			//Sprite
+			text->setPosition(sf::Vector2f(window->mapPixelToCoords(sf::Vector2i(constPos))));
+			text->setScale(constSize.x / window->getViewport(window->getView()).width * window->getView().getSize().x,
+				constSize.y / window->getViewport(window->getView()).height * window->getView().getSize().y);
 		}
 
 		static std::chrono::milliseconds getTimeInMsSinceEpoch()

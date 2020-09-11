@@ -5,8 +5,11 @@ ENetTestGame::ENetTestGame(const ENetwork * const context)
 	//Set context
 	this->context = context;
 	//Create window
-	window = new sf::RenderWindow();
+	this->window = new sf::RenderWindow();
 	this->gameState = State(this);
+	//Init camera
+	this->camera = new Camera(this->window);
+	this->camera->setView(Vector2f(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), window);
 }
 
 ENetTestGame::~ENetTestGame()
@@ -20,6 +23,7 @@ ENetTestGame::~ENetTestGame()
 	pthread_mutex_unlock(&ENetMutex);
 
 	pthread_mutex_destroy(&ENetMutex);
+	delete camera;
 	delete window;
 }
 
@@ -212,6 +216,13 @@ void ENetTestGame::loop()
 				sf::View newView(sf::FloatRect(0.f, 0.f, size.x, size.y));
 				window->setView(newView);
 			}
+			if (event.type == sf::Event::MouseWheelScrolled)
+			{
+				if (event.mouseWheelScroll.delta > 0)
+					Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, (1.f / 1.05));
+				else if (event.mouseWheelScroll.delta < 0)
+					Camera::zoomViewAt({ event.mouseWheelScroll.x, event.mouseWheelScroll.y }, *window, 1.05);
+			}
 		}
 
 		//Game clock
@@ -223,13 +234,17 @@ void ENetTestGame::loop()
 		if (incer >= cap)
 		{
 			incer = 0;
-			window->setTitle("ENet Testing | FPS: " + std::to_string(FPS));
+			window->setTitle("ENet Testing  " + players[*ENetID_ptr]->playerID + " | FPS: " + std::to_string(FPS));
 		}
 		//Rendering
 		window->clear();
 
 		update(dt);
 		draw(window);
+
+		//Update camera
+		ENetTestPlayer* myPlayer = players[*ENetID_ptr];
+		this->camera->setView(myPlayer->rect.getPosition(), window);
 
 		window->display();
 	}

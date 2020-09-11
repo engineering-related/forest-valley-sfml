@@ -1,6 +1,10 @@
 #ifndef ENET_TEST_PLAYER
 #define ENET_TEST_PLAYER
 
+
+#define MAP_WIDTH WINDOW_WIDTH*2
+#define MAP_HEIGHT WINDOW_HEIGHT*2
+
 #include "Entity/Creature/Humans/Player.h"
 
 class ENetTestPlayer
@@ -101,6 +105,7 @@ public:
 	}
 
 	//Functions
+
 	void initText()
 	{
 		text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
@@ -111,26 +116,25 @@ public:
 		text.setOutlineColor(rect.getFillColor());
 	}
 
-	void updateText(const float & dt)
+	void renderText(RenderTarget* target)
 	{
+		util::fn::mapTextToWindowCoords(target, &text, rect.getPosition(), sf::Vector2f(1.f, 1.f));
+
 		text.setString(playerID + " " + std::to_string((int)round(rect.getPosition().x)) +
 			" " + std::to_string((int)round(rect.getPosition().y)));
 		static float time;
-		time += 5*dt;
+		//time += 5*dt;
 		text.setPosition(rect.getPosition().x - text.getGlobalBounds().width/2,
 			rect.getPosition().y - rect.getGlobalBounds().height -
 			1.2*text.getGlobalBounds().height + sin(time) * text.getGlobalBounds().height/20);
-	}
 
-	void drawText(RenderTarget* target)
-	{
 		target->draw(text);
 	}
 
 	void draw(sf::RenderTarget* target)
 	{
 		//target->draw(rect);
-		drawText(target);
+		renderText(target);
 		player->draw(target);
 	}
 
@@ -191,7 +195,16 @@ public:
 		player->getComponent<PositionComponent>().setPosition(
 			sf::Vector2f(rect.getPosition().x - TILE_SIZE.x, rect.getPosition().y - TILE_SIZE.y));
 
-		updateText(dt);
+		//Ensure bounds
+		if(this->rect.getPosition().x < 0.f)
+			this->rect.setPosition(0.f, this->rect.getPosition().y);
+		if(this->rect.getPosition().y < 0.f)
+			this->rect.setPosition(this->rect.getPosition().x, 0.f);
+
+		if(this->rect.getPosition().x > MAP_WIDTH)
+			this->rect.setPosition(MAP_WIDTH, this->rect.getPosition().y);
+		if(this->rect.getPosition().y > MAP_HEIGHT)
+			this->rect.setPosition(this->rect.getPosition().x, MAP_HEIGHT);
 	}
 
 	sf::Vector2f getVelocityVector(const sf::Vector2f& p1, const sf::Vector2f& p2)
@@ -203,11 +216,14 @@ public:
 	//Static functions
 	static void handleMouse(ENetTestPlayer* player, sf::RenderWindow* window)
 	{
-		sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePos) && !player->mouseClicked)
+
+		Vector2f mousePosRelative = window->mapPixelToCoords(Mouse::getPosition(*window), window->getView());
+		sf::Vector2i mousePosAbsolute = sf::Mouse::getPosition(*window);
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && window->getViewport(window->getView()).contains(mousePosAbsolute) &&
+		 !player->mouseClicked)
 		{
 			player->mouseClicked = true;
-			player->endPos = (sf::Vector2f)mousePos;
+			player->endPos = mousePosRelative;
 			player->velocity = player->getVelocityVector(player->rect.getPosition(), player->endPos);
 			player->currentStateType = StateType::MOVE;
 			player->refreshState();
