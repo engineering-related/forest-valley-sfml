@@ -50,7 +50,6 @@ sf::Packet ENetClient::getDataFromRequest(const Request &request)
 
 void ENetClient::sendRequestToServer(const Request& request)
 {
-    d();
     sendPacket(peer, 0, getDataFromRequest(request));
 }
 

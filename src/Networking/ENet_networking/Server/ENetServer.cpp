@@ -191,7 +191,6 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 				game->refreshState();
 
 				//Send packet to peers
-				d();
 				brodcastPacket(1, game->getChangedStateData(ENetID, PacketType::GAME_STATE));
 
 				//Reset send checkers

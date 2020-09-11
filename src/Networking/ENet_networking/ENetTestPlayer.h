@@ -95,8 +95,8 @@ public:
 		/*-------------------WARNING-----------------------*/
 		//rect.setPosition(state.playerSnapshot.startPos);
 		/*-------------------------------------------------*/
-		velocity = state.playerSnapshot.velocity;
 		endPos = state.playerSnapshot.endPos;
+		velocity = getVelocityVector(rect.getPosition(), endPos);
 		refreshState();
 	}
 
@@ -194,6 +194,12 @@ public:
 		updateText(dt);
 	}
 
+	sf::Vector2f getVelocityVector(const sf::Vector2f& p1, const sf::Vector2f& p2)
+	{
+		float angle = atan2f(p2.y - p1.y, p2.x - p1.x);
+		return sf::Vector2f(speedMagnitude*cos(angle), speedMagnitude*sin(angle));
+	}
+
 	//Static functions
 	static void handleMouse(ENetTestPlayer* player, sf::RenderWindow* window)
 	{
@@ -202,8 +208,7 @@ public:
 		{
 			player->mouseClicked = true;
 			player->endPos = (sf::Vector2f)mousePos;
-			float angle = atan2f(player->endPos.y - player->rect.getPosition().y, player->endPos.x - player->rect.getPosition().x);
-			player->velocity = sf::Vector2f(player->speedMagnitude*cos(angle), player->speedMagnitude*sin(angle));
+			player->velocity = player->getVelocityVector(player->rect.getPosition(), player->endPos);
 			player->currentStateType = StateType::MOVE;
 			player->refreshState();
 		}

@@ -5,11 +5,11 @@ sf::Packet& operator <<(sf::Packet& packet, const ENetTestPlayer::State& state)
 	packet <<
 	(sf::Uint8)state.playerSnapshot.type <<
 	//StartPosition
-	(float)state.playerSnapshot.startPos.x <<
-	(float)state.playerSnapshot.startPos.y <<
+	//(float)state.playerSnapshot.startPos.x <<
+	//(float)state.playerSnapshot.startPos.y <<
 	//Velocity
-	(float)state.playerSnapshot.velocity.x <<
-	(float)state.playerSnapshot.velocity.y <<
+	//(float)state.playerSnapshot.velocity.x <<
+	//(float)state.playerSnapshot.velocity.y <<
 	//Endpos
 	(float)state.playerSnapshot.endPos.x <<
 	(float)state.playerSnapshot.endPos.y;
@@ -22,11 +22,11 @@ sf::Packet& operator >>(sf::Packet& packet, ENetTestPlayer::State &state)
 	packet >>
 	state.playerSnapshot.type >>
 	//StartPosition
-	state.playerSnapshot.startPos.x >>
-	state.playerSnapshot.startPos.y >>
+	//state.playerSnapshot.startPos.x >>
+	//state.playerSnapshot.startPos.y >>
 	//Velocity
-	state.playerSnapshot.velocity.x >>
-	state.playerSnapshot.velocity.y >>
+	//state.playerSnapshot.velocity.x >>
+	//state.playerSnapshot.velocity.y >>
 	//Endpos
 	state.playerSnapshot.endPos.x >>
 	state.playerSnapshot.endPos.y;
