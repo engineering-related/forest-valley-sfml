@@ -50,6 +50,7 @@ sf::Packet ENetClient::getDataFromRequest(const Request &request)
 
 void ENetClient::sendRequestToServer(const Request& request)
 {
+    d();
     sendPacket(peer, 0, getDataFromRequest(request));
 }
 
@@ -67,8 +68,12 @@ void ENetClient::checkPlayerState()
         if(game->players[ENetID]->changedState)
         {
             pthread_mutex_lock(&game->ENetMutex);
+
                 game->players[ENetID]->changedState = false;
-                addRequest(game->players[ENetID]->playerState);
+                //Dont send a request when the player is idle, endPos is already known
+                if(game->players[ENetID]->currentStateType != ENetTestPlayer::StateType::IDLE)
+                    addRequest(game->players[ENetID]->playerState);
+
             pthread_mutex_unlock(&game->ENetMutex);
         }
     }

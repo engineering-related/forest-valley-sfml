@@ -90,7 +90,9 @@ public:
 	void setPlayerState(State& state)
 	{
 		currentStateType = (StateType)state.playerSnapshot.type;
-		rect.setPosition(state.playerSnapshot.startPos);
+		/*-------------------WARNING-----------------------*/
+		//rect.setPosition(state.playerSnapshot.startPos);
+		/*-------------------------------------------------*/
 		velocity = state.playerSnapshot.velocity;
 		endPos = state.playerSnapshot.endPos;
 		refreshState();

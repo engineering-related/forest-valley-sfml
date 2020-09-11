@@ -173,18 +173,20 @@ void ENetServer::removePlayerFromServer(ENetPeer* peer)
 
 		std::string serverData;
 		//Send data to clients if any player-state has been changed
-		pthread_mutex_lock(&game->ENetMutex);
-			if((receivedDuringTick || game->players[ENetID]->changedState) && peers.size() > 0)
+		pthread_mutex_lock(&game->ENetMutex); //LORD HAVE MERCY ON MY DISGUSTING CODE
+			if((receivedDuringTick || (game->players[ENetID]->changedState &&
+				game->players[ENetID]->currentStateType != ENetTestPlayer::StateType::IDLE)) &&
+				peers.size() > 0)
 			{
 				//Refresh the game-state for server
 				game->refreshState();
 
 				//Send packet to peers
+				d();
 				brodcastPacket(1, game->getChangedStateData(ENetID, PacketType::GAME_STATE));
 
 				//Reset send checkers
 				receivedDuringTick = false;
-				game->players[ENetID]->changedState = false;
 			}
 		pthread_mutex_unlock(&game->ENetMutex);
 	}
