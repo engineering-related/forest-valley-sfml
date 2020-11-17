@@ -33,7 +33,7 @@ protected:
 	virtual void sendPackets();
 
 public:
-	ENetClient(/* args */);
+	ENetClient(const char* serverIP, const short &port);
 	virtual ~ENetClient();
 
 	int connect();

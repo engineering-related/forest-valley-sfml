@@ -1,10 +1,12 @@
 #include "ENetwork.h"
 
-ENetwork::ENetwork(/* args */)
+ENetwork::ENetwork(const char* serverIP, const short &port)
 {
 	initENet();
 	ENetID = 0;
-	address.port = PORT;
+	address.port = port;
+	this->serverIP = serverIP;
+	this->port = &address.port;
 	game = new ENetTestGame(this);
 	game->initTestPlayer(&ENetID);
 	setShouldDisconnect(true);

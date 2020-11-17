@@ -44,12 +44,12 @@ int main()
 
 	if (connectionType == 's')
 	{
-		ENetServer server;
+		ENetServer server("192.168.1.104", 24474);
 		server.run();
 	}
 	else
 	{
-		ENetClient client;
+		ENetClient client("192.168.1.104", 24474);
 
 		if(client.connect() < 1)
 			client.run();

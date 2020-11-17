@@ -1,7 +1,7 @@
 #include "ENetServer.h"
 
-
-ENetServer::ENetServer(/* args */)
+ENetServer::ENetServer(const char* serverIP, const short &port) :
+	ENetwork(serverIP, port)
 {
 	init();
 }

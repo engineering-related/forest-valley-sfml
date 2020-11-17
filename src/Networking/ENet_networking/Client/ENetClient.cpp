@@ -1,6 +1,7 @@
 #include "ENetClient.h"
 
-ENetClient::ENetClient(/* args */)
+ENetClient::ENetClient(const char* serverIP, const short &port) :
+    ENetwork(serverIP, port)
 {
 	init();
 }
@@ -244,7 +245,7 @@ void ENetClient::changePlayerID(sf::Packet& packet)
 int ENetClient::connect()
 {
 	//Set the host to local IP-addres
-    enet_address_set_host(&address, SERVER_IP);
+    enet_address_set_host(&address, this->serverIP);
 
     //Connect to the peer/server
     peer = enet_host_connect(host, &address, channels, 0);
@@ -254,7 +255,7 @@ int ENetClient::connect()
         return EXIT_FAILURE;
     }
     //Check if the server has contacted us back
-    std::string message = "Connection to " + (std::string)SERVER_IP + ":" + std::to_string(PORT);
+    std::string message = "Connection to " + (std::string)this->serverIP + ":" + std::to_string(*this->port);
 
     if(enet_host_service(host, &event, 5000) > 0 &&
         event.type == ENET_EVENT_TYPE_CONNECT)
@@ -293,7 +294,7 @@ int ENetClient::connect()
 
         case ENET_EVENT_TYPE_DISCONNECT:
             /*Reset the peer's client information. */
-            event.peer -> data = NULL;
+            event.peer->data = NULL;
             puts("Disconnection succeeded.");
             return EXIT_SUCCESS;
             break;

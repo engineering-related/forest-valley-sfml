@@ -1,11 +1,6 @@
 #ifndef ENETWORK
 #define ENETWORK
 
-///////////////////////////////////
-#define SERVER_IP "192.168.1.104"
-#define PORT 24474
-///////////////////////////////////
-
 #include "ENetTestGame.h"
 
 class ENetwork
@@ -31,6 +26,8 @@ protected:
 	void sendPacket(ENetPeer* peer, enet_uint8 channel, const sf::Packet& packet);
 
 	//ENet
+	const char* serverIP;
+	const enet_uint16* port;
 	sf::Uint16 ENetID; //65,535 max objects( 2^16 - 1)
 	ENetAddress address;
     ENetHost* host;
@@ -63,7 +60,7 @@ protected:
 	}
 
 public:
-	ENetwork(/* args */);
+	ENetwork(const char* serverIP, const short &port);
 	virtual ~ENetwork();
 
 	int run();

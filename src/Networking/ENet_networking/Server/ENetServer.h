@@ -45,7 +45,7 @@ protected:
 	void brodcastPacket(const size_t& channel, const sf::Packet& packet);
 
 public:
-	ENetServer(/* args */);
+	ENetServer(const char* serverIP, const short &port);
 	virtual ~ENetServer();
 
 	virtual int disconnect();
