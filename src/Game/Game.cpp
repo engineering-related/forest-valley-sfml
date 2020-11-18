@@ -45,12 +45,12 @@ void Game::init()
 	this->initMap();
 
 	//Testing Obejcts
-	this->player = new Player(Vector2f(this->map->textureSize.x / 2, this->map->textureSize.y / 2));
+	this->player = new Player(Vector2f(this->map->pixelSize/2));
 	this->entites.push_back(this->player);
 
 	//Init camera
 	this->camera = new Camera(this->window);
-	this->camera->setView(Vector2f(this->map->textureSize.x / 2, this->map->textureSize.y / 2), this->window);
+	this->camera->setView(Vector2f(Vector2f(this->map->pixelSize/2)), this->window);
 }
 
 void Game::initMap()
@@ -149,8 +149,9 @@ void Game::sortZindex()
 }
 
 //Will be moved into a separate system in another file later
-void Game::checkTileColision(Object* object)
+void Game::checkTileColision(Object* object, const Chunk& chunk)
 {
+	/*
 	if(object->hasComponent<MovementComponent>())
 	{
 		object->getComponent<PositionComponent>().setPosition(object->getComponent<MovementComponent>().getPrevPos());
@@ -229,6 +230,7 @@ void Game::checkTileColision(Object* object)
 		}
 		object->getComponent<MovementComponent>().moveSprite(object->getComponent<MovementComponent>().getVel(), dt);
 	}
+	*/
 }
 
 void Game::startLoop()
@@ -250,7 +252,7 @@ void Game::startLoop()
 		for(Object* object: this->entites)
 		{
 			object->update(this->dt, this->multiplier);
-			this->checkTileColision(object);
+			//this->checkTileColision(object, chunk);
 			object->draw(this->window);
 		}
 		this->player->getComponent<HitboxComponent>().draw(window);

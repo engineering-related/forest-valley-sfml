@@ -18,7 +18,7 @@ MapGenerator::MapGenerator(unsigned int seed, Vector2i mapDimensions, float nois
 	this->constDraw = false;
 
 	this->initTerrainTypes();
-	this->update();
+	this->initTexture();
 }
 
 
@@ -27,11 +27,14 @@ MapGenerator::~MapGenerator()
 
 }
 
+void MapGenerator::initTexture()
+{
+	this->texture.clear();
+	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
+}
+
 void MapGenerator::initTerrainTypes()
 {
-	//Init terrainVec
-	this->terrainVec = std::vector<std::vector<TerrainType>>(this->mapDimensions.x, std::vector<TerrainType>(this->mapDimensions.y, TerrainType::WATER_DEEP));
-
 	//HeightMap standard
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.15f, Color(55, 102, 196)));
@@ -97,13 +100,14 @@ void MapGenerator::draw(RenderTarget* window)
 	window->draw(this->sprite);
 }
 
-void MapGenerator::update(/*const float & dt, const float & multiplier*/)
+
+std::vector<std::vector<MapGenerator::TerrainType>> MapGenerator::getMapSegment(const Vector2i &gridPos, const Vector2i &areaSize)
 {
-	this->heightMap = MapGenerator::generateNoiseMap(this->seed, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-	this->forsetMap = MapGenerator::generateNoiseMap(this->seed + 1, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-	this->fieldMap = MapGenerator::generateNoiseMap(this->seed + 2, this->mapDimensions.x, this->mapDimensions.y, this->noiseScale, this->octaves, this->persistance, this->lacunarity, this->offset);
-	this->setTerrainTypes();
-	this->updateTexture();
+	return this->getTerrainTypes(gridPos, areaSize,
+		this->generateNoiseMap(this->seed, gridPos, areaSize),
+		this->generateNoiseMap(this->seed+1, gridPos, areaSize),
+		this->generateNoiseMap(this->seed+2, gridPos, areaSize)
+	);
 }
 
 void MapGenerator::setConstDraw(const bool& state)
@@ -111,23 +115,29 @@ void MapGenerator::setConstDraw(const bool& state)
 	this->constDraw = state;
 }
 
-void MapGenerator::setTerrainTypes()
+std::vector<std::vector<MapGenerator::TerrainType>> MapGenerator::getTerrainTypes(const Vector2i &gridPos, const Vector2i &areaSize,
+	const std::vector<std::vector<float>> heightMap,
+	const std::vector<std::vector<float>> forsetMap,
+	const std::vector<std::vector<float>> fieldMap
+)
 {
-	for (int y = 0; y < this->mapDimensions.y; y++)
+	std::vector<std::vector<MapGenerator::TerrainType>> terrainVec = std::vector<std::vector<TerrainType>>(heightMap.size(), std::vector<TerrainType>(heightMap[0].size(), TerrainType::WATER_DEEP));
+
+	for (int y = 0; y < areaSize.y; y++)
 	{
-		for (int x = 0; x < this->mapDimensions.x; x++)
+		for (int x = 0; x < areaSize.x; x++)
 		{
-			float currentHeight = pow(this->heightMap[x][y], this->elevation);
-			float forestValue = this->forsetMap[x][y];
-			float wheatValue = this->fieldMap[x][y];
-			float boundryValue = MapGenerator::addSquareMask(x, y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 3.f, true);
+			float currentHeight = pow(heightMap[x][y], this->elevation);
+			float forestValue = forsetMap[x][y];
+			float wheatValue = fieldMap[x][y];
+			float boundryValue = MapGenerator::addSquareMask(x + gridPos.x, y + gridPos.y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 3.f, true);
 
 			//Add diffent height
 			for (auto& heightRegion : this->heightRegions)
 			{
 				if (currentHeight <= heightRegion.value)
 				{
-					this->terrainVec[x][y] = heightRegion.type;
+					terrainVec[x][y] = heightRegion.type;
 					break;
 				}
 			}
@@ -137,7 +147,7 @@ void MapGenerator::setTerrainTypes()
 			{
 				if (forestValue <= forestRegion.value && currentHeight > *forestRegion.startRange && currentHeight < *forestRegion.endRange)
 				{
-					this->terrainVec[x][y] = forestRegion.type;
+					terrainVec[x][y] = forestRegion.type;
 					break;
 				}
 			}
@@ -147,9 +157,9 @@ void MapGenerator::setTerrainTypes()
 			{
 				if (wheatValue <= wheatRegion.value && currentHeight > *wheatRegion.startRange && currentHeight < *wheatRegion.endRange)
 				{
-					if (this->terrainVec[x][y] == TerrainType::GRASS_LIGHT)
+					if (terrainVec[x][y] == TerrainType::GRASS_LIGHT)
 					{
-						this->terrainVec[x][y] = wheatRegion.type;
+						terrainVec[x][y] = wheatRegion.type;
 					}
 					break;
 				}
@@ -165,41 +175,40 @@ void MapGenerator::setTerrainTypes()
 																										//REMOVE THIS TO MAKE ISLAND
 				if (boundryValue >= this->heightRegions[static_cast<int>(TOrder::MINERALS)].value && boundryValue <= heightRegion.value)
 				{
-					this->terrainVec[x][y] = heightRegion.type;
+					terrainVec[x][y] = heightRegion.type;
 					break;
 				}
 			}
 		}
 	}
+	return terrainVec;
 }
 
-void MapGenerator::updateTexture()
+void MapGenerator::updateTexture(const Vector2i &gridPos,
+	const std::vector<std::vector<MapGenerator::TerrainType>>& terrainVec)
 {
-	this->texture.clear();
-	this->texture.create(this->terrainVec.size(), this->terrainVec[0].size());
-
 	RectangleShape cell;
 	cell.setOutlineThickness(0.f);
 	cell.setSize(Vector2f(1.f, 1.f));
 
-	for (int y = 0; y < this->mapDimensions.y; y++)
+	for (int y = 0; y < terrainVec[0].size(); y++)
 	{
-		for (int x = 0; x < this->mapDimensions.x; x++)
+		for (int x = 0; x < terrainVec.size(); x++)
 		{
-			cell.setPosition(static_cast<float>(x), static_cast<float>(y));
+			cell.setPosition(static_cast<float>(x) + gridPos.x, static_cast<float>(y) + gridPos.y);
 			for (auto& heightRegion : this->heightRegions)
 			{
-				if (this->terrainVec[x][y] == heightRegion.type)
+				if (terrainVec[x][y] == heightRegion.type)
 					cell.setFillColor(heightRegion.color);
 			}
 			for (auto& forestRegion : this->forestRegions)
 			{
-				if (this->terrainVec[x][y] == forestRegion.type)
+				if (terrainVec[x][y] == forestRegion.type)
 					cell.setFillColor(forestRegion.color);
 			}
 			for (auto& wheatRegion : this->wheatRegions)
 			{
-				if (this->terrainVec[x][y] == wheatRegion.type)
+				if (terrainVec[x][y] == wheatRegion.type)
 					cell.setFillColor(wheatRegion.color);
 			}
 			this->texture.draw(cell);
@@ -265,20 +274,22 @@ unsigned int MapGenerator::generatePsuedoRandomSeed()
 	return seed;
 }
 
-std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned int& seed, const unsigned int& width, const unsigned int& height, float& scale, const int& octaves, const float& persistance, const float& lacunarity, const sf::Vector2f& offset)
+std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const int& seed, const Vector2i &gridPos, const Vector2i &areaSize)
 {
-	std::vector<std::vector<float>> noiseMap(width, std::vector<float>(height, 0));
+	std::vector<std::vector<float>> noiseMap(areaSize.x, std::vector<float>(areaSize.y, 0));
 
 	srand(seed);
 	PerlinNoise pn(seed);
 
 	std::vector<sf::Vector2f> octaveOffsets;
-	for (int i = 0; i < octaves; i++)
+	for (int i = 0; i < this->octaves; i++)
 	{
-		float offsetX = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + offset.x;
-		float offsetY = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + offset.y;
+		float offsetX = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + this->offset.x;
+		float offsetY = util::fn::randFloatFromRange(-1000000.f, 1000000.f) + this->offset.y;
+
 		octaveOffsets.push_back(sf::Vector2f(offsetX, offsetY));
 	}
+	float scale = this->noiseScale;
 
 	if (scale <= 0)
 	{
@@ -288,26 +299,26 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 	float maxNoiseHeight = std::numeric_limits<float>::min();
 	float minNoiseHeight = std::numeric_limits<float>::max();
 
-	double halfWidth = static_cast<float>(width / 2.f);
-	double halfHeight = static_cast<float>(height / 2.f);
+	double halfWidth = static_cast<float>(mapDimensions.x / 2.f);
+	double halfHeight = static_cast<float>(mapDimensions.y / 2.f);
 
-	for (unsigned int y = 0; y < height; y++)
+	for (int y = 0; y < areaSize.y; y++)
 	{
-		for (unsigned int x = 0; x < width; x++)
+		for (int x = 0; x < areaSize.x; x++)
 		{
 			float amplitude = 1;
 			float frequency = 1;
 			float noiseHeight = 0;
 
-			for (int i = 0; i < octaves; i++)
+			for (int i = 0; i < this->octaves; i++)
 			{
-				float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].x;
-				float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].y;
+				float sampleX = (x + gridPos.x - halfWidth) / scale * frequency + octaveOffsets[i].x;
+				float sampleY = (y + gridPos.y - halfHeight) / scale * frequency + octaveOffsets[i].y;
 
 				float perlinValue = static_cast<float>(pn.noise(sampleX, sampleY) * 2 - 1);
 				noiseHeight += perlinValue * amplitude;
-				amplitude *= persistance;
-				frequency *= lacunarity;
+				amplitude *= this->persistance;
+				frequency *= this->lacunarity;
 			}
 
 			if (noiseHeight > maxNoiseHeight)
@@ -322,11 +333,11 @@ std::vector<std::vector<float>> MapGenerator::generateNoiseMap(const unsigned in
 		}
 	}
 	//Normalize noisemap
-	for (unsigned int y = 0; y < height; y++)
+	for (int y = 0; y < areaSize.y; y++)
 	{
-		for (unsigned int x = 0; x < width; x++)
+		for (int x = 0; x < areaSize.x; x++)
 		{
-			noiseMap[x][y] = PerlinNoise::invLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x][y]);
+			noiseMap[x][y] = util::fn::map(noiseMap[x][y], -1, 1, 0, 1);
 		}
 	}
 	return noiseMap;

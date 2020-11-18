@@ -11,18 +11,18 @@ Map::~Map()
 	delete this->map;
 
 	//Delete objects
-	for(size_t x = 0; x < this->grid.size(); x++)
+	/*for(size_t x = 0; x < this->grid.size(); x++)
 	{
 		for(size_t y = 0; y < this->grid[x].size(); y++)
 		{
 			delete this->grid[x][y];
 		}
-	}
+	}*/
 
 	//Delete chunks
-	for (int x = 0; x < this->chunkSize.x; ++x)
+	for (int x = 0; x < this->chunkAmount.x; ++x)
 	{
-		for (int y = 0; y < this->chunkSize.y; ++y)
+		for (int y = 0; y < this->chunkAmount.y; ++y)
 		{
 			delete this->chunks[x][y];
 		}
@@ -32,41 +32,43 @@ Map::~Map()
 void Map::init()
 {
 	this->initMapGenerator();
-	this->initChunks();
-	this->buildNature(this->seed);
-	this->updateTexture();
-	this->addNatureToChunks();
+	this->initChunks(this->map);
+
+	for (int x = 0; x < this->chunkAmount.x; ++x)
+	{
+		for (int y = 0; y < this->chunkAmount.y; ++y)
+		{
+			this->chunks[x][y]->load();
+			this->updateTexture(this->chunks[x][y]);
+			this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
+		}
+	}
 }
 
 void Map::initMapGenerator()
 {
-	this->chunkSize = Vector2i(8, 8);
+	this->chunkAmount = Vector2i(4, 4);
 	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new MapGenerator(this->seed, Vector2i(CHUNK_SIZE.x * this->chunkSize.x, CHUNK_SIZE.y * this->chunkSize.y), 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
+	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
+	this->map = new MapGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
-	this->drawVector = this->map->terrainVec;
-	this->grid = std::vector<std::vector<Tile*>>(this->map->terrainVec.size(), std::vector<Tile*>(this->map->terrainVec[0].size(), nullptr));
-	this->interactableGrid = std::vector<std::vector<Nature*>>(this->map->terrainVec.size(), std::vector<Nature*>(this->map->terrainVec[0].size(), nullptr));
 }
 
-void Map::initChunks()
+void Map::initChunks(MapGenerator* map)
 {
-	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkSize.x, std::vector<Chunk*>(this->chunkSize.y, nullptr));
-	Vector2f pos(0, 0);
-	for (int x = 0; x < this->chunkSize.x; x++)
+	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkAmount.x, std::vector<Chunk*>(this->chunkAmount.y, nullptr));
+	for (int x = 0; x < this->chunkAmount.x; x++)
 	{
-		for (int y = 0; y < this->chunkSize.y; y++)
+		for (int y = 0; y < this->chunkAmount.y; y++)
 		{
-			this->chunks[x][y] = new Chunk(pos);
-			pos.y += CHUNK_SIZE.y*TILE_SIZE.y;
+			this->chunks[x][y] = new Chunk(Vector2i(x, y), map);
 		}
-		pos.y = 0;
-		pos.x += CHUNK_SIZE.x * TILE_SIZE.x;
 	}
 }
 
-std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y)
+std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y, Chunk* chunk)
 {
 	std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> returnInfo = std::vector<std::vector<std::pair<Vector2i*, Vector2i>>>(3, std::vector<std::pair<Vector2i*, Vector2i>>(3));
 
@@ -87,17 +89,17 @@ std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(
 		for(size_t col = 0; col < returnInfo[row].size(); col++)
 		{
 			Vector2i pos = std::get<1>(returnInfo[row][col]);
-			MapGenerator::TerrainType *current = &drawVector[pos.x][pos.y],
-									  *tl = &drawVector[pos.x - 1][pos.y - 1],
-									  *tm = &drawVector[pos.x][pos.y - 1],
-									  *tr = &drawVector[pos.x + 1][pos.y - 1],
+			MapGenerator::TerrainType *current = &chunk->drawVector[pos.x][pos.y],
+									  *tl = &chunk->drawVector[pos.x - 1][pos.y - 1],
+									  *tm = &chunk->drawVector[pos.x][pos.y - 1],
+									  *tr = &chunk->drawVector[pos.x + 1][pos.y - 1],
 
-									  *ml = &drawVector[pos.x - 1][pos.y],
-									  *mr = &drawVector[pos.x + 1][pos.y],
+									  *ml = &chunk->drawVector[pos.x - 1][pos.y],
+									  *mr = &chunk->drawVector[pos.x + 1][pos.y],
 
-									  *bl = &drawVector[pos.x - 1][pos.y + 1],
-									  *bm = &drawVector[pos.x][pos.y + 1],
-									  *br = &drawVector[pos.x + 1][pos.y + 1];
+									  *bl = &chunk->drawVector[pos.x - 1][pos.y + 1],
+									  *bm = &chunk->drawVector[pos.x][pos.y + 1],
+									  *br = &chunk->drawVector[pos.x + 1][pos.y + 1];
 
 			std::vector<int> binary = std::vector<int>(8, 0);
 
@@ -195,13 +197,13 @@ std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> Map::getNeighboursInfo(
 	return returnInfo;
 }
 
-std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y)
+std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y, Chunk* chunk)
 {
 	Tile* tileType;
 	Tile::Parts* type;
 	Vector2f pos(TILE_SIZE.x*x, TILE_SIZE.y*y);
 
-	switch (this->map->terrainVec[x][y])
+	switch (chunk->terrainVec[x][y])
 	{
 		case MapGenerator::TerrainType::GRASS_LIGHT:
 			tileType = new Ground(pos, Vector2i(0, 0));
@@ -245,7 +247,7 @@ std::pair<Tile*, Tile::Parts*> Map::getCellInfo(const size_t& x, const size_t& y
 	return returnPair;
 }
 
-void Map::spawnNatureObj(const IntRect& type, const int& x, const int& y)
+void Map::spawnNatureObj(const IntRect& type, const int& x, const int& y, Chunk* chunk)
 {
 	//Build object
 	Vector2f pos(x * TILE_SIZE.x, y * TILE_SIZE.y);
@@ -265,23 +267,27 @@ void Map::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 	{
 		for (int col = -1; col <= height; col++)
 		{
-			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK)
+			if (chunk->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK)
 				safeSpawn = false;
-			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
-				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_DEEP)
+			if (chunk->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
+				chunk->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_DEEP)
 				safeSpawn = false;
 		}
 	}
-	if (safeSpawn) this->interactableGrid[x][y] = natureObj;
+	if (safeSpawn)
+	{
+		chunk->interactableGrid[x][y] = natureObj;
+		chunk->dynamicEntites.push_back(natureObj);
+	}
 	else delete natureObj;
 }
 
-void Map::buildNature(unsigned int seed)
+void Map::buildNature(unsigned int seed, Chunk* chunk)
 {
 	srand(seed);
-	for (size_t x = 4; x < this->map->terrainVec.size() - 4; x++)
+	for (int x = 4; x < this->tileAmount.x - 4; x++)
 	{
-		for (size_t y = 4; y < this->map->terrainVec[x].size()-4; y++)
+		for (int y = 4; y < this->tileAmount.y - 4; y++)
 		{
 			Vector2f pos(0.f, 0.f);
 			double r = ((double)rand() / (RAND_MAX));
@@ -295,13 +301,13 @@ void Map::buildNature(unsigned int seed)
 			std::vector<IntRect*> SMALL_FLOWERS = { Nature::FLOWER_ONE, Nature::FLOWER_TWO, Nature::FLOWER_THREE };
 			std::vector<IntRect*> BIG_FLOWERS = { Nature::FLOWER_BIG, Nature::FLOWER_WEED};
 
-			switch (this->drawVector[x][y])
+			switch (chunk->drawVector[x][y])
 			{
 				case MapGenerator::TerrainType::GRASS_LIGHT:
 					if (r < 0.015)
 					{
 						int index = rand() % SMALL_STONES.size();
-						this->spawnNatureObj(*SMALL_STONES[index], x, y);
+						this->spawnNatureObj(*SMALL_STONES[index], x, y, chunk);
 					}
 					else if (r < 0.03)
 					{
@@ -313,7 +319,7 @@ void Map::buildNature(unsigned int seed)
 						}
 						ALL_TREES.insert(ALL_TREES.end(), BIG_TREES.begin(), BIG_TREES.end());
 						int index = rand() % ALL_TREES.size();
-						this->spawnNatureObj(*ALL_TREES[index], x, y);
+						this->spawnNatureObj(*ALL_TREES[index], x, y, chunk);
 					}
 					if (r < 0.02)
 					{
@@ -324,7 +330,7 @@ void Map::buildNature(unsigned int seed)
 						}
 						ALL_FLOWERS.insert(ALL_FLOWERS.end(), BIG_FLOWERS.begin(), BIG_FLOWERS.end());
 						int index = rand() % ALL_FLOWERS.size();
-						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
+						this->spawnNatureObj(*ALL_FLOWERS[index], x, y, chunk);
 					}
 					break;
 				case MapGenerator::TerrainType::FOREST_SHALLOW:
@@ -339,14 +345,14 @@ void Map::buildNature(unsigned int seed)
 						ALL_TREES.insert(ALL_TREES.end(), STUMP_TREES.begin(), STUMP_TREES.end());
 
 						int index = rand() % ALL_TREES.size();
-						this->spawnNatureObj(*ALL_TREES[index], x, y);
+						this->spawnNatureObj(*ALL_TREES[index], x, y, chunk);
 					}
 					break;
 				case MapGenerator::TerrainType::FOREST_DEEP:
 					if (r < 0.6)
 					{
 						int index = rand() % BIG_TREES.size();
-						this->spawnNatureObj(*BIG_TREES[index], x, y);
+						this->spawnNatureObj(*BIG_TREES[index], x, y, chunk);
 					}
 					break;
 				case MapGenerator::TerrainType::SAND:
@@ -366,7 +372,7 @@ void Map::buildNature(unsigned int seed)
 						ALL_FLOWERS.insert(ALL_FLOWERS.end(), BIG_FLOWERS.begin(), BIG_FLOWERS.end());
 
 						int index = rand() % ALL_FLOWERS.size();
-						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
+						this->spawnNatureObj(*ALL_FLOWERS[index], x, y, chunk);
 					}
 					break;
 				case MapGenerator::TerrainType::MINERALS:
@@ -376,7 +382,7 @@ void Map::buildNature(unsigned int seed)
 						ALL_STONES.insert(ALL_STONES.end(), SMALL_STONES.begin(), SMALL_STONES.end());
 						ALL_STONES.insert(ALL_STONES.end(), BIG_STONES.begin(), BIG_STONES.end());
 						int index = rand() % ALL_STONES.size();
-						this->spawnNatureObj(*ALL_STONES[index], x, y);
+						this->spawnNatureObj(*ALL_STONES[index], x, y, chunk);
 					}
 					break;
 				default:
@@ -387,47 +393,21 @@ void Map::buildNature(unsigned int seed)
 	srand(time(NULL));
 }
 
-void Map::addNatureToChunks()
+void Map::updateTexture(Chunk* chunk)
 {
-	//Push into the main game object vector
-	int chunkX = -1;
-	int chunkY = -1;
-	for (size_t x = 0; x < this->map->terrainVec.size(); x++)
-	{
-		if(x % CHUNK_SIZE.x == 0) chunkX++;
-		for (size_t y = 0; y < this->map->terrainVec[x].size(); y++)
-		{
-			if(y % CHUNK_SIZE.y == 0) chunkY++;
-
-			if (this->interactableGrid[x][y] != nullptr)
-			{
-				this->chunks[chunkX][chunkY]->dynamicEntites.push_back(this->interactableGrid[x][y]);
-			}
-		}
-		chunkY = -1;
-	}
-}
-
-void Map::updateTexture()
-{
-	//Init rendertexture
-	//this->renderTexture.clear();
-	//this->textureSize = Vector2i(TILE_SIZE.x * this->map->terrainVec.size(), TILE_SIZE.y * this->map->terrainVec[0].size());
-	//this->renderTexture.create(this->textureSize.x, this->textureSize.y);
-
 	//The container for the drawing information stored in a tuple
 	std::vector<std::pair<int, Vector2i>> grid1D;
 
 	//2D-Vector with the info if a cell has been draw
-	std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
+	std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(chunk->terrainVec.size(), std::vector<bool>(chunk->terrainVec[0].size(), false));
 
-	for (size_t x = 3; x < this->map->terrainVec.size() - 3; x++)
+	for (size_t x = 3; x < chunk->terrainVec.size() - 3; x++)
 	{
-		for (size_t y = 3; y < this->map->terrainVec[x].size()-3; y++)
+		for (size_t y = 3; y < chunk->terrainVec[x].size()-3; y++)
 		{
 			//Store building information from every type in the 2D-vector and store it in the 1D-vector
 			std::pair<int, Vector2i> drawingInformation;
-			int layer = static_cast<int>(this->map->terrainVec[x][y]);
+			int layer = static_cast<int>(chunk->terrainVec[x][y]);
 			drawingInformation = std::make_pair(layer, Vector2i(x, y));
 			grid1D.push_back(drawingInformation);
 		}
@@ -455,20 +435,20 @@ void Map::updateTexture()
 						for(int col = -1; col <= 1; col++)
 						{
 							//set all terrain around the cell to it self
-							this->drawVector[currentGridPos.x + row][currentGridPos.y + col] = this->map->terrainVec[currentGridPos.x][currentGridPos.y];
+							chunk->drawVector[currentGridPos.x + row][currentGridPos.y + col] = chunk->terrainVec[currentGridPos.x][currentGridPos.y];
 						}
 					}
 				}
 				else break;
 			}
-			gridDrawn = std::vector<std::vector<bool>>(this->map->terrainVec.size(), std::vector<bool>(this->map->terrainVec[0].size(), false));
+			gridDrawn = std::vector<std::vector<bool>>(chunk->terrainVec.size(), std::vector<bool>(chunk->terrainVec[0].size(), false));
 
 		}
-		std::pair<Tile*, Tile::Parts*> cellInfo = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y);
+		std::pair<Tile*, Tile::Parts*> cellInfo = Map::getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y, chunk);
 		//Save the pointer to the Tile obj to the grid
-		this->grid[std::get<1>(tuple).x][std::get<1>(tuple).y] = std::get<0>(cellInfo);
+		chunk->grid[std::get<1>(tuple).x][std::get<1>(tuple).y] = std::get<0>(cellInfo);
 
-		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = this->getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y);
+		std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> neighBoursInfo = Map::getNeighboursInfo(std::get<1>(cellInfo), std::get<1>(tuple).x, std::get<1>(tuple).y, chunk);
 
 		//Loop through each neighbour and draw the Tile with the correct type at the neighbour pos
 		Vector2f drawPos(0.f, 0.f);
@@ -477,64 +457,50 @@ void Map::updateTexture()
 			for (size_t y = 0; y < neighBoursInfo[x].size(); y++)
 			{
 				Vector2i gridPos = std::get<1>(neighBoursInfo[x][y]);
-				Vector2i chunkPos(floor(gridPos.x / CHUNK_SIZE.x),
-								  floor(gridPos.y / CHUNK_SIZE.y));
+
 				if(!gridDrawn[gridPos.x][gridPos.y])
 				{
 					//Delete if an object exist in a previous layer
-					if(this->grid[gridPos.x][gridPos.y] != nullptr)
+					if(chunk->grid[gridPos.x][gridPos.y] != nullptr)
 					{
-						delete this->grid[gridPos.x][gridPos.y];
+						delete chunk->grid[gridPos.x][gridPos.y];
 					}
-					this->grid[gridPos.x][gridPos.y] = this->getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y).first;
+					chunk->grid[gridPos.x][gridPos.y] = Map::getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y, chunk).first;
 
 					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
 
-					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
-					this->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
-					this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().update(0.f, 0.f); //HitboxPos needs to be updated
+					chunk->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
+					chunk->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
+					chunk->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().update(0.f, 0.f); //HitboxPos needs to be updated
 
 					//Update colision component rect
-					if(this->grid[gridPos.x][gridPos.y]->hasComponent<ColisionComponent>())
+					if(chunk->grid[gridPos.x][gridPos.y]->hasComponent<ColisionComponent>())
 					{
-						this->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(this->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
+						chunk->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(chunk->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
 					}
 
 					//Change drawPos to fit with the chunk texture
 					drawPos = Vector2f((gridPos.x % CHUNK_SIZE.x) * TILE_SIZE.x, (gridPos.y % CHUNK_SIZE.y) * TILE_SIZE.y);
-					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
+					chunk->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 
 					//Draw to the correct chunk texture
-					this->grid[gridPos.x][gridPos.y]->draw(&this->chunks[chunkPos.x][chunkPos.y]->renderTexture);
+					chunk->grid[gridPos.x][gridPos.y]->draw(&chunk->renderTexture);
 
 					//Reset tile object the correct world position
-					this->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y  * TILE_SIZE.y));
+					chunk->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y  * TILE_SIZE.y));
 					gridDrawn[gridPos.x][gridPos.y] = true;
 				}
 			}
 		}
 	}
-
-	//Set the texture of each chunk after they have been drawn to
-	for (int x = 0; x < this->chunkSize.x; x++)
-	{
-		for (int y = 0; y < this->chunkSize.y; y++)
-		{
-			this->chunks[x][y]->setTexture();
-		}
-	}
-
-	addNatureToChunks();
-	//Set the texture to the sprite
-	//this->renderTexture.display();
-	//this->sprite.setTexture(this->renderTexture.getTexture());
+	chunk->setTexture();
 }
 
 void Map::draw(RenderTarget * window)
 {
-	for (int x = 0; x < this->chunkSize.x; x++)
+	for (int x = 0; x < this->chunkAmount.x; ++x)
 	{
-		for (int y = 0; y < this->chunkSize.y; y++)
+		for (int y = 0; y < this->chunkAmount.y; ++y)
 		{
 			this->chunks[x][y]->drawTiles(window);
 		}

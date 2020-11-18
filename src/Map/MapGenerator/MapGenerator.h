@@ -11,7 +11,9 @@ private:
 	bool constDraw;
 	Vector2f constDrawPos;
 	Vector2f constDrawScale;
+	void initTexture();
 	void initTerrainTypes();
+	void initOctaves();
 
 public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	enum class TerrainType {SAND, MINERALS,
@@ -55,8 +57,6 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 		inline void setRange(float * start, float * end) { this->startRange = start, this->endRange = end; }
 	};
 
-	std::vector<std::vector<TerrainType>> terrainVec;
-
 	std::vector<Terrain> heightRegions;
 	std::vector<Terrain> forestRegions;
 	std::vector<Terrain> wheatRegions;
@@ -69,9 +69,6 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	float lacunarity;
 	Vector2f offset;
 	float elevation;
-	std::vector<std::vector<float>> heightMap;
-	std::vector<std::vector<float>> forsetMap;
-	std::vector<std::vector<float>> fieldMap;
 
 	RenderTexture texture;
 	Sprite sprite;
@@ -80,17 +77,25 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	~MapGenerator();
 
 	void draw(RenderTarget * window);
-	void update(/*const float &dt, const float &multiplier*/);
+	std::vector<std::vector<TerrainType>> getMapSegment(const Vector2i &gridPos, const Vector2i &areaSize);
+
 	//Set the map to a constant pos/scale when drawn
 	void setConstDraw(const bool& state);
-	void setTerrainTypes();
-	void updateTexture();
+
+	std::vector<std::vector<TerrainType>> getTerrainTypes(const Vector2i &gridPos, const Vector2i &areaSize,
+		const std::vector<std::vector<float>> heightMap,
+		const std::vector<std::vector<float>> forsetMap,
+		const std::vector<std::vector<float>> fieldMap
+	);
+
+	void updateTexture(const Vector2i &gridPos,
+		const std::vector<std::vector<MapGenerator::TerrainType>>& terrainVec);
 	void setDisplaySize(const Vector2f &size);
 
 	static unsigned int generatePsuedoRandomSeed();
 	static float addSquareMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
 	static float addCircleMask(const int &x, const int &y, float noise, float islad_size, float max_width_factor, float gradientExp, bool inverse);
-	static std::vector<std::vector<float>> generateNoiseMap(const unsigned int& seed, const unsigned int& width, const unsigned int& height, float& scale, const int& octaves, const float& persistance, const float& lacunarity, const sf::Vector2f& offset);
+	std::vector<std::vector<float>> generateNoiseMap(const int& seed, const Vector2i &gridPos, const Vector2i &areaSize);
 };
 
 #endif

@@ -33,9 +33,10 @@ file:///home/viktor/Code/GitHub/forest-valley-experimental/forest-valley-experim
 
 int main()
 {
-	//Game* game = new Game();
-	//game->start();
+	Game* game = new Game();
+	game->start();
 
+	/*
 	//Networking class testing
 	char connectionType;
 
@@ -53,6 +54,6 @@ int main()
 
 		if(client.connect() < 1)
 			client.run();
-	}
+	}*/
 
 }
