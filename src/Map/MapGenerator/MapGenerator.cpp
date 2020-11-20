@@ -216,8 +216,6 @@ void MapGenerator::updateTexture(const Vector2i &gridPos,
 	}
 	this->texture.display();
 	this->sprite.setTexture(this->texture.getTexture());
-	this->constDrawPos = this->sprite.getPosition();
-	this->constDrawScale = this->sprite.getScale();
 }
 
 float MapGenerator::addSquareMask(const int& x, const int& y, float noise, float island_size, float max_width_factor, float gradientExp, bool inverse)
@@ -263,14 +261,8 @@ void MapGenerator::setDisplaySize(const Vector2f& size)
 
 unsigned int MapGenerator::generatePsuedoRandomSeed()
 {
-	Clock clock;
-	for (int i = 0; i < USHRT_MAX; i++)
-	{
-		std::cout << "" << std::endl;
-		continue;
-	}
-	Int64 t = clock.getElapsedTime().asMicroseconds();
-	unsigned int seed = (time(NULL) * t) % INT_MAX;
+	Int64 t = time(NULL);
+	unsigned int seed = (t * t) % INT_MAX;
 	return seed;
 }
 

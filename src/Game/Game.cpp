@@ -50,12 +50,13 @@ void Game::init()
 
 	//Init camera
 	this->camera = new Camera(this->window);
-	this->camera->setView(Vector2f(Vector2f(this->map->pixelSize/2)), this->window);
+	this->camera->setView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window);
 }
 
 void Game::initMap()
 {
-	this->map = new Map(&this->entites);
+	this->seed = MapGenerator::generatePsuedoRandomSeed();
+	this->map = new Map(this->seed);
 }
 
 void Game::handleInput()
@@ -149,9 +150,8 @@ void Game::sortZindex()
 }
 
 //Will be moved into a separate system in another file later
-void Game::checkTileColision(Object* object, const Chunk& chunk)
+void Game::checkTileColision(Object* object, Chunk* chunk)
 {
-	/*
 	if(object->hasComponent<MovementComponent>())
 	{
 		object->getComponent<PositionComponent>().setPosition(object->getComponent<MovementComponent>().getPrevPos());
@@ -163,14 +163,14 @@ void Game::checkTileColision(Object* object, const Chunk& chunk)
 			for (int y = topLeft.y - 1; y <= bottomRight.y + 1; y++)
 			{
 				//Ensure bounds
-				if(x < 0 || x > (int)this->map->grid.size() - 1 ||
-		  		   y < 0 || y > (int)this->map->grid[0].size() - 1) return;
+				if(x < 0 || x > (int)chunk->grid.size() - 1 ||
+		  		   y < 0 || y > (int)chunk->grid[0].size() - 1) return;
 				//Check if tile is colidable
-				else if (this->map->grid[x][y]->hasComponent<ColisionComponent>())
+				else if (chunk->grid[x][y]->hasComponent<ColisionComponent>())
 				{
-					this->map->grid[x][y]->getComponent<ColisionComponent>().draw(window);
+					chunk->grid[x][y]->getComponent<ColisionComponent>().draw(window);
 					IntRect r1 = object->getComponent<HitboxComponent>().getHitbox();
-					IntRect r2 = this->map->grid[x][y]->getComponent<ColisionComponent>().getColisionIntRect();
+					IntRect r2 = chunk->grid[x][y]->getComponent<ColisionComponent>().getColisionIntRect();
 					IntRect nextFrame = r1;
 					Vector2f vel = MovementComponent::getClampedMagVel(object->getComponent<MovementComponent>().getVel())*dt;
 
@@ -230,7 +230,6 @@ void Game::checkTileColision(Object* object, const Chunk& chunk)
 		}
 		object->getComponent<MovementComponent>().moveSprite(object->getComponent<MovementComponent>().getVel(), dt);
 	}
-	*/
 }
 
 void Game::startLoop()
@@ -246,19 +245,60 @@ void Game::startLoop()
 
 		this->map->draw(this->window);
 
+		//Testing with rendering chunks, should use a threadpool later!
+		Vector2i playerChunkPos = this->player->getComponent<PositionComponent>().getChunkPos();
+
+		for(int x = playerChunkPos.x - 1; x <= playerChunkPos.x + 1; x++)
+		{
+			for(int y = playerChunkPos.y - 1; y <= playerChunkPos.y + 1; y++)
+			{
+				if(x >= 0 && x < map->chunkAmount.x &&
+				   y >= 0 && y < map->chunkAmount.y)
+				{
+					if(!this->map->chunks[x][y]->loaded)
+					{
+						this->map->chunks[x][y]->load();
+						this->map->map->updateTexture(this->map->chunks[x][y]->gridPos, this->map->chunks[x][y]->terrainVec);
+					}
+					this->map->chunks[x][y]->drawTiles(this->window);
+				}
+			}
+		}
+
+		//Testing with rendering chunks, should use a threadpool later!
+		static Vector2i oldPlayerChunksPos;
+		if(oldPlayerChunksPos != playerChunkPos)
+		{
+			this->entites.clear();
+			for(int x = playerChunkPos.x - 1; x <= playerChunkPos.x + 1; x++)
+			{
+				for(int y = playerChunkPos.y - 1; y <= playerChunkPos.y + 1; y++)
+				{
+					if(x >= 0 && x < map->chunkAmount.x &&
+						y >= 0 && y < map->chunkAmount.y)
+					{
+						this->entites.insert(this->entites.end(), this->map->chunks[x][y]->dynamicEntities.begin(), this->map->chunks[x][y]->dynamicEntities.end());
+					}
+				}
+			}
+			this->entites.push_back(this->player);
+		}
+		oldPlayerChunksPos = playerChunkPos;
+
 		//Sort the Objects based on zIndex
 		this->sortZindex();
+
 		//Update and draw Objects
 		for(Object* object: this->entites)
 		{
 			object->update(this->dt, this->multiplier);
-			//this->checkTileColision(object, chunk);
+			//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);
 			object->draw(this->window);
 		}
-		this->player->getComponent<HitboxComponent>().draw(window);
+		//this->player->getComponent<HitboxComponent>().draw(window);
 		this->map->map->draw(window);
-		this->camera->updateView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
-
+		//this->camera->updateView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
+		this->camera->setView(player->getComponent<PositionComponent>().getCenterPosition(), this->window);
 		this->window->display();
 	}
 }

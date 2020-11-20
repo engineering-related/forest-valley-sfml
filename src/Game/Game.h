@@ -39,7 +39,7 @@ private:
 	void printInfoToWindow();
 	/////EXTRACT TO SYSTEM CLASS////
 	void sortZindex();
-	void checkTileColision(Object* object, const Chunk& chunk);
+	void checkTileColision(Object* object, Chunk* chunk);
 	/////////////////////////////////
 	void startLoop();
 

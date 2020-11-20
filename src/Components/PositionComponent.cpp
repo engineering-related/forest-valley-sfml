@@ -31,6 +31,9 @@ void PositionComponent::setWorldGridPos()
 	this->gridPos.topLeft.y = floor(this->spritePtr->getPosition().y / TILE_SIZE.y);
 	this->gridPos.bottomRight.x = floor((this->spritePtr->getPosition().x + this->spritePtr->getTextureRect().width) / TILE_SIZE.x);
 	this->gridPos.bottomRight.y = floor((this->spritePtr->getPosition().y + this->spritePtr->getTextureRect().height) / TILE_SIZE.y);
+
+	this->chunkPos.x = floor(this->gridPos.bottomRight.x / CHUNK_SIZE.x);
+	this->chunkPos.y = floor(this->gridPos.bottomRight.y / CHUNK_SIZE.y);
 }
 
 void PositionComponent::draw(RenderTarget* window)

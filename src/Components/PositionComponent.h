@@ -18,6 +18,7 @@ private:
 		Vector2i bottomRight; //Bottom right pos of hitbox
 	};
 	GridPos gridPos;
+	Vector2i chunkPos;
 	void setWorldGridPos();
 
 public:
@@ -30,6 +31,7 @@ public:
 	inline const Vector2f &getPosition()const{return this->spritePtr->getPosition(); }
 	inline const bool& getFixedZIndex() const{return this->fixedZIndex; }
 	inline const GridPos& getGridPos() const{return this->gridPos; }
+	inline const Vector2i& getChunkPos() const {return this->chunkPos; }
 
 	//Modifiers
 	inline void setPosition(const Vector2f& pos){this->spritePtr->setPosition(pos); }

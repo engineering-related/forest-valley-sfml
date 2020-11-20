@@ -12,7 +12,6 @@ private:
 	void initMapGenerator();
 	void initChunks(MapGenerator* map);
 	unsigned int seed;
-
 	//std::vector<std::vector<DynamicTile*> dynamicTiles;
 	//Dynamic tiles goes on three different textures depending on their frame
 	//One of the three textures are drawn on top of the main texture
@@ -22,10 +21,9 @@ public:
 	Vector2i pixelSize;
 	MapGenerator* map;
 
-	std::vector<Object*>* entitesPtr;
 	std::vector<std::vector<Chunk*>> chunks;
 
-	Map(std::vector<Object*>* entites);
+	Map(const unsigned int seed);
 	~Map();
 
 	void draw(RenderTarget* window);

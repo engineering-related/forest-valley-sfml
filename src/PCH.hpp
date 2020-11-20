@@ -96,6 +96,6 @@
 #define CAP 30
 #define SCALE sf::Vector2f(1.f, 1.f)
 #define TILE_SIZE sf::Vector2f(32, 32)
-#define CHUNK_SIZE sf::Vector2i(50, 50)
+#define CHUNK_SIZE sf::Vector2i(25, 25)
 
 #endif // PRECOMPILED_HEADER_HPP
