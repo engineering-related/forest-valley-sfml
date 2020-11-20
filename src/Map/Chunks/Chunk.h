@@ -1,10 +1,8 @@
 #ifndef CHUNK
 #define CHUNK
 
-#include "Entity/Object.h"
-#include "Entity/Tiles/Tile.h"
-//#include "Entity/Tiles/Static/Nature/Nature.h"
 #include "Map/MapGenerator/MapGenerator.h"
+#include "Entity/AllEntities.hpp"
 
 using namespace sf;
 
@@ -35,8 +33,16 @@ public:
 	void load();
 	void save();
 
+	//Functions
+	std::pair<Tile*, Tile::Parts*> getCellInfo(const size_t& x, const size_t& y);
+	std::vector<std::vector<std::pair<Vector2i*, Vector2i>>> getNeighboursInfo(Ground::Parts* const parts, const size_t& x, const size_t& y);
+
+	void updateTexture();
+
+	void spawnNatureObj(const IntRect &type, const int& x, const int& y);
+	void buildNature(unsigned int seed);
+
 	void drawTiles(RenderTarget* window);
-	void update(const float &dt, const float &multiplier);
 	void setTexture();
 
 };
