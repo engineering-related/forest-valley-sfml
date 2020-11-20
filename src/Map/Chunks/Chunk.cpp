@@ -16,7 +16,7 @@ Chunk::~Chunk()
 void Chunk::load()
 {
 	this->init();
-	this->terrainVec = this->mapGeneratorPtr->getMapSegment(this->gridPos, CHUNK_SIZE);
+	this->terrainVec = this->mapGeneratorPtr->getMapSegment(this->gridPos - Vector2i(3, 3), CHUNK_SIZE + Vector2i(6, 6));
 	this->drawVector = this->terrainVec;
 	this->grid = std::vector<std::vector<Tile*>>(this->terrainVec.size(), std::vector<Tile*>(this->terrainVec[0].size(), nullptr));
 	this->interactableGrid = std::vector<std::vector<Object*>>(this->terrainVec.size(), std::vector<Object*>(this->terrainVec[0].size(), nullptr));

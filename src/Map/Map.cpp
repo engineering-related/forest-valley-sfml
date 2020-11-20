@@ -401,9 +401,9 @@ void Map::updateTexture(Chunk* chunk)
 	//2D-Vector with the info if a cell has been draw
 	std::vector<std::vector<bool>> gridDrawn = std::vector<std::vector<bool>>(chunk->terrainVec.size(), std::vector<bool>(chunk->terrainVec[0].size(), false));
 
-	for (size_t x = 3; x < chunk->terrainVec.size() - 3; x++)
+	for (size_t x = 2; x < chunk->terrainVec.size() - 2; x++)
 	{
-		for (size_t y = 3; y < chunk->terrainVec[x].size()-3; y++)
+		for (size_t y = 2; y < chunk->terrainVec[x].size() - 2; y++)
 		{
 			//Store building information from every type in the 2D-vector and store it in the 1D-vector
 			std::pair<int, Vector2i> drawingInformation;
@@ -467,7 +467,7 @@ void Map::updateTexture(Chunk* chunk)
 					}
 					chunk->grid[gridPos.x][gridPos.y] = Map::getCellInfo(std::get<1>(tuple).x, std::get<1>(tuple).y, chunk).first;
 
-					drawPos = Vector2f(gridPos.x * TILE_SIZE.x, gridPos.y * TILE_SIZE.y);
+					drawPos = Vector2f((gridPos.x - 3) * TILE_SIZE.x, (gridPos.y - 3)* TILE_SIZE.y);
 
 					chunk->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 					chunk->grid[gridPos.x][gridPos.y]->changeType(*std::get<0>(neighBoursInfo[x][y]));
@@ -478,10 +478,6 @@ void Map::updateTexture(Chunk* chunk)
 					{
 						chunk->grid[gridPos.x][gridPos.y]->getComponent<ColisionComponent>().setRects(chunk->grid[gridPos.x][gridPos.y]->getComponent<HitboxComponent>().getHitbox());
 					}
-
-					//Change drawPos to fit with the chunk texture
-					drawPos = Vector2f((gridPos.x % CHUNK_SIZE.x) * TILE_SIZE.x, (gridPos.y % CHUNK_SIZE.y) * TILE_SIZE.y);
-					chunk->grid[gridPos.x][gridPos.y]->getComponent<PositionComponent>().setPosition(drawPos);
 
 					//Draw to the correct chunk texture
 					chunk->grid[gridPos.x][gridPos.y]->draw(&chunk->renderTexture);
