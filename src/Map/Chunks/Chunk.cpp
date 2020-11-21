@@ -39,6 +39,13 @@ void Chunk::load()
 	this->drawVector = this->terrainVec;
 	this->grid = tile_vec_2D(this->terrainVec.size(), std::vector<Tile*>(this->terrainVec[0].size(), nullptr));
 	this->interactableGrid = nature_vec_2D(this->terrainVec.size(), std::vector<Nature*>(this->terrainVec[0].size(), nullptr));
+
+	this->natureSpawnMaxPos = Vector2i((int)this->drawVector.size() - Chunk::drawTileExtension.x,
+				 (int)this->drawVector[0].size() - Chunk::drawTileExtension.y);
+
+	this->natureSpawnMinPos = Vector2i(Chunk::drawTileExtension.x,
+				Chunk::drawTileExtension.y - 1);
+
 	this->updateTexture();
 	this->buildNature(this->mapGeneratorPtr->seed);
 	this->loaded = true;
@@ -53,6 +60,7 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 		(y - Chunk::drawTileExtension.y) * TILE_SIZE.y + this->drawPos.y
 	);
 	Nature* natureObj = new Nature(pos, type);
+	natureObj->update(0.f, 0.f);
 
 	bool safeSpawn = true;
 	int width = 0, height = 0;
@@ -63,16 +71,25 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 	if(natureObj->getComponent<HitboxComponent>().getHitbox().height <= TILE_SIZE.y) height = 2;
 	else height = 3;
 
+	//Don't spawn small tile-sized objects 1 tile over top of the chunk
+	if(height == 2 && y <= this->natureSpawnMinPos.y)
+		safeSpawn = false;
+
+	//Don't spawn big 2-tile-sized height objects 1 tile below the chunk
+	if(height == 3 && y >= this->natureSpawnMaxPos.y - 1)
+		safeSpawn = false;
+
 	//Dont spawn anything on rocks or in water
-	for (int row = -1; row <= width; row++)
+	for (int row = -1; row <= width + 1 && safeSpawn; row++)
 	{
-		for (int col = -1; col <= height; col++)
+		for (int col = -1; col <= height + 1 && safeSpawn; col++)
 		{
-			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK)
-				safeSpawn = false;
-			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
+			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK ||
+				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
 				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_DEEP)
+			{
 				safeSpawn = false;
+			}
 		}
 	}
 	if (safeSpawn)
@@ -86,9 +103,9 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 void Chunk::buildNature(unsigned int seed)
 {
 	srand(seed);
-	for (int x = Chunk::drawTileExtension.x; x < (int)this->drawVector.size() - Chunk::drawTileExtension.x - 1; x++)
+	for (int x = this->natureSpawnMinPos.x; x < this->natureSpawnMaxPos.x; x++)
 	{
-		for (int y = Chunk::drawTileExtension.y; y < (int)this->drawVector.size() - Chunk::drawTileExtension.x - 1; y++)
+		for (int y = this->natureSpawnMinPos.y; y < this->natureSpawnMaxPos.y; y++)
 		{
 			double r = ((double)rand() / (RAND_MAX));
 
@@ -104,12 +121,12 @@ void Chunk::buildNature(unsigned int seed)
 			switch (this->drawVector[x][y])
 			{
 				case MapGenerator::TerrainType::GRASS_LIGHT:
-					if (r < 0.015)
+					if (r < 0.0025)
 					{
 						int index = rand() % SMALL_STONES.size();
 						this->spawnNatureObj(*SMALL_STONES[index], x, y);
 					}
-					else if (r < 0.03)
+					else if (r < 0.005)
 					{
 						std::vector<IntRect*> ALL_TREES = std::vector<IntRect*>();
 						for (int i = 0; i < 20; i++)
@@ -121,7 +138,7 @@ void Chunk::buildNature(unsigned int seed)
 						int index = rand() % ALL_TREES.size();
 						this->spawnNatureObj(*ALL_TREES[index], x, y);
 					}
-					else if (r < 0.04)
+					else if (r < 0.03)
 					{
 						std::vector<IntRect*> ALL_FLOWERS = std::vector<IntRect*>();
 						for (int i = 0; i < 20; i++)
@@ -176,11 +193,14 @@ void Chunk::buildNature(unsigned int seed)
 					}
 					break;
 				case MapGenerator::TerrainType::MINERALS:
-					if (r < 0.1)
+					if (r < 0.3)
 					{
 						std::vector<IntRect*> ALL_STONES = std::vector<IntRect*>();
 						ALL_STONES.insert(ALL_STONES.end(), SMALL_STONES.begin(), SMALL_STONES.end());
-						ALL_STONES.insert(ALL_STONES.end(), BIG_STONES.begin(), BIG_STONES.end());
+						for (int i = 0; i < 20; i++)
+						{
+							ALL_STONES.insert(ALL_STONES.end(), BIG_STONES.begin(), BIG_STONES.end());
+						}
 						int index = rand() % ALL_STONES.size();
 						this->spawnNatureObj(*ALL_STONES[index], x, y);
 					}

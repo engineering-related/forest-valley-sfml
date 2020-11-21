@@ -9,6 +9,7 @@ HitboxComponent::HitboxComponent(Sprite& sprite)
 	this->hitboxRect.setPosition(this->spritePtr->getPosition());
 	this->hitboxRect.setSize(Vector2f(this->hitbox.width, this->hitbox.height));
 	this->color = Color::White;
+	this->update(0.f, 0.f);
 }
 
 HitboxComponent::~HitboxComponent()

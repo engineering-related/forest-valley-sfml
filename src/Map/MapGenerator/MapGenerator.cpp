@@ -38,9 +38,9 @@ void MapGenerator::initTerrainTypes()
 	//HeightMap standard
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.15f, Color(50, 80, 170)));
 	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.15f, Color(55, 102, 196)));
-	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.20f, Color(208, 208, 128)));
-	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.65f, Color(85, 151, 24)));
-	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.7f, Color(59, 49, 52)));
+	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.22f, Color(208, 208, 128)));
+	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.60f, Color(85, 151, 24)));
+	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.67f, Color(59, 49, 52)));
 	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.75f, Color(76, 59, 58)));
 	//Rock light
 	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.8f, Color(93, 69, 64)));
@@ -71,20 +71,20 @@ void MapGenerator::initTerrainTypes()
 
 	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 2.05f, Color(255, 255, 255)));
 
-	////HeightMap LOTR
-	//this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(147, 156, 112)));
-	//this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(153, 156, 112)));
-	////this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
-	//this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.55f, Color(204, 192, 151)));
-	////this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.6f, Color(105, 105, 105)));
-	//this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.7f, Color(181/1.5, 170/1.5, 132/1.5)));
-	//this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 1.f, Color(153/2, 156/2, 112/2)));
-	////this->heightRegions.push_back(Terrain(TerrainType::SNOW, 0.95f, Color(255, 255, 255)));
+	//HeightMap LOTR
+	/*this->heightRegions.push_back(Terrain(TerrainType::WATER_DEEP, 0.1f, Color(147, 156, 112)));
+	this->heightRegions.push_back(Terrain(TerrainType::WATER_SHALLOW, 0.2f, Color(153, 156, 112)));
+	this->heightRegions.push_back(Terrain(TerrainType::SAND, 0.25f, Color(208, 208, 128)));
+	this->heightRegions.push_back(Terrain(TerrainType::GRASS_LIGHT, 0.55f, Color(204, 192, 151)));
+	this->heightRegions.push_back(Terrain(TerrainType::MINERALS, 0.6f, Color(105, 105, 105)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_LIGHT, 0.7f, Color(181/1.5, 170/1.5, 132/1.5)));
+	this->heightRegions.push_back(Terrain(TerrainType::ROCK_DARK, 0.95f, Color(153/2, 156/2, 112/2)));
+	this->heightRegions.push_back(Terrain(TerrainType::SNOW, 1.0f, Color(255, 255, 255)));*/
 
 	//Forestmap
-	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.25f, Color(0, 40, 0)));
+	this->forestRegions.push_back(Terrain(TerrainType::FOREST_DEEP, 0.3f, Color(0, 40, 0)));
 	this->forestRegions[0].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);
-	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.5f, Color(0, 60, 0)));
+	this->forestRegions.push_back(Terrain(TerrainType::FOREST_SHALLOW, 0.6f, Color(0, 60, 0)));
 	this->forestRegions[1].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::MINERALS)].value);
 
 	//Fieldmap

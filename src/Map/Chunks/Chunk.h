@@ -18,6 +18,12 @@ private:
 	using bool_grid_2D = std::vector<std::vector<bool>>;
 	using grid_data_1D = std::vector<std::pair<int, Vector2i>>;
 
+	//Constants
+	inline static const Vector2i drawTileExtension = Vector2i(3, 3);
+
+	Vector2i natureSpawnMaxPos;
+	Vector2i natureSpawnMinPos;
+
 	void init();
 	void peelVectors();
 
@@ -25,7 +31,8 @@ public:
 	Vector2i chunkGridPos;
 	Vector2i gridPos;
 	Vector2f drawPos;
-	inline static const Vector2i drawTileExtension = Vector2i(3, 3);
+
+	const Vector2i naturSpawnMinPos = drawTileExtension;
 
 	RenderTexture renderTexture;
 	Sprite sprite;

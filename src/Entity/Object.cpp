@@ -36,7 +36,6 @@ void Object::draw(RenderTarget* window) const
 
 void Object::update(const float& dt, const float& multiplier)
 {
-
 	for(auto & c: this->components)
 	{
 		c->update(dt, multiplier);

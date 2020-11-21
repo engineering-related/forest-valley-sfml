@@ -277,7 +277,9 @@ void Game::startLoop()
 					if(x >= 0 && x < map->chunkAmount.x &&
 						y >= 0 && y < map->chunkAmount.y)
 					{
-						this->entites.insert(this->entites.end(), this->map->chunks[x][y]->dynamicEntities.begin(), this->map->chunks[x][y]->dynamicEntities.end());
+						this->entites.insert(this->entites.end(),
+						this->map->chunks[x][y]->dynamicEntities.begin(),
+						this->map->chunks[x][y]->dynamicEntities.end());
 					}
 				}
 			}
@@ -294,6 +296,7 @@ void Game::startLoop()
 			object->update(this->dt, this->multiplier);
 			//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);
 			object->draw(this->window);
+			//object->getComponent<HitboxComponent>().draw(this->window);
 		}
 		//this->player->getComponent<HitboxComponent>().draw(window);
 		this->map->map->draw(window);
