@@ -11,21 +11,39 @@ Chunk::Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr)
 
 Chunk::~Chunk()
 {
-	//Delete objects
+	this->deleteObjects();
+	delete this->sprite;
+	delete this->renderTexture;
+}
+
+void Chunk::init()
+{
+	this->renderTexture = new RenderTexture();
+	this->sprite = new Sprite();
+	this->renderTexture->clear();
+	this->renderTexture->create(CHUNK_SIZE.x*TILE_SIZE.x, CHUNK_SIZE.y*TILE_SIZE.y);
+	this->sprite->setPosition(this->drawPos);
+}
+
+void Chunk::deleteObjects()
+{
+	//Delete Tiles
 	for(size_t x = 0; x < this->grid.size(); x++)
 	{
 		for(size_t y = 0; y < this->grid[x].size(); y++)
 		{
 			delete this->grid[x][y];
+			delete this->interactableGrid[x][y];
 		}
 	}
-}
 
-void Chunk::init()
-{
-	this->renderTexture.clear();
-	this->renderTexture.create(CHUNK_SIZE.x*TILE_SIZE.x, CHUNK_SIZE.y*TILE_SIZE.y);
-	this->sprite.setPosition(this->drawPos);
+	//Free up memory from vectors
+	this->terrainVec.clear(), this->terrainVec.shrink_to_fit();
+	this->drawVector.clear(), this->drawVector.shrink_to_fit();
+
+	this->grid.clear(), this->grid.shrink_to_fit();
+	this->interactableGrid.clear(), this->interactableGrid.shrink_to_fit();
+	this->dynamicEntities.clear(), this->dynamicEntities.shrink_to_fit();
 }
 
 void Chunk::load()
@@ -49,6 +67,14 @@ void Chunk::load()
 	this->updateTexture();
 	this->buildNature(this->worldGeneratorPtr->seed);
 	this->loaded = true;
+}
+
+void Chunk::save()
+{
+	this->deleteObjects();
+	delete this->sprite;
+	delete this->renderTexture;
+	this->loaded = false;
 }
 
 void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
@@ -454,6 +480,12 @@ void Chunk::updateTexture()
 		Tile* cellTile = std::get<0>(cellInfo);
 		Tile::Parts* cellPart = std::get<1>(cellInfo);
 
+		//Delete if an object exist in a previous layer
+		if(this->grid[tileGridPos.x][tileGridPos.y] != nullptr)
+		{
+			delete this->grid[tileGridPos.x][tileGridPos.y];
+		}
+
 		//Save the pointer to the Tile obj to the grid
 		this->grid[tileGridPos.x][tileGridPos.y] = cellTile;
 
@@ -494,7 +526,7 @@ void Chunk::updateTexture()
 					}
 
 					//Draw to the texture
-					this->grid[neighbourGridPos.x][neighbourGridPos.y]->draw(&this->renderTexture);
+					this->grid[neighbourGridPos.x][neighbourGridPos.y]->draw(this->renderTexture);
 
 					//Reset tile object the correct world position
 					this->grid[neighbourGridPos.x][neighbourGridPos.y]->getComponent<PositionComponent>().setPosition(Vector2f(neighbourGridPos.x * TILE_SIZE.x, neighbourGridPos.y  * TILE_SIZE.y));
@@ -508,11 +540,11 @@ void Chunk::updateTexture()
 
 void Chunk::drawTiles(RenderTarget *window)
 {
-	window->draw(this->sprite);
+	window->draw(*this->sprite);
 }
 
 void Chunk::setTexture()
 {
-	this->renderTexture.display();
-	this->sprite.setTexture(this->renderTexture.getTexture());
+	this->renderTexture->display();
+	this->sprite->setTexture(this->renderTexture->getTexture());
 }

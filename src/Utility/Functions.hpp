@@ -36,6 +36,12 @@ namespace util
 			float r3 = LO + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI - LO)));
 			return r3;
 		}
+
+		static bool isInrage(const float& LO, const float& HI, const float& X)
+		{
+			return ((X-LO) <= (HI-LO));
+		}
+
 		static void constrain(float& value, const float& minimum, const float& maximum)
 		{
 			if (value < minimum)

@@ -12,13 +12,14 @@ private:
 	void initWorldGenerator();
 
 	void initChunks(WorldGenerator* map);
-	void updateEntitiesFromPlayerChunks(Player* player);
-	void checkLoadSavePlayerChunks(Player* player);
+	void updatePlayerChunks(Player* player);
 	void drawTilesPlayerChunks(RenderTarget* window);
 
 	unsigned int seed;
+
 	Vector2i playerChunkPos;
 	Vector2i oldPlayerChunkPos;
+
 	std::vector<Object*>* entitesPtr;
 	//std::vector<std::vector<DynamicTile*> dynamicTiles;
 	//Dynamic tiles goes on three different textures depending on their frame

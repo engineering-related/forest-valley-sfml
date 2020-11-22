@@ -25,7 +25,7 @@ private:
 	Vector2i natureSpawnMinPos;
 
 	void init();
-	void peelVectors();
+	void deleteObjects();
 
 public:
 	Vector2i chunkGridPos;
@@ -34,8 +34,8 @@ public:
 
 	const Vector2i naturSpawnMinPos = drawTileExtension;
 
-	RenderTexture renderTexture;
-	Sprite sprite;
+	RenderTexture* renderTexture;
+	Sprite* sprite;
 
 	terrain_vec_2D terrainVec;
 	terrain_vec_2D drawVector;

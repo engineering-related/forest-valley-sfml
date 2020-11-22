@@ -30,7 +30,7 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(20, 20);
+	this->chunkAmount = Vector2i(100, 100);
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -50,47 +50,85 @@ void World::initChunks(WorldGenerator* map)
 	}
 }
 
-void World::updateEntitiesFromPlayerChunks(Player* player)
+void World::updatePlayerChunks(Player* player)
 {
+	//Testing with rendering chunks, should use a threadpool later!
+	this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
+
 	//Testing with rendering chunks, should use a threadpool later!
 	if(this->oldPlayerChunkPos != this->playerChunkPos)
 	{
 		this->entitesPtr->clear();
-		for(int x = this->playerChunkPos.x - 1; x <= this->playerChunkPos.x + 1; x++)
+
+		Vector2i chunkPosDiff = this->playerChunkPos - this->oldPlayerChunkPos;
+
+		//std::cout << this->playerChunkPos.x << " " << this->playerChunkPos.y << std::endl;wwww
+
+		for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
 		{
-			for(int y = this->playerChunkPos.y - 1; y <= this->playerChunkPos.y + 1; y++)
+			for(int y = this->playerChunkPos.y - 1; y <=  this->playerChunkPos.y + 1; y++)
 			{
 				if(x >= 0 && x < this->chunkAmount.x &&
 					y >= 0 && y < this->chunkAmount.y)
 				{
-					this->entitesPtr->insert(this->entitesPtr->end(),
-					this->chunks[x][y]->dynamicEntities.begin(),
-					this->chunks[x][y]->dynamicEntities.end());
+					if(chunkPosDiff.x < 0 && x == this->playerChunkPos.x - 1 &&
+						this->playerChunkPos.x + 2 >= 0 &&
+						this->playerChunkPos.x + 2 < this->chunkAmount.x &&
+						this->chunks[this->playerChunkPos.x + 2][y]->loaded)
+					{
+						this->chunks[this->playerChunkPos.x + 2][y]->save();
+						//std::cout << "Saved: " << this->playerChunkPos.x + 2 << " " << y << std::endl;
+					}
+
+					if(chunkPosDiff.x > 0 && x == this->playerChunkPos.x - 1 &&
+						this->playerChunkPos.x - 2 >= 0 &&
+						this->playerChunkPos.x - 2 < this->chunkAmount.x &&
+						this->chunks[this->playerChunkPos.x - 2][y]->loaded)
+					{
+						this->chunks[this->playerChunkPos.x - 2][y]->save();
+						//std::cout << "Saved: " << this->playerChunkPos.x - 2 << " " << y << std::endl;
+					}
+
+					if(chunkPosDiff.y < 0 && y == this->playerChunkPos.y - 1 &&
+						this->playerChunkPos.y + 2 >= 0 &&
+						this->playerChunkPos.y + 2 < this->chunkAmount.y &&
+						this->chunks[x][this->playerChunkPos.y + 2]->loaded)
+					{
+						this->chunks[x][this->playerChunkPos.y + 2]->save();
+						//std::cout << "Saved: " << x << " " << this->playerChunkPos.y + 2 << std::endl;
+					}
+
+					if(chunkPosDiff.y > 0 && y == this->playerChunkPos.y - 1 &&
+						this->playerChunkPos.y - 2 >= 0 &&
+						this->playerChunkPos.y - 2 < this->chunkAmount.y &&
+						this->chunks[x][this->playerChunkPos.y - 2]->loaded)
+					{
+						this->chunks[x][this->playerChunkPos.y - 2]->save();
+						//std::cout << "Saved: " << x << " " << this->playerChunkPos.y - 2 << std::endl;
+					}
+
+					//Load the current chunk if it haven't been
+					if(!this->chunks[x][y]->loaded)
+					{
+						this->chunks[x][y]->load();
+						this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
+					}
+
+					//Make sure the current chunk is loaded
+					if(this->chunks[x][y]->loaded)
+					{
+						this->entitesPtr->insert(this->entitesPtr->end(),
+						this->chunks[x][y]->dynamicEntities.begin(),
+						this->chunks[x][y]->dynamicEntities.end());
+					}
 				}
 			}
 		}
 		this->entitesPtr->push_back(player);
 	}
 	this->oldPlayerChunkPos = this->playerChunkPos;
-}
 
-void World::checkLoadSavePlayerChunks(Player* player)
-{
-	for(int x = this->playerChunkPos.x - 1; x <= this->playerChunkPos.x + 1; x++)
-	{
-		for(int y = this->playerChunkPos.y - 1; y <= this->playerChunkPos.y + 1; y++)
-		{
-			if(x >= 0 && x < this->chunkAmount.x &&
-				y >= 0 && y < this->chunkAmount.y)
-			{
-				if(!this->chunks[x][y]->loaded)
-				{
-					this->chunks[x][y]->load();
-					this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
-				}
-			}
-		}
-	}
+
 }
 
 void World::drawTilesPlayerChunks(RenderTarget* window)
@@ -116,8 +154,5 @@ void World::draw(RenderTarget * window)
 
 void World::update(Player* player)
 {
-	//Testing with rendering chunks, should use a threadpool later!
-	this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
-	this->checkLoadSavePlayerChunks(player);
-	this->updateEntitiesFromPlayerChunks(player);
+	this->updatePlayerChunks(player);
 }

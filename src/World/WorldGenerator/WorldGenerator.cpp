@@ -30,7 +30,7 @@ WorldGenerator::~WorldGenerator()
 void WorldGenerator::initTexture()
 {
 	this->texture.clear();
-	this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
+	//this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
 }
 
 void WorldGenerator::initTerrainTypes()
