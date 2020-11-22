@@ -3,7 +3,7 @@
 Player::Player(Vector2f pos) :
 	Creature(pos, util::txh::PlayerBase,
 	Vector2i(0, 0), Vector2i(util::txh::PlayerBase->getTexture()->getSize().x, util::txh::PlayerBase->getTexture()->getSize().y),
-	150.f*4, 30.f*4, 15.f*4) //Change movement/friction later!
+	150.f*10, 30.f*10, 15.f*10) //Change movement/friction later!
 {
 	this->setAnimations();
 	this->addComponent<AnimationComponent>(this->sprite, &this->idle.down);

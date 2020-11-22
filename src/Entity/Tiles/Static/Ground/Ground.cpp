@@ -37,6 +37,7 @@ Tile::Parts* Ground::getParts(const Vector2i& gridPos)
 
 	part->IML = Vector2i(startPos.x + 3, startPos.y + 1);
 	part->IMR = Vector2i(startPos.x + 4, startPos.y + 1);
+
 	//Invert if water corner
 	if (gridPos.x == 0 && gridPos.y == 2)
 	{

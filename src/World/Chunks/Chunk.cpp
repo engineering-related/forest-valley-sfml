@@ -1,11 +1,11 @@
 #include "Chunk.h"
 
-Chunk::Chunk(Vector2i chunkGridPos, MapGenerator* mapGenerator)
+Chunk::Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr)
 {
 	this->chunkGridPos = chunkGridPos;
 	this->gridPos = Vector2i(this->chunkGridPos.x * CHUNK_SIZE.x, this->chunkGridPos.y * CHUNK_SIZE.y);
 	this->drawPos = Vector2f(this->gridPos.x * TILE_SIZE.x, this->gridPos.y * TILE_SIZE.y);
-	this->mapGeneratorPtr = mapGenerator;
+	this->worldGeneratorPtr = worldGeneratorPtr;
 	this->loaded = false;
 }
 
@@ -31,7 +31,7 @@ void Chunk::init()
 void Chunk::load()
 {
 	this->init();
-	this->terrainVec = this->mapGeneratorPtr->getMapSegment
+	this->terrainVec = this->worldGeneratorPtr->getSegment
 	(
 		this->gridPos - Chunk::drawTileExtension,
 		CHUNK_SIZE + 2 * Chunk::drawTileExtension
@@ -47,7 +47,7 @@ void Chunk::load()
 				Chunk::drawTileExtension.y - 1);
 
 	this->updateTexture();
-	this->buildNature(this->mapGeneratorPtr->seed);
+	this->buildNature(this->worldGeneratorPtr->seed);
 	this->loaded = true;
 }
 
@@ -84,9 +84,9 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 	{
 		for (int col = -1; col <= height + 1 && safeSpawn; col++)
 		{
-			if (this->drawVector[x + row][y + col] == MapGenerator::TerrainType::ROCK_DARK ||
-				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_SHALLOW ||
-				this->drawVector[x + row][y + col] == MapGenerator::TerrainType::WATER_DEEP)
+			if (this->drawVector[x + row][y + col] == WorldGenerator::TerrainType::ROCK_DARK ||
+				this->drawVector[x + row][y + col] == WorldGenerator::TerrainType::WATER_SHALLOW ||
+				this->drawVector[x + row][y + col] == WorldGenerator::TerrainType::WATER_DEEP)
 			{
 				safeSpawn = false;
 			}
@@ -120,7 +120,7 @@ void Chunk::buildNature(unsigned int seed)
 
 			switch (this->drawVector[x][y])
 			{
-				case MapGenerator::TerrainType::GRASS_LIGHT:
+				case WorldGenerator::TerrainType::GRASS_LIGHT:
 					if (r < 0.0025)
 					{
 						int index = rand() % SMALL_STONES.size();
@@ -150,7 +150,7 @@ void Chunk::buildNature(unsigned int seed)
 						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
 					}
 					break;
-				case MapGenerator::TerrainType::FOREST_SHALLOW:
+				case WorldGenerator::TerrainType::FOREST_SHALLOW:
 					if (r < 0.2)
 					{
 						std::vector<IntRect*> ALL_TREES = std::vector<IntRect*>();
@@ -165,23 +165,23 @@ void Chunk::buildNature(unsigned int seed)
 						this->spawnNatureObj(*ALL_TREES[index], x, y);
 					}
 					break;
-				case MapGenerator::TerrainType::FOREST_DEEP:
+				case WorldGenerator::TerrainType::FOREST_DEEP:
 					if (r < 0.6)
 					{
 						int index = rand() % BIG_TREES.size();
 						this->spawnNatureObj(*BIG_TREES[index], x, y);
 					}
 					break;
-				case MapGenerator::TerrainType::SAND:
+				case WorldGenerator::TerrainType::SAND:
 
 					break;
-				case MapGenerator::TerrainType::WATER_DEEP:
+				case WorldGenerator::TerrainType::WATER_DEEP:
 
 					break;
-				case MapGenerator::TerrainType::WATER_SHALLOW:
+				case WorldGenerator::TerrainType::WATER_SHALLOW:
 
 					break;
-				case MapGenerator::TerrainType::WHEAT:
+				case WorldGenerator::TerrainType::WHEAT:
 					if (r < 0.5)
 					{
 						std::vector<IntRect*> ALL_FLOWERS = std::vector<IntRect*>();
@@ -192,7 +192,7 @@ void Chunk::buildNature(unsigned int seed)
 						this->spawnNatureObj(*ALL_FLOWERS[index], x, y);
 					}
 					break;
-				case MapGenerator::TerrainType::MINERALS:
+				case WorldGenerator::TerrainType::MINERALS:
 					if (r < 0.3)
 					{
 						std::vector<IntRect*> ALL_STONES = std::vector<IntRect*>();
@@ -221,35 +221,35 @@ Chunk::tile_data Chunk::getTileData(const size_t& x, const size_t& y)
 
 	switch (this->terrainVec[x][y])
 	{
-		case MapGenerator::TerrainType::GRASS_LIGHT:
+		case WorldGenerator::TerrainType::GRASS_LIGHT:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::GRASS_FLAT;
 			break;
-		case MapGenerator::TerrainType::FOREST_SHALLOW:
+		case WorldGenerator::TerrainType::FOREST_SHALLOW:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::GRASS_FOREST;
 			break;
-		case MapGenerator::TerrainType::FOREST_DEEP:
+		case WorldGenerator::TerrainType::FOREST_DEEP:
 			tileType = new Ground(pos, Vector2i(0, 0));
-			type = Ground::GRASS_FOREST;
+			type = Ground::GRASS_FOREST_DEEP;
 			break;
-		case MapGenerator::TerrainType::SAND:
+		case WorldGenerator::TerrainType::SAND:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::SAND;
 			break;
-		case MapGenerator::TerrainType::WATER_DEEP:
+		case WorldGenerator::TerrainType::WATER_DEEP:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::WATER;
 			break;
-		case MapGenerator::TerrainType::WATER_SHALLOW:
+		case WorldGenerator::TerrainType::WATER_SHALLOW:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::WATER;
 			break;
-		case MapGenerator::TerrainType::WHEAT:
+		case WorldGenerator::TerrainType::WHEAT:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::FIELD;
 			break;
-		case MapGenerator::TerrainType::MINERALS:
+		case WorldGenerator::TerrainType::MINERALS:
 			tileType = new Ground(pos, Vector2i(0, 0));
 			type = Ground::MINERAL;
 			break;
@@ -284,7 +284,7 @@ Chunk::tile_data Chunk::getTileData(const size_t& x, const size_t& y)
 		for(size_t col = 0; col < returnInfo[row].size(); col++)
 		{
 			Vector2i pos = std::get<1>(returnInfo[row][col]);
-			MapGenerator::TerrainType *current = &this->drawVector[pos.x][pos.y],
+			WorldGenerator::TerrainType *current = &this->drawVector[pos.x][pos.y],
 									  *tl = &this->drawVector[pos.x - 1][pos.y - 1],
 									  *tm = &this->drawVector[pos.x][pos.y - 1],
 									  *tr = &this->drawVector[pos.x + 1][pos.y - 1],

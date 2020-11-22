@@ -1,7 +1,7 @@
 #ifndef CHUNK
 #define CHUNK
 
-#include "Map/MapGenerator/MapGenerator.h"
+#include "World/WorldGenerator/WorldGenerator.h"
 #include "Entity/AllEntities.hpp"
 
 using namespace sf;
@@ -12,7 +12,7 @@ private:
 	//Aliases
 	using tile_data = std::pair<Tile*, Tile::Parts*>;
 	using tile_neighbour_type_data = std::vector<std::vector<std::pair<Vector2i*, Vector2i>>>;
-	using terrain_vec_2D = std::vector<std::vector<MapGenerator::TerrainType>>;
+	using terrain_vec_2D = std::vector<std::vector<WorldGenerator::TerrainType>>;
 	using tile_vec_2D = std::vector<std::vector<Tile*>>;
 	using nature_vec_2D = std::vector<std::vector<Nature*>>;
 	using bool_grid_2D = std::vector<std::vector<bool>>;
@@ -44,9 +44,9 @@ public:
 	nature_vec_2D interactableGrid;
 	std::vector<Object*> dynamicEntities;
 
-	MapGenerator* mapGeneratorPtr;
+	WorldGenerator* worldGeneratorPtr;
 
-	Chunk(Vector2i chunkGridPos, MapGenerator* mapGenerator);
+	Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr);
 	~Chunk();
 
 	bool loaded;

@@ -26,6 +26,7 @@ public:
 	static Parts* getParts(const Vector2i& gridPos);
 
 	inline static Parts* const GRASS_FOREST = Ground::getParts(Vector2i(0, 0));
+	inline static Parts* const GRASS_FOREST_DEEP = Ground::getParts(Vector2i(0, 0));
 	inline static Parts* const GRASS_FLAT = Ground::getParts(Vector2i(0, 3));
 	inline static Parts* const SAND = Ground::getParts(Vector2i(1, 4));
 	inline static Parts* const GRAVEL = Ground::getParts(Vector2i(2, 4));

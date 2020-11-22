@@ -69,7 +69,7 @@ namespace util
 									  //*const Cave = new Data("Cave.png" /*, sf::Vector2i(?, ?)*/),
 									  //*const Dirt = new Data("Dirt.png"),
 									  //*const Fancy = new Data("Fancy.png"),
-									  *const Ground = new Data("content/terrain/Ground.png", sf::Vector2i(480 / 32, 768 / 32)),
+									  *const Ground = new Data("content/terrain/Ground3.png", sf::Vector2i(480 / 32, 768 / 32)),
 								  //*const Ground2 = new Data("Ground2.png");
 										  *const Nature = new Data("content/terrain/Nature.png", sf::Vector2i(480/32, 128/32)),
 								  //*const Nature2 = new Data("Nature2.png"),

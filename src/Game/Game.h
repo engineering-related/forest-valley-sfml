@@ -3,7 +3,7 @@
 
 //Includes
 #include "Camera/Camera.h"
-#include "Map/Map.h"
+#include "World/World.h"
 #include "Platform/Platform.hpp"
 #include "Entity/AllEntities.hpp"
 
@@ -28,10 +28,10 @@ private:
 	std::vector<Object*> entites;
 
 	unsigned int seed;
-	Map* map;
+	World* world;
 
 	void init();
-	void initMap();
+	void initWorld();
 	void handleInput();
 	void onResize();
 	void pollEvents();

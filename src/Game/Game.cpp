@@ -10,7 +10,7 @@ Game::~Game()
 {
 	delete this->window;
 	delete this->font;
-	delete this->map;
+	delete this->world;
 	delete this->camera;
 	//Delete all entities
 	for(Object* entity: this->entites)
@@ -41,11 +41,11 @@ void Game::init()
 	this->cap = CAP;
 	this->window->setFramerateLimit(this->framerateLimit);
 
-	//Init Map
-	this->initMap();
+	//Init World
+	this->initWorld();
 
 	//Testing Obejcts
-	this->player = new Player(Vector2f(this->map->pixelSize/2));
+	this->player = new Player(Vector2f(this->world->pixelSize/2));
 	this->entites.push_back(this->player);
 
 	//Init camera
@@ -53,10 +53,10 @@ void Game::init()
 	this->camera->setView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window);
 }
 
-void Game::initMap()
+void Game::initWorld()
 {
-	this->seed = MapGenerator::generatePsuedoRandomSeed();
-	this->map = new Map(this->seed);
+	this->seed = WorldGenerator::generatePsuedoRandomSeed();
+	this->world = new World(this->seed, &this->entites);
 }
 
 void Game::handleInput()
@@ -243,49 +243,8 @@ void Game::startLoop()
 		//Draw
 		this->window->clear();
 
-		this->map->draw(this->window);
-
-		//Testing with rendering chunks, should use a threadpool later!
-		Vector2i playerChunkPos = this->player->getComponent<PositionComponent>().getChunkPos();
-
-		for(int x = playerChunkPos.x - 1; x <= playerChunkPos.x + 1; x++)
-		{
-			for(int y = playerChunkPos.y - 1; y <= playerChunkPos.y + 1; y++)
-			{
-				if(x >= 0 && x < map->chunkAmount.x &&
-				   y >= 0 && y < map->chunkAmount.y)
-				{
-					if(!this->map->chunks[x][y]->loaded)
-					{
-						this->map->chunks[x][y]->load();
-						this->map->map->updateTexture(this->map->chunks[x][y]->gridPos, this->map->chunks[x][y]->terrainVec);
-					}
-					this->map->chunks[x][y]->drawTiles(this->window);
-				}
-			}
-		}
-
-		//Testing with rendering chunks, should use a threadpool later!
-		static Vector2i oldPlayerChunksPos;
-		if(oldPlayerChunksPos != playerChunkPos)
-		{
-			this->entites.clear();
-			for(int x = playerChunkPos.x - 1; x <= playerChunkPos.x + 1; x++)
-			{
-				for(int y = playerChunkPos.y - 1; y <= playerChunkPos.y + 1; y++)
-				{
-					if(x >= 0 && x < map->chunkAmount.x &&
-						y >= 0 && y < map->chunkAmount.y)
-					{
-						this->entites.insert(this->entites.end(),
-						this->map->chunks[x][y]->dynamicEntities.begin(),
-						this->map->chunks[x][y]->dynamicEntities.end());
-					}
-				}
-			}
-			this->entites.push_back(this->player);
-		}
-		oldPlayerChunksPos = playerChunkPos;
+		this->world->update(this->player);
+		this->world->draw(this->window);
 
 		//Sort the Objects based on zIndex
 		this->sortZindex();
@@ -299,7 +258,7 @@ void Game::startLoop()
 			//object->getComponent<HitboxComponent>().draw(this->window);
 		}
 		//this->player->getComponent<HitboxComponent>().draw(window);
-		this->map->map->draw(window);
+		this->world->map->draw(window);
 		//this->camera->updateView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
 		this->camera->setView(player->getComponent<PositionComponent>().getCenterPosition(), this->window);
 		this->window->display();
