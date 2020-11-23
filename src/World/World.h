@@ -11,12 +11,11 @@ private:
 	void init();
 	void initWorldGenerator();
 
-	void initChunks(WorldGenerator* map);
-	void updateMiniMap();
 	void savePlayerChunks();
 	void loadPlayerChunks();
 	void updatePlayerChunks(Player* player);
 	void drawTilesPlayerChunks(RenderTarget* window);
+	void updateMiniMap();
 
 	unsigned int seed;
 
@@ -33,7 +32,9 @@ public:
 	Vector2i pixelSize;
 	WorldGenerator* map;
 
-	std::vector<std::vector<Chunk*>> chunks;
+	//Chunks map
+	inline size_t chunkPosKey(int i,int j) {return (size_t) i << 32 | (unsigned int) j;}
+	std::unordered_map<size_t /*chunkPosKey*/, Chunk* /*Chunk obj.*/> chunks;
 
 	World(const unsigned int seed, std::vector<Object*>* entitesPtr);
 	~World();

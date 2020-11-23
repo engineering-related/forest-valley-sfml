@@ -10,13 +10,12 @@ World::World(const unsigned int seed, std::vector<Object*>* entitesPtr)
 World::~World()
 {
 	//Delete chunks
-	for (int x = 0; x < this->chunkAmount.x; ++x)
+	for(auto& container: this->chunks)
 	{
-		for (int y = 0; y < this->chunkAmount.y; ++y)
-		{
-			delete this->chunks[x][y];
-		}
+		this->chunks.erase(container.first);
+		delete container.second;
 	}
+	this->chunks.clear();
 
 	//Delete WorldGenerator
 	delete this->map;
@@ -25,30 +24,16 @@ World::~World()
 void World::init()
 {
 	this->initWorldGenerator();
-	this->initChunks(this->map);
 }
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(10, 10); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
+	this->chunkAmount = Vector2i(1000, 1000); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	//this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
-}
-
-void World::initChunks(WorldGenerator* map)
-{
-	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkAmount.x, std::vector<Chunk*>(this->chunkAmount.y, nullptr));
-
-	for (int x = 0; x < this->chunkAmount.x; x++)
-	{
-		for (int y = 0; y < this->chunkAmount.y; y++)
-		{
-			this->chunks[x][y] = new Chunk(Vector2i(x, y), map);
-		}
-	}
 }
 
 void World::savePlayerChunks()
@@ -58,31 +43,26 @@ void World::savePlayerChunks()
 	{
 		for(int y = this->oldPlayerChunkPos.y - 1; y <=  this->oldPlayerChunkPos.y + 1; y++)
 		{
-			if(x >= 0 && x < this->chunkAmount.x &&
-				y >= 0 && y < this->chunkAmount.y &&
-				chunks[x][y]->loaded)
+			//Check if the chunk exists
+			if(chunks.find(chunkPosKey(x, y)) != chunks.end())
 			{
-				if(x < this->playerChunkPos.x - 1 ||
-					x > this->playerChunkPos.x + 1 ||
-					y < this->playerChunkPos.y - 1 ||
-					y > this->playerChunkPos.y + 1)
+				if(x >= 0 && x < this->chunkAmount.x &&
+					y >= 0 && y < this->chunkAmount.y)
 				{
-					this->chunks[x][y]->save();
+					if((x < this->playerChunkPos.x - 1 ||
+						x > this->playerChunkPos.x + 1 ||
+						y < this->playerChunkPos.y - 1 ||
+						y > this->playerChunkPos.y + 1))
+					{
+						this->chunks[chunkPosKey(x, y)]->save();
+
+						Chunk* deleteChunkPtr = this->chunks[chunkPosKey(x, y)];
+						this->chunks.erase(chunkPosKey(x, y));
+						delete deleteChunkPtr;
+					}
 				}
 			}
 		}
-	}
-}
-
-void World::updateMiniMap()
-{
-	if(this->playerChunkPos.x >= 0 && this->playerChunkPos.x < this->chunkAmount.x &&
-	   this->playerChunkPos.y >= 0 && this->playerChunkPos.y < this->chunkAmount.y &&
-		this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->loaded)
-	{
-		this->map->updateTexture(
-			this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->gridPos,
-			this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->terrainVec);
 	}
 }
 
@@ -95,18 +75,24 @@ void World::loadPlayerChunks()
 			if(x >= 0 && x < this->chunkAmount.x &&
 				y >= 0 && y < this->chunkAmount.y)
 			{
-				//Load the current chunk if it haven't been
-				if(!this->chunks[x][y]->loaded)
+				//key is not present!
+				if(chunks.find(chunkPosKey(x, y)) == chunks.end())
 				{
-					this->chunks[x][y]->load();
+					chunks[chunkPosKey(x, y)] = new Chunk(Vector2i(x, y), this->map);
+				}
+
+				//Load the current chunk if it haven't been
+				if(!this->chunks[chunkPosKey(x, y)]->loaded)
+				{
+					this->chunks[chunkPosKey(x, y)]->load();
 				}
 
 				//Make sure the current chunk is loaded
-				if(this->chunks[x][y]->loaded)
+				if(this->chunks[chunkPosKey(x, y)]->loaded)
 				{
 					this->entitesPtr->insert(this->entitesPtr->end(),
-					this->chunks[x][y]->dynamicEntities.begin(),
-					this->chunks[x][y]->dynamicEntities.end());
+					this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
+					this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
 				}
 			}
 		}
@@ -122,8 +108,8 @@ void World::updatePlayerChunks(Player* player)
 	if(this->oldPlayerChunkPos != this->playerChunkPos)
 	{
 		this->entitesPtr->clear();
-		this->savePlayerChunks();
 		this->loadPlayerChunks();
+		this->savePlayerChunks();
 		this->entitesPtr->push_back(player);
 	}
 	this->oldPlayerChunkPos = this->playerChunkPos;
@@ -138,12 +124,27 @@ void World::drawTilesPlayerChunks(RenderTarget* window)
 			if(x >= 0 && x < this->chunkAmount.x &&
 				y >= 0 && y < this->chunkAmount.y)
 			{
-				if(this->chunks[x][y]->loaded)
-					this->chunks[x][y]->drawTiles(window);
+				if(this->chunks[chunkPosKey(x, y)]->loaded)
+					this->chunks[chunkPosKey(x, y)]->drawTiles(window);
 			}
 		}
 	}
 }
+
+void World::updateMiniMap()
+{
+	int x = this->playerChunkPos.x, y = this->playerChunkPos.y;
+
+	if(x >= 0 && x < this->chunkAmount.x &&
+	   y >= 0 && y < this->chunkAmount.y &&
+		this->chunks[chunkPosKey(x, y)]->loaded)
+	{
+		this->map->updateTexture(
+			this->chunks[chunkPosKey(x, y)]->gridPos,
+			this->chunks[chunkPosKey(x, y)]->terrainVec);
+	}
+}
+
 
 void World::draw(RenderTarget * window)
 {

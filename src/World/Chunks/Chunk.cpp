@@ -11,7 +11,7 @@ Chunk::Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr)
 
 Chunk::~Chunk()
 {
-	this->save();
+	if(this->loaded) this->save();
 }
 
 void Chunk::init()
