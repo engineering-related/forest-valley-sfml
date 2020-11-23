@@ -28,7 +28,7 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(1000, 1000); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
+	this->chunkAmount = Vector2i(10000, 10000); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, TECHNICALLY INFINITE MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
