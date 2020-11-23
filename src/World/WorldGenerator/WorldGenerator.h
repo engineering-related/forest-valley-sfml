@@ -11,7 +11,7 @@ private:
 	bool constDraw;
 	Vector2f constDrawPos;
 	Vector2f constDrawScale;
-	void initTexture();
+	void initTextures();
 	void initTerrainTypes();
 	void initOctaves();
 
@@ -79,8 +79,8 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	Vector2f offset;
 	float elevation;
 
-	RenderTexture texture;
-	Sprite sprite;
+	RenderTexture texture, segmentTexture;
+	Sprite sprite, segmentSprite;
 
 	WorldGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
 	~WorldGenerator();

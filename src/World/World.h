@@ -12,6 +12,7 @@ private:
 	void initWorldGenerator();
 
 	void initChunks(WorldGenerator* map);
+	void updateMiniMap();
 	void savePlayerChunks();
 	void loadPlayerChunks(Player* player);
 	void updatePlayerChunks(Player* player);

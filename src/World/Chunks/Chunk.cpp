@@ -11,9 +11,7 @@ Chunk::Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr)
 
 Chunk::~Chunk()
 {
-	this->deleteObjects();
-	delete this->sprite;
-	delete this->renderTexture;
+	this->save();
 }
 
 void Chunk::init()

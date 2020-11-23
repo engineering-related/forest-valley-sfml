@@ -30,11 +30,11 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(1000, 1000); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
+	this->chunkAmount = Vector2i(10, 10); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
-	this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
+	//this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/4, WINDOW_WIDTH/4));
 	this->map->setConstDraw(true);
 }
 
@@ -74,6 +74,18 @@ void World::savePlayerChunks()
 	}
 }
 
+void World::updateMiniMap()
+{
+	if(this->playerChunkPos.x >= 0 && this->playerChunkPos.x < this->chunkAmount.x &&
+	   this->playerChunkPos.y >= 0 && this->playerChunkPos.y < this->chunkAmount.y &&
+		this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->loaded)
+	{
+		this->map->updateTexture(
+			this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->gridPos,
+			this->chunks[this->playerChunkPos.x][this->playerChunkPos.y]->terrainVec);
+	}
+}
+
 void World::loadPlayerChunks(Player* player)
 {
 	for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
@@ -87,7 +99,6 @@ void World::loadPlayerChunks(Player* player)
 				if(!this->chunks[x][y]->loaded)
 				{
 					this->chunks[x][y]->load();
-					this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
 				}
 
 				//Make sure the current chunk is loaded
@@ -142,4 +153,5 @@ void World::draw(RenderTarget * window)
 void World::update(Player* player)
 {
 	this->updatePlayerChunks(player);
+	this->updateMiniMap();
 }

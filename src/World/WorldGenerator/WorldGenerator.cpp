@@ -18,7 +18,7 @@ WorldGenerator::WorldGenerator(unsigned int seed, Vector2i mapDimensions, float 
 	this->constDraw = false;
 
 	this->initTerrainTypes();
-	this->initTexture();
+	this->initTextures();
 }
 
 
@@ -27,10 +27,14 @@ WorldGenerator::~WorldGenerator()
 
 }
 
-void WorldGenerator::initTexture()
+void WorldGenerator::initTextures()
 {
 	this->texture.clear();
-	//this->texture.create(this->mapDimensions.x, this->mapDimensions.y);
+	this->texture.create(WINDOW_WIDTH/4, WINDOW_HEIGHT/4);
+	this->setDisplaySize(Vector2f(this->texture.getSize().x, this->texture.getSize().y));
+
+	//Create segment drawing-texture
+	this->segmentTexture.create(CHUNK_SIZE.x, CHUNK_SIZE.y);
 }
 
 void WorldGenerator::initTerrainTypes()
@@ -105,6 +109,13 @@ void WorldGenerator::initTerrainTypes()
 	//Fieldmap
 	this->wheatRegions.push_back(Terrain(TerrainType::WHEAT, 0.10f, Color(208, 176, 132)));
 	this->wheatRegions[0].setRange(&heightRegions[static_cast<int>(TOrder::SAND)].value, &heightRegions[static_cast<int>(TOrder::GRASS_LIGHT)].value);
+}
+
+void WorldGenerator::setDisplaySize(const Vector2f& size)
+{
+	Vector2f scale = Vector2f(size.x / this->texture.getSize().x, size.y / this->texture.getSize().y);
+	this->constDrawScale = scale;
+	this->sprite.setScale(scale);
 }
 
 void WorldGenerator::draw(RenderTarget* window)
@@ -202,6 +213,12 @@ std::vector<std::vector<WorldGenerator::TerrainType>> WorldGenerator::getTerrain
 void WorldGenerator::updateTexture(const Vector2i &gridPos,
 	const std::vector<std::vector<WorldGenerator::TerrainType>>& terrainVec)
 {
+	this->segmentTexture.clear();
+
+	Vector2f scale(
+		(float)this->texture.getSize().x / (float)this->mapDimensions.x,
+		(float)this->texture.getSize().y / (float)this->mapDimensions.y);
+
 	RectangleShape cell;
 	cell.setOutlineThickness(0.f);
 	cell.setSize(Vector2f(1.f, 1.f));
@@ -210,7 +227,7 @@ void WorldGenerator::updateTexture(const Vector2i &gridPos,
 	{
 		for (size_t x = 0; x < terrainVec.size(); x++)
 		{
-			cell.setPosition(static_cast<float>(x) + gridPos.x, static_cast<float>(y) + gridPos.y);
+			cell.setPosition(x, y);
 			for (auto& heightRegion : this->heightRegions)
 			{
 				if (terrainVec[x][y] == heightRegion.type)
@@ -226,9 +243,16 @@ void WorldGenerator::updateTexture(const Vector2i &gridPos,
 				if (terrainVec[x][y] == wheatRegion.type)
 					cell.setFillColor(wheatRegion.color);
 			}
-			this->texture.draw(cell);
+			this->segmentTexture.draw(cell);
 		}
 	}
+	this->segmentTexture.display();
+
+	this->segmentSprite.setTexture(segmentTexture.getTexture());
+	this->segmentSprite.setPosition(gridPos.x * scale.y, gridPos.y * scale.y);
+	this->segmentSprite.setScale(scale);
+
+	this->texture.draw(this->segmentSprite);
 	this->texture.display();
 	this->sprite.setTexture(this->texture.getTexture());
 }
@@ -267,12 +291,6 @@ float WorldGenerator::addCircleMask(const int& x, const int& y, float noise, flo
 	return noise;
 }
 
-void WorldGenerator::setDisplaySize(const Vector2f& size)
-{
-	Vector2f scale = Vector2f(size.x / this->texture.getSize().x, size.y / this->texture.getSize().y);
-	this->constDrawScale = scale;
-	this->sprite.setScale(scale);
-}
 
 unsigned int WorldGenerator::generatePsuedoRandomSeed()
 {
