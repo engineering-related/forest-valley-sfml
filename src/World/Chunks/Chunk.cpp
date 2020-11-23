@@ -28,9 +28,9 @@ void Chunk::init()
 void Chunk::deleteObjects()
 {
 	//Delete Tiles
-	for(size_t x = 0; x < this->grid.size(); x++)
+	for(size_t x = 0; x < this->terrainVec.size(); x++)
 	{
-		for(size_t y = 0; y < this->grid[x].size(); y++)
+		for(size_t y = 0; y < this->terrainVec[x].size(); y++)
 		{
 			delete this->grid[x][y];
 			delete this->interactableGrid[x][y];
@@ -59,7 +59,7 @@ void Chunk::load()
 	this->interactableGrid = nature_vec_2D(this->terrainVec.size(), std::vector<Nature*>(this->terrainVec[0].size(), nullptr));
 
 	this->natureSpawnMaxPos = Vector2i((int)this->drawVector.size() - Chunk::drawTileExtension.x,
-				 (int)this->drawVector[0].size() - Chunk::drawTileExtension.y);
+			 (int)this->drawVector[0].size() - Chunk::drawTileExtension.y);
 
 	this->natureSpawnMinPos = Vector2i(Chunk::drawTileExtension.x,
 				Chunk::drawTileExtension.y - 1);
@@ -118,6 +118,7 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 			}
 		}
 	}
+
 	if (safeSpawn)
 	{
 		this->interactableGrid[x][y] = natureObj;

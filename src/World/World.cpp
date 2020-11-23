@@ -30,7 +30,7 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(100, 100);
+	this->chunkAmount = Vector2i(1000, 1000); //WARNING: CAN NOT BE TO BIG, MAP IS NOT MADE TO BE INFINITE, MAX SHOULD BE AROUND 1000, 1000 AND THAT IS VERY BIG!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -41,6 +41,7 @@ void World::initWorldGenerator()
 void World::initChunks(WorldGenerator* map)
 {
 	this->chunks = std::vector<std::vector<Chunk*>>(this->chunkAmount.x, std::vector<Chunk*>(this->chunkAmount.y, nullptr));
+
 	for (int x = 0; x < this->chunkAmount.x; x++)
 	{
 		for (int y = 0; y < this->chunkAmount.y; y++)
@@ -71,6 +72,7 @@ void World::updatePlayerChunks(Player* player)
 				if(x >= 0 && x < this->chunkAmount.x &&
 					y >= 0 && y < this->chunkAmount.y)
 				{
+					//SOMETHING IS WRONG! WHEN WALKING DIAGONALLY IT CREATES MEMORY LEAKS!
 					if(chunkPosDiff.x < 0 && x == this->playerChunkPos.x - 1 &&
 						this->playerChunkPos.x + 2 >= 0 &&
 						this->playerChunkPos.x + 2 < this->chunkAmount.x &&

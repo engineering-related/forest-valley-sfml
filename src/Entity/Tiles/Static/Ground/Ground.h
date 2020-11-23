@@ -11,6 +11,9 @@ private:
 	Vector2i type;
 	float friction;
 
+	//Get the correct type of a given ground
+	static Parts* getParts(const Vector2i& gridPos);
+
 protected:
 
 public:
@@ -22,9 +25,6 @@ public:
 	virtual void update(const float& dt, const float& multiplier);
 
 	//Static defintions
-	//Get the correct type of a given ground
-	static Parts* getParts(const Vector2i& gridPos);
-
 	inline static Parts* const GRASS_FOREST = Ground::getParts(Vector2i(0, 0));
 	inline static Parts* const GRASS_FOREST_DEEP = Ground::getParts(Vector2i(0, 0));
 	inline static Parts* const GRASS_FLAT = Ground::getParts(Vector2i(0, 3));

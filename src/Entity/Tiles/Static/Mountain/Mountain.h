@@ -9,6 +9,8 @@ class Mountain : public StaticTile
 {
 private:
 	Vector2i type;
+	//Get the correct type of a given mountain
+	static Parts* getParts(const Vector2i& gridPos);
 
 protected:
 
@@ -20,9 +22,6 @@ public:
 	virtual void update(const float& dt, const float& multiplier);
 
 	//Static defintions
-	//Get the correct type of a given mountain
-	static Parts* getParts(const Vector2i& gridPos);
-
 	inline static Parts* const ROCK = Mountain::getParts(Vector2i(0, 0));
 };
 
