@@ -14,7 +14,7 @@ private:
 	void initChunks(WorldGenerator* map);
 	void updateMiniMap();
 	void savePlayerChunks();
-	void loadPlayerChunks(Player* player);
+	void loadPlayerChunks();
 	void updatePlayerChunks(Player* player);
 	void drawTilesPlayerChunks(RenderTarget* window);
 

@@ -86,7 +86,7 @@ void World::updateMiniMap()
 	}
 }
 
-void World::loadPlayerChunks(Player* player)
+void World::loadPlayerChunks()
 {
 	for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
 	{
@@ -111,7 +111,6 @@ void World::loadPlayerChunks(Player* player)
 			}
 		}
 	}
-	this->entitesPtr->push_back(player);
 }
 
 void World::updatePlayerChunks(Player* player)
@@ -124,7 +123,8 @@ void World::updatePlayerChunks(Player* player)
 	{
 		this->entitesPtr->clear();
 		this->savePlayerChunks();
-		this->loadPlayerChunks(player);
+		this->loadPlayerChunks();
+		this->entitesPtr->push_back(player);
 	}
 	this->oldPlayerChunkPos = this->playerChunkPos;
 }
