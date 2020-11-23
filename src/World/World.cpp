@@ -51,6 +51,58 @@ void World::initChunks(WorldGenerator* map)
 	}
 }
 
+void World::savePlayerChunks()
+{
+	//Save old chunks
+	for(int x = this->oldPlayerChunkPos.x - 1; x <=  this->oldPlayerChunkPos.x + 1; x++)
+	{
+		for(int y = this->oldPlayerChunkPos.y - 1; y <=  this->oldPlayerChunkPos.y + 1; y++)
+		{
+			if(x >= 0 && x < this->chunkAmount.x &&
+				y >= 0 && y < this->chunkAmount.y &&
+				chunks[x][y]->loaded)
+			{
+				if(x < this->playerChunkPos.x - 1 ||
+					x > this->playerChunkPos.x + 1 ||
+					y < this->playerChunkPos.y - 1 ||
+					y > this->playerChunkPos.y + 1)
+				{
+					this->chunks[x][y]->save();
+				}
+			}
+		}
+	}
+}
+
+void World::loadPlayerChunks(Player* player)
+{
+	for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
+	{
+		for(int y = this->playerChunkPos.y - 1; y <=  this->playerChunkPos.y + 1; y++)
+		{
+			if(x >= 0 && x < this->chunkAmount.x &&
+				y >= 0 && y < this->chunkAmount.y)
+			{
+				//Load the current chunk if it haven't been
+				if(!this->chunks[x][y]->loaded)
+				{
+					this->chunks[x][y]->load();
+					this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
+				}
+
+				//Make sure the current chunk is loaded
+				if(this->chunks[x][y]->loaded)
+				{
+					this->entitesPtr->insert(this->entitesPtr->end(),
+					this->chunks[x][y]->dynamicEntities.begin(),
+					this->chunks[x][y]->dynamicEntities.end());
+				}
+			}
+		}
+	}
+	this->entitesPtr->push_back(player);
+}
+
 void World::updatePlayerChunks(Player* player)
 {
 	//Testing with rendering chunks, should use a threadpool later!
@@ -60,53 +112,8 @@ void World::updatePlayerChunks(Player* player)
 	if(this->oldPlayerChunkPos != this->playerChunkPos)
 	{
 		this->entitesPtr->clear();
-
-		//Save old chunks
-		for(int x = this->oldPlayerChunkPos.x - 1; x <=  this->oldPlayerChunkPos.x + 1; x++)
-		{
-			for(int y = this->oldPlayerChunkPos.y - 1; y <=  this->oldPlayerChunkPos.y + 1; y++)
-			{
-				if(x >= 0 && x < this->chunkAmount.x &&
-				   y >= 0 && y < this->chunkAmount.y &&
-				   chunks[x][y]->loaded)
-				{
-					if(x < this->playerChunkPos.x - 1 ||
-					   x > this->playerChunkPos.x + 1 ||
-					   y < this->playerChunkPos.y - 1 ||
-					   y > this->playerChunkPos.y + 1)
-					{
-						this->chunks[x][y]->save();
-					}
-				}
-			}
-		}
-
-		for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
-		{
-			for(int y = this->playerChunkPos.y - 1; y <=  this->playerChunkPos.y + 1; y++)
-			{
-				if(x >= 0 && x < this->chunkAmount.x &&
-					y >= 0 && y < this->chunkAmount.y)
-				{
-
-					//Load the current chunk if it haven't been
-					if(!this->chunks[x][y]->loaded)
-					{
-						this->chunks[x][y]->load();
-						this->map->updateTexture(this->chunks[x][y]->gridPos, this->chunks[x][y]->terrainVec);
-					}
-
-					//Make sure the current chunk is loaded
-					if(this->chunks[x][y]->loaded)
-					{
-						this->entitesPtr->insert(this->entitesPtr->end(),
-						this->chunks[x][y]->dynamicEntities.begin(),
-						this->chunks[x][y]->dynamicEntities.end());
-					}
-				}
-			}
-		}
-		this->entitesPtr->push_back(player);
+		this->savePlayerChunks();
+		this->loadPlayerChunks(player);
 	}
 	this->oldPlayerChunkPos = this->playerChunkPos;
 }
