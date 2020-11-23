@@ -61,9 +61,25 @@ void World::updatePlayerChunks(Player* player)
 	{
 		this->entitesPtr->clear();
 
-		Vector2i chunkPosDiff = this->playerChunkPos - this->oldPlayerChunkPos;
-
-		//std::cout << this->playerChunkPos.x << " " << this->playerChunkPos.y << std::endl;wwww
+		//Save old chunks
+		for(int x = this->oldPlayerChunkPos.x - 1; x <=  this->oldPlayerChunkPos.x + 1; x++)
+		{
+			for(int y = this->oldPlayerChunkPos.y - 1; y <=  this->oldPlayerChunkPos.y + 1; y++)
+			{
+				if(x >= 0 && x < this->chunkAmount.x &&
+				   y >= 0 && y < this->chunkAmount.y &&
+				   chunks[x][y]->loaded)
+				{
+					if(x < this->playerChunkPos.x - 1 ||
+					   x > this->playerChunkPos.x + 1 ||
+					   y < this->playerChunkPos.y - 1 ||
+					   y > this->playerChunkPos.y + 1)
+					{
+						this->chunks[x][y]->save();
+					}
+				}
+			}
+		}
 
 		for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
 		{
@@ -72,42 +88,6 @@ void World::updatePlayerChunks(Player* player)
 				if(x >= 0 && x < this->chunkAmount.x &&
 					y >= 0 && y < this->chunkAmount.y)
 				{
-					//SOMETHING IS WRONG! WHEN WALKING DIAGONALLY IT CREATES MEMORY LEAKS!
-					if(chunkPosDiff.x < 0 && x == this->playerChunkPos.x - 1 &&
-						this->playerChunkPos.x + 2 >= 0 &&
-						this->playerChunkPos.x + 2 < this->chunkAmount.x &&
-						this->chunks[this->playerChunkPos.x + 2][y]->loaded)
-					{
-						this->chunks[this->playerChunkPos.x + 2][y]->save();
-						//std::cout << "Saved: " << this->playerChunkPos.x + 2 << " " << y << std::endl;
-					}
-
-					if(chunkPosDiff.x > 0 && x == this->playerChunkPos.x - 1 &&
-						this->playerChunkPos.x - 2 >= 0 &&
-						this->playerChunkPos.x - 2 < this->chunkAmount.x &&
-						this->chunks[this->playerChunkPos.x - 2][y]->loaded)
-					{
-						this->chunks[this->playerChunkPos.x - 2][y]->save();
-						//std::cout << "Saved: " << this->playerChunkPos.x - 2 << " " << y << std::endl;
-					}
-
-					if(chunkPosDiff.y < 0 && y == this->playerChunkPos.y - 1 &&
-						this->playerChunkPos.y + 2 >= 0 &&
-						this->playerChunkPos.y + 2 < this->chunkAmount.y &&
-						this->chunks[x][this->playerChunkPos.y + 2]->loaded)
-					{
-						this->chunks[x][this->playerChunkPos.y + 2]->save();
-						//std::cout << "Saved: " << x << " " << this->playerChunkPos.y + 2 << std::endl;
-					}
-
-					if(chunkPosDiff.y > 0 && y == this->playerChunkPos.y - 1 &&
-						this->playerChunkPos.y - 2 >= 0 &&
-						this->playerChunkPos.y - 2 < this->chunkAmount.y &&
-						this->chunks[x][this->playerChunkPos.y - 2]->loaded)
-					{
-						this->chunks[x][this->playerChunkPos.y - 2]->save();
-						//std::cout << "Saved: " << x << " " << this->playerChunkPos.y - 2 << std::endl;
-					}
 
 					//Load the current chunk if it haven't been
 					if(!this->chunks[x][y]->loaded)
@@ -129,8 +109,6 @@ void World::updatePlayerChunks(Player* player)
 		this->entitesPtr->push_back(player);
 	}
 	this->oldPlayerChunkPos = this->playerChunkPos;
-
-
 }
 
 void World::drawTilesPlayerChunks(RenderTarget* window)
