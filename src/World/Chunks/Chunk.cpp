@@ -68,7 +68,7 @@ void Chunk::load()
 }
 
 void Chunk::save()
-{
+{	//FIX WITH SMART POINTERS YOU ABSOLUTE 0 IQ APE :) -FROM RETARD VIKTOR TO RETARD VIKTOR
 	this->deleteObjects();
 	delete this->sprite;
 	delete this->renderTexture;

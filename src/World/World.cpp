@@ -25,9 +25,6 @@ World::~World()
 
 	//Delete WorldGenerator
 	delete this->map;
-
-	//Delete threadpool
-	delete this->pool;
 }
 
 void World::init()
@@ -50,17 +47,16 @@ void World::initWorldGenerator()
 void World::initPlayer()
 {
 	this->player = new Player(Vector2f(this->pixelSize/2));
+	this->entites.push_back(this->player);
 }
 
 int World::initThreads()
 {
-	//this->pool = new ThreadPool(this->numThreads);
-
-	//Create network thread
-	if (pthread_create(&this->minimap_thread, NULL, &minimapHelper, this) != 0)
+	//Create thread
+	if (pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this) != 0)
 	{
 		printf("\nReceive-Thread can't be created :[%s]",
-			strerror(pthread_create(&this->minimap_thread, NULL, &minimapHelper, this)));
+			strerror(pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this)));
 		return EXIT_FAILURE;
 	}
 
@@ -90,14 +86,11 @@ void World::savePlayerChunks()
 						y < this->playerChunkPos.y - 1 ||
 						y > this->playerChunkPos.y + 1))
 					{
-						//Distrubute workload on the different threads on pool
-						//this->pool->enqueue([this, x, y] {
-							this->chunks[chunkPosKey(x, y)]->save();
+						this->chunks[chunkPosKey(x, y)]->save();
 
-							Chunk* deleteChunkPtr = this->chunks[chunkPosKey(x, y)];
-							this->chunks.erase(chunkPosKey(x, y));
-							delete deleteChunkPtr;
-						//});
+						Chunk* deleteChunkPtr = this->chunks[chunkPosKey(x, y)];
+						this->chunks.erase(chunkPosKey(x, y));
+						delete deleteChunkPtr;
 					}
 				}
 			}
@@ -121,39 +114,38 @@ void World::loadPlayerChunks()
 				//Load the current chunk if it haven't been
 				if(!this->chunks[chunkPosKey(x, y)]->loaded)
 				{
-
-					//Distrubute workload on the different threads on pool
-					//this->pool->enqueue([this, x, y] {
-						this->chunks[chunkPosKey(x, y)]->load();
-					//)};
+					this->chunks[chunkPosKey(x, y)]->load();
 				}
 
-				//Make sure the current chunk is loaded
 				if(this->chunks[chunkPosKey(x, y)]->loaded)
 				{
-					this->entites.insert(this->entites.end(),
+					this->entitiesUpdated.insert(this->entitiesUpdated.end(),
 					this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
 					this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
 				}
 			}
 		}
 	}
+	this->entitiesSwap = true;
+	this->entitiesUpdated.push_back(this->player);
 }
 
-void World::updatePlayerChunks()
+void* World::updatePlayerChunks()
 {
-	//Testing with rendering chunks, should use a threadpool later!
-	this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
-
-	//Testing with rendering chunks, should use a threadpool later!
-	if(this->oldPlayerChunkPos != this->playerChunkPos)
+	while(true)
 	{
-		this->entites.clear();
-		this->loadPlayerChunks();
-		this->savePlayerChunks();
-		this->entites.push_back(player);
+		this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
+
+		//Testing with rendering chunks, should use a threadpool later!
+		if(this->oldPlayerChunkPos != this->playerChunkPos)
+		{
+			this->loadPlayerChunks();
+			this->updateMiniMap();
+			//this->savePlayerChunks();
+		}
+		this->oldPlayerChunkPos = this->playerChunkPos;
 	}
-	this->oldPlayerChunkPos = this->playerChunkPos;
+	return NULL;
 }
 
 void World::drawTilesPlayerChunks(RenderTarget* window)
@@ -175,25 +167,19 @@ void World::drawTilesPlayerChunks(RenderTarget* window)
 	}
 }
 
-void* World::updateMiniMap()
+void World::updateMiniMap()
 {
-	/*while(true)
-	{
-		int x = this->playerChunkPos.x, y = this->playerChunkPos.y;
+	int x = this->playerChunkPos.x, y = this->playerChunkPos.y;
 
-		if(x >= 0 && x < this->chunkAmount.x &&
-		   y >= 0 && y < this->chunkAmount.y &&
-			chunks.find(chunkPosKey(x, y)) != chunks.end() &&
-			this->chunks[chunkPosKey(x, y)]->loaded)
-		{
-			pthread_mutex_lock(&this->mutex);
-			this->map->updateTexture(
-				this->chunks[chunkPosKey(x, y)]->gridPos,
-				this->chunks[chunkPosKey(x, y)]->terrainVec);
-			pthread_mutex_unlock(&this->mutex);
-		}
-	}*/
-	return NULL;
+	if(x >= 0 && x < this->chunkAmount.x &&
+		y >= 0 && y < this->chunkAmount.y &&
+		chunks.find(chunkPosKey(x, y)) != chunks.end() &&
+		this->chunks[chunkPosKey(x, y)]->loaded)
+	{
+		this->map->updateTexture(
+			this->chunks[chunkPosKey(x, y)]->gridPos,
+			this->chunks[chunkPosKey(x, y)]->terrainVec);
+	}
 }
 
 void World::sortZindex()
@@ -212,7 +198,6 @@ void World::sortZindex()
 			return obj1->getComponent<PositionComponent>().getZIndex() < obj2->getComponent<PositionComponent>().getZIndex();
 	});
 }
-
 
 void World::checkTileColision(Object* object, Chunk* chunk)
 {
@@ -296,7 +281,6 @@ void World::checkTileColision(Object* object, Chunk* chunk)
 	}
 }
 
-
 void World::draw(RenderTarget * window)
 {
 	this->drawTilesPlayerChunks(window);
@@ -310,8 +294,12 @@ void World::draw(RenderTarget * window)
 
 void World::update(const float& dt, const float& multiplier)
 {
-	this->updatePlayerChunks();
-	//Sort the Objects based on zIndex
+	if(this->entitiesSwap)
+	{
+		this->entites = this->entitiesUpdated;
+		this->entitiesUpdated.clear();
+		this->entitiesSwap = false;
+	}
 
 	this->sortZindex();
 
@@ -320,7 +308,6 @@ void World::update(const float& dt, const float& multiplier)
 	{
 		object->update(dt, multiplier);
 		//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);
-
 		//object->getComponent<HitboxComponent>().draw(this->window);
 	}
 }
