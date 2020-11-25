@@ -98,7 +98,8 @@
 		"variant": "cpp",
 		"bit": "cpp",
 		"shared_mutex": "cpp",
-		"*.cuh": "cpp"
+		"*.cuh": "cpp",
+		"cinttypes": "cpp"
 	},
 	"terminal.integrated.shell.windows": "C:/Program Files/Git/bin/bash.exe",
 	"terminal.integrated.env.windows": {

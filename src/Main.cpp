@@ -1,7 +1,7 @@
 #include "Game/Game.h"
 #include "Networking/Networking.hpp"
 
-/*COMMANDS:
+/*VS CODE COMMANDS:
 	-CTRL + SHIFT + B TO BUILD AND RUN
 	-COMMENT MULTIPLE LINES CTRL + K, CTRL + C
 	-UNCOMMENT MULITPLE LINES CTRL + K, CTRL + U
@@ -10,6 +10,11 @@
 	-SWITH BETWEEN VIEWS: CTRL + 1, 2 ...
 	-SWITCH BETWEEN TABS:
 */
+
+/* LINUX COMMANDS
+	-BUILD AND RUN RELEASE: bash ./build.sh buildrun Release vscode
+	-PERFORMANCE GENERAL: top -p `pgrep -f bin/Release/forest-valley `
+	-PERFORMANCE GPU: watch nvidia-smi */
 
 /*COMPLIER
 	-TO NOT TREAT WARNINGS AS ERRORS REMOVE "-Werror"

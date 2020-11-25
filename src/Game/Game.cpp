@@ -12,11 +12,6 @@ Game::~Game()
 	delete this->font;
 	delete this->world;
 	delete this->camera;
-	//Delete all entities
-	for(Object* entity: this->entites)
-	{
-		delete entity;
-	}
 }
 
 void Game::init()
@@ -44,19 +39,15 @@ void Game::init()
 	//Init World
 	this->initWorld();
 
-	//Testing Obejcts
-	this->player = new Player(Vector2f(this->world->pixelSize/2));
-	this->entites.push_back(this->player);
-
 	//Init camera
 	this->camera = new Camera(this->window);
-	this->camera->setView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window);
+	this->camera->setView(this->world->getPlayer()->getComponent<PositionComponent>().getCenterPosition(), this->window);
 }
 
 void Game::initWorld()
 {
 	this->seed = WorldGenerator::generatePsuedoRandomSeed();
-	this->world = new World(this->seed, &this->entites);
+	this->world = new World(this->seed);
 }
 
 void Game::handleInput()
@@ -66,19 +57,19 @@ void Game::handleInput()
 
 	if (Keyboard::isKeyPressed(Keyboard::W) && !Keyboard::isKeyPressed(Keyboard::S))
 	{
-		this->player->up(this->dt, this->multiplier);
+		this->world->getPlayer()->up(this->dt, this->multiplier);
 	}
 	if (Keyboard::isKeyPressed(Keyboard::S) && !Keyboard::isKeyPressed(Keyboard::W))
 	{
-		this->player->down(this->dt, this->multiplier);
+		this->world->getPlayer()->down(this->dt, this->multiplier);
 	}
 	if (Keyboard::isKeyPressed(Keyboard::A) && !Keyboard::isKeyPressed(Keyboard::D))
 	{
-		this->player->left(this->dt, this->multiplier);
+		this->world->getPlayer()->left(this->dt, this->multiplier);
 	}
 	if (Keyboard::isKeyPressed(Keyboard::D) && !Keyboard::isKeyPressed(Keyboard::A))
 	{
-		this->player->right(this->dt, this->multiplier);
+		this->world->getPlayer()->right(this->dt, this->multiplier);
 	}
 }
 
@@ -131,106 +122,6 @@ void Game::printInfoToWindow()
 	" | SEED: " + std::to_string(this->seed));
 }
 
-//Will be moved into a separate system in another file later
-void Game::sortZindex()
-{
-	std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool {
-		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
-		{
-			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
-			{
-				return obj1->getComponent<PositionComponent>().getCenterPosition().y > obj2->getComponent<PositionComponent>().getCenterPosition().y;
-			}
-			else
-				return obj1->getComponent<PositionComponent>().getCenterPosition().x < obj2->getComponent<PositionComponent>().getCenterPosition().x;
-		}
-		else
-			return obj1->getComponent<PositionComponent>().getZIndex() < obj2->getComponent<PositionComponent>().getZIndex();
-	});
-}
-
-//Will be moved into a separate system in another file later
-void Game::checkTileColision(Object* object, Chunk* chunk)
-{
-	if(object->hasComponent<MovementComponent>())
-	{
-		object->getComponent<PositionComponent>().setPosition(object->getComponent<MovementComponent>().getPrevPos());
-		Vector2i topLeft = object->getComponent<PositionComponent>().getGridPos().topLeft;
-		Vector2i bottomRight = object->getComponent<PositionComponent>().getGridPos().bottomRight;
-
-		for (int x = topLeft.x - 1; x <= bottomRight.x + 1; x++)
-		{
-			for (int y = topLeft.y - 1; y <= bottomRight.y + 1; y++)
-			{
-				//Ensure bounds
-				if(x < 0 || x > (int)chunk->grid.size() - 1 ||
-		  		   y < 0 || y > (int)chunk->grid[0].size() - 1) return;
-				//Check if tile is colidable
-				else if (chunk->grid[x][y]->hasComponent<ColisionComponent>())
-				{
-					chunk->grid[x][y]->getComponent<ColisionComponent>().draw(window);
-					IntRect r1 = object->getComponent<HitboxComponent>().getHitbox();
-					IntRect r2 = chunk->grid[x][y]->getComponent<ColisionComponent>().getColisionIntRect();
-					IntRect nextFrame = r1;
-					Vector2f vel = MovementComponent::getClampedMagVel(object->getComponent<MovementComponent>().getVel())*dt;
-
-					//Nextframe vel needs to be a rounded to the closest int in the direction of the wall
-					if(vel.x < 0.f) vel.x = floor(vel.x);
-					if(vel.x > 0.f) vel.x = ceil(vel.x);
-					if(vel.y < 0.f) vel.y = floor(vel.y);
-					if(vel.y > 0.f) vel.y = ceil(vel.y);
-
-					//Calc the position of the next frame
-					nextFrame.left += vel.x;
-					nextFrame.top += vel.y;
-
-					if(r2.intersects(nextFrame))
-					{
-						//Bottom colision
-						if(r1.top < r2.top &&
-						   r1.top + r1.height < r2.top + r2.height &&
-						   r1.left < r2.left + r2.width &&
-						   r1.left + r1.width > r2.left)
-						{
-							object->getComponent<MovementComponent>().setVel(Vector2f(object->getComponent<MovementComponent>().getVel().x, 0.f));
-							object->getComponent<PositionComponent>().setPosition(Vector2f(r1.left, r2.top - r1.height));
-						}
-						//Top colision
-						else if(r1.top > r2.top &&
-						   r1.top + r1.height > r2.top + r2.height &&
-						   r1.left < r2.left + r2.width &&
-						   r1.left + r1.width > r2.left)
-						{
-							object->getComponent<MovementComponent>().setVel(Vector2f(object->getComponent<MovementComponent>().getVel().x, 0.f));
-							object->getComponent<PositionComponent>().setPosition(Vector2f(r1.left, r2.top + r2.height));
-						}
-
-						//Right colision
-						if(r1.left < r2.left &&
-						   r1.left + r1.width < r2.left + r2.width &&
-						   r1.top < r2.top + r2.height &&
-						   r1.top + r1.height > r2.top)
-						{
-							object->getComponent<MovementComponent>().setVel(Vector2f(0.f, object->getComponent<MovementComponent>().getVel().y));
-							object->getComponent<PositionComponent>().setPosition(Vector2f(r2.left - r1.width, r1.top));
-						}
-						//Left colision
-						else if(r1.left > r2.left &&
-						   r1.left + r1.width > r2.left + r2.width &&
-						   r1.top < r2.top + r2.height &&
-						   r1.top + r1.height > r2.top)
-						{
-							object->getComponent<MovementComponent>().setVel(Vector2f(0.f, object->getComponent<MovementComponent>().getVel().y));
-							object->getComponent<PositionComponent>().setPosition(Vector2f(r2.left + r2.width, r1.top));
-						}
-					}
-				}
-				else continue;
-			}
-		}
-		object->getComponent<MovementComponent>().moveSprite(object->getComponent<MovementComponent>().getVel(), dt);
-	}
-}
 
 void Game::startLoop()
 {
@@ -243,24 +134,13 @@ void Game::startLoop()
 		//Draw
 		this->window->clear();
 
-		this->world->update(this->player);
+		this->world->update(this->dt, this->multiplier);
 		this->world->draw(this->window);
 
-		//Sort the Objects based on zIndex
-		this->sortZindex();
-
-		//Update and draw Objects
-		for(Object* object: this->entites)
-		{
-			object->update(this->dt, this->multiplier);
-			//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);
-			object->draw(this->window);
-			//object->getComponent<HitboxComponent>().draw(this->window);
-		}
-		//this->player->getComponent<HitboxComponent>().draw(window);
-		this->world->map->draw(window);
-		//this->camera->updateView(this->player->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
-		this->camera->setView(player->getComponent<PositionComponent>().getCenterPosition(), this->window);
+		//this->getPlayer()->getComponent<HitboxComponent>().draw(window);
+		this->world->getMap()->draw(this->window);
+		//this->camera->updateView(this->getPlayer()->getComponent<PositionComponent>().getCenterPosition(), this->window, this->dt, this->multiplier);
+		this->camera->setView(this->world->getPlayer()->getComponent<PositionComponent>().getCenterPosition(), this->window);
 		this->window->display();
 	}
 }

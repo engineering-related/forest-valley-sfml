@@ -44,6 +44,10 @@ public:
 	nature_vec_2D interactableGrid;
 	std::vector<Object*> dynamicEntities;
 
+	//std::vector<std::vector<DynamicTile*> dynamicTiles;
+	//Dynamic tiles goes on three different textures depending on their frame
+	//One of the three textures are drawn on top of the main texture
+
 	WorldGenerator* worldGeneratorPtr;
 
 	Chunk(Vector2i chunkGridPos, WorldGenerator* worldGeneratorPtr);

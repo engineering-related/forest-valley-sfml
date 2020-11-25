@@ -5,7 +5,6 @@
 #include "Camera/Camera.h"
 #include "World/World.h"
 #include "Platform/Platform.hpp"
-#include "Entity/AllEntities.hpp"
 
 using namespace sf;
 
@@ -24,9 +23,6 @@ private:
 	float framerateLimit;
 	float cap;
 
-	Player* player;
-	std::vector<Object*> entites;
-
 	unsigned int seed;
 	World* world;
 
@@ -37,10 +33,7 @@ private:
 	void pollEvents();
 	void updateClock();
 	void printInfoToWindow();
-	/////EXTRACT TO SYSTEM CLASS////
-	void sortZindex();
-	void checkTileColision(Object* object, Chunk* chunk);
-	/////////////////////////////////
+
 	void startLoop();
 
 public:
