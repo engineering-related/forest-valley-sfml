@@ -3,6 +3,7 @@
 
 #include "World/WorldGenerator/WorldGenerator.h"
 #include "Entity/AllEntities.hpp"
+#include "Utility/threads/ThreadPool.h"
 
 using namespace sf;
 
@@ -10,11 +11,11 @@ class Chunk
 {
 private:
 	//Aliases
-	using tile_data = std::pair<Tile*, Tile::Parts*>;
+	using tile_data = std::pair<std::shared_ptr<Tile>, Tile::Parts*>;
 	using tile_neighbour_type_data = std::vector<std::vector<std::pair<Vector2i*, Vector2i>>>;
 	using terrain_vec_2D = std::vector<std::vector<WorldGenerator::TerrainType>>;
-	using tile_vec_2D = std::vector<std::vector<Tile*>>;
-	using nature_vec_2D = std::vector<std::vector<Nature*>>;
+	using tile_vec_2D = std::vector<std::vector<std::shared_ptr<Tile>>>;
+	using nature_vec_2D = std::vector<std::vector<std::shared_ptr<Nature>>>;
 	using bool_grid_2D = std::vector<std::vector<bool>>;
 	using grid_data_1D = std::vector<std::pair<int, Vector2i>>;
 
@@ -25,7 +26,7 @@ private:
 	Vector2i natureSpawnMinPos;
 
 	void init();
-	void deleteObjects();
+	void clearVectors();
 
 public:
 	Vector2i chunkGridPos;
@@ -35,14 +36,15 @@ public:
 	const Vector2i naturSpawnMinPos = drawTileExtension;
 
 	RenderTexture* renderTexture;
-	Sprite* sprite;
+	Texture texture;
+	Sprite sprite;
 
 	terrain_vec_2D terrainVec;
 	terrain_vec_2D drawVector;
 
 	tile_vec_2D grid;
 	nature_vec_2D interactableGrid;
-	std::vector<Object*> dynamicEntities;
+	std::vector<std::shared_ptr<Object>> dynamicEntities;
 
 	//std::vector<std::vector<DynamicTile*> dynamicTiles;
 	//Dynamic tiles goes on three different textures depending on their frame

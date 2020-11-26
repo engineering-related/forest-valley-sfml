@@ -8,23 +8,7 @@ World::World(const unsigned int seed)
 
 World::~World()
 {
-	//Delete chunks
-	for(auto& container: this->chunks)
-	{
-		this->chunks.erase(container.first);
-		delete container.second;
-	}
-	this->chunks.clear();
 
-	//Delete all entities
-	for(Object* entity: this->entites)
-	{
-		delete entity;
-	}
-	entites.clear();
-
-	//Delete WorldGenerator
-	delete this->map;
 }
 
 void World::init()
@@ -39,19 +23,20 @@ void World::initWorldGenerator()
 	this->chunkAmount = Vector2i(50, 50); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
-	this->map = new WorldGenerator(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
+	this->map = std::make_shared<WorldGenerator>(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
 	//this->map->setDisplaySize(Vector2f(WINDOW_WIDTH/2, WINDOW_WIDTH/2));
 	this->map->setConstDraw(true);
 }
 
 void World::initPlayer()
 {
-	this->player = new Player(Vector2f(this->pixelSize/2));
+	this->player = std::make_shared<Player>(Vector2f(this->pixelSize/2));
 	this->entites.push_back(this->player);
 }
 
 int World::initThreads()
 {
+
 	//Create thread
 	if (pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this) != 0)
 	{
@@ -79,18 +64,17 @@ void World::savePlayerChunks()
 			if(chunks.find(chunkPosKey(x, y)) != chunks.end())
 			{
 				if(x >= 0 && x < this->chunkAmount.x &&
-					y >= 0 && y < this->chunkAmount.y)
+				   y >= 0 && y < this->chunkAmount.y)
 				{
 					if((x < this->playerChunkPos.x - 1 ||
 						x > this->playerChunkPos.x + 1 ||
 						y < this->playerChunkPos.y - 1 ||
 						y > this->playerChunkPos.y + 1))
 					{
-						this->chunks[chunkPosKey(x, y)]->save();
-
-						Chunk* deleteChunkPtr = this->chunks[chunkPosKey(x, y)];
-						this->chunks.erase(chunkPosKey(x, y));
-						delete deleteChunkPtr;
+						if(this->chunks[chunkPosKey(x, y)]->loaded)
+						{
+							this->chunks.erase(chunkPosKey(x, y));
+						}
 					}
 				}
 			}
@@ -100,6 +84,7 @@ void World::savePlayerChunks()
 
 void World::loadPlayerChunks()
 {
+	this->entitiesUpdated.clear();
 	for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
 	{
 		for(int y = this->playerChunkPos.y - 1; y <=  this->playerChunkPos.y + 1; y++)
@@ -109,7 +94,7 @@ void World::loadPlayerChunks()
 			{
 				//key is not present!
 				if(chunks.find(chunkPosKey(x, y)) == chunks.end())
-					chunks[chunkPosKey(x, y)] = new Chunk(Vector2i(x, y), this->map);
+					chunks[chunkPosKey(x, y)] = std::make_shared<Chunk>(Vector2i(x, y), this->map.get());
 
 				//Load the current chunk if it haven't been
 				if(!this->chunks[chunkPosKey(x, y)]->loaded)
@@ -126,8 +111,8 @@ void World::loadPlayerChunks()
 			}
 		}
 	}
-	this->entitiesSwap = true;
 	this->entitiesUpdated.push_back(this->player);
+	this->entitiesSwap = true;
 }
 
 void* World::updatePlayerChunks()
@@ -135,13 +120,12 @@ void* World::updatePlayerChunks()
 	while(true)
 	{
 		this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
-
 		//Testing with rendering chunks, should use a threadpool later!
 		if(this->oldPlayerChunkPos != this->playerChunkPos)
 		{
+			this->savePlayerChunks();
 			this->loadPlayerChunks();
 			this->updateMiniMap();
-			//this->savePlayerChunks();
 		}
 		this->oldPlayerChunkPos = this->playerChunkPos;
 	}
@@ -184,7 +168,7 @@ void World::updateMiniMap()
 
 void World::sortZindex()
 {
-	std::sort(this->entites.begin(), this->entites.end(), [](Object* obj1, Object* obj2) -> bool {
+	std::sort(this->entites.begin(), this->entites.end(), [](std::shared_ptr<Object> obj1, std::shared_ptr<Object> obj2) -> bool {
 		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
 		{
 			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
@@ -286,7 +270,7 @@ void World::draw(RenderTarget * window)
 	this->drawTilesPlayerChunks(window);
 
 	//Draw Objects
-	for(Object* object: this->entites)
+	for(auto& object: this->entites)
 	{
 		object->draw(window);
 	}
@@ -297,14 +281,13 @@ void World::update(const float& dt, const float& multiplier)
 	if(this->entitiesSwap)
 	{
 		this->entites = this->entitiesUpdated;
-		this->entitiesUpdated.clear();
 		this->entitiesSwap = false;
 	}
 
 	this->sortZindex();
 
 	//Update objects
-	for(Object* object: this->entites)
+	for(auto& object: this->entites)
 	{
 		object->update(dt, multiplier);
 		//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);

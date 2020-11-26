@@ -2,6 +2,7 @@
 #define WORLD
 
 #include "Chunks/Chunk.h"
+#include "Utility/threads/ThreadPool.h"
 
 using namespace sf;
 
@@ -22,7 +23,6 @@ private:
 	{
 		return ((World *)context)->updatePlayerChunks();
 	}
-
 	void drawTilesPlayerChunks(RenderTarget* window);
 	void updateMiniMap();
 
@@ -36,7 +36,7 @@ private:
 	Vector2i pixelSize;
 
 	//Player
-	Player* player;
+	std::shared_ptr<Player> player;
 	Vector2i playerChunkPos;
 	Vector2i oldPlayerChunkPos;
 
@@ -45,20 +45,20 @@ private:
 	pthread_mutex_t mutex;
 
 	//World generation
-	WorldGenerator* map;
+	std::shared_ptr<WorldGenerator> map;
 
 	//ALL Entities
-	std::vector<Object*> entites, entitiesUpdated;
+	std::vector<std::shared_ptr<Object>> entites, entitiesUpdated;
 	bool entitiesSwap = false;
 
 	//Chunks & threads
 	inline size_t chunkPosKey(int i,int j) {return (size_t) i << 32 | (unsigned int) j;}
-	std::unordered_map<size_t /*chunkPosKey*/, Chunk* /*Chunk obj.*/> chunks;
+	std::unordered_map<size_t /*chunkPosKey*/, std::shared_ptr<Chunk> /*Chunk obj.*/> chunks;
 
 public:
 	//Accessors
-	inline Player* getPlayer(){return this->player; }
-	inline WorldGenerator* getMap(){return this->map; }
+	inline std::shared_ptr<Player> getPlayer(){return this->player; }
+	inline std::shared_ptr<WorldGenerator> getMap(){return this->map; }
 
 	//Modifiers
 

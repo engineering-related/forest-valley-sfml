@@ -17,24 +17,12 @@ Chunk::~Chunk()
 void Chunk::init()
 {
 	this->renderTexture = new RenderTexture();
-	this->sprite = new Sprite();
-	this->renderTexture->clear();
 	this->renderTexture->create(CHUNK_SIZE.x*TILE_SIZE.x, CHUNK_SIZE.y*TILE_SIZE.y);
-	this->sprite->setPosition(this->drawPos);
+	this->sprite.setPosition(this->drawPos);
 }
 
-void Chunk::deleteObjects()
+void Chunk::clearVectors()
 {
-	//Delete Tiles
-	for(size_t x = 0; x < this->terrainVec.size(); x++)
-	{
-		for(size_t y = 0; y < this->terrainVec[x].size(); y++)
-		{
-			delete this->grid[x][y];
-			delete this->interactableGrid[x][y];
-		}
-	}
-
 	//Free up memory from vectors
 	this->terrainVec.clear(), this->terrainVec.shrink_to_fit();
 	this->drawVector.clear(), this->drawVector.shrink_to_fit();
@@ -53,8 +41,8 @@ void Chunk::load()
 		CHUNK_SIZE + 2 * Chunk::drawTileExtension
 	);
 	this->drawVector = this->terrainVec;
-	this->grid = tile_vec_2D(this->terrainVec.size(), std::vector<Tile*>(this->terrainVec[0].size(), nullptr));
-	this->interactableGrid = nature_vec_2D(this->terrainVec.size(), std::vector<Nature*>(this->terrainVec[0].size(), nullptr));
+	this->grid = tile_vec_2D(this->terrainVec.size(), std::vector<std::shared_ptr<Tile>>(this->terrainVec[0].size(), nullptr));
+	this->interactableGrid = nature_vec_2D(this->terrainVec.size(), std::vector<std::shared_ptr<Nature>>(this->terrainVec[0].size(), nullptr));
 
 	this->natureSpawnMaxPos = Vector2i((int)this->drawVector.size() - Chunk::drawTileExtension.x,
 			 (int)this->drawVector[0].size() - Chunk::drawTileExtension.y);
@@ -68,10 +56,7 @@ void Chunk::load()
 }
 
 void Chunk::save()
-{	//FIX WITH SMART POINTERS YOU ABSOLUTE 0 IQ APE :) -FROM RETARD VIKTOR TO RETARD VIKTOR
-	this->deleteObjects();
-	delete this->sprite;
-	delete this->renderTexture;
+{
 	this->loaded = false;
 }
 
@@ -83,7 +68,7 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 		(x - Chunk::drawTileExtension.x) * TILE_SIZE.x + this->drawPos.x,
 		(y - Chunk::drawTileExtension.y) * TILE_SIZE.y + this->drawPos.y
 	);
-	Nature* natureObj = new Nature(pos, type);
+	std::shared_ptr<Nature> natureObj = std::make_shared<Nature>(pos, type);
 	natureObj->update(0.f, 0.f);
 
 	bool safeSpawn = true;
@@ -122,7 +107,6 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 		this->interactableGrid[x][y] = natureObj;
 		this->dynamicEntities.push_back(natureObj);
 	}
-	else delete natureObj;
 }
 
 void Chunk::buildNature(unsigned int seed)
@@ -240,50 +224,50 @@ void Chunk::buildNature(unsigned int seed)
 
 Chunk::tile_data Chunk::getTileData(const size_t& x, const size_t& y)
 {
-	Tile* tileType;
+	std::shared_ptr<Tile> tileType;
 	Tile::Parts* type;
 	Vector2f pos(TILE_SIZE.x*x, TILE_SIZE.y*y);
 
 	switch (this->terrainVec[x][y])
 	{
 		case WorldGenerator::TerrainType::GRASS_LIGHT:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::GRASS_FLAT;
 			break;
 		case WorldGenerator::TerrainType::FOREST_SHALLOW:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::GRASS_FOREST;
 			break;
 		case WorldGenerator::TerrainType::FOREST_DEEP:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::GRASS_FOREST_DEEP;
 			break;
 		case WorldGenerator::TerrainType::SAND:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::SAND;
 			break;
 		case WorldGenerator::TerrainType::WATER_DEEP:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::WATER;
 			break;
 		case WorldGenerator::TerrainType::WATER_SHALLOW:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::WATER;
 			break;
 		case WorldGenerator::TerrainType::WHEAT:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::FIELD;
 			break;
 		case WorldGenerator::TerrainType::MINERALS:
-			tileType = new Ground(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Ground>(pos, Vector2i(0, 0));
 			type = Ground::MINERAL;
 			break;
 		default:
-			tileType = new Mountain(pos, Vector2i(0, 0));
+			tileType = std::make_shared<Mountain>(pos, Vector2i(0, 0));
 			type = Mountain::ROCK;
 			break;
 	}
-	std::pair<Tile*, Tile::Parts*> returnPair;
+	std::pair<std::shared_ptr<Tile>, Tile::Parts*> returnPair;
 	returnPair = std::make_pair(tileType, type);
 	return returnPair;
 }
@@ -476,14 +460,8 @@ void Chunk::updateTexture()
 		tile_data cellInfo = this->getTileData(tileGridPos.x, tileGridPos.y);
 
 		//Create ptrs as aliases
-		Tile* cellTile = std::get<0>(cellInfo);
+		std::shared_ptr<Tile> cellTile = std::get<0>(cellInfo);
 		Tile::Parts* cellPart = std::get<1>(cellInfo);
-
-		//Delete if an object exist in a previous layer
-		if(this->grid[tileGridPos.x][tileGridPos.y] != nullptr)
-		{
-			delete this->grid[tileGridPos.x][tileGridPos.y];
-		}
 
 		//Save the pointer to the Tile obj to the grid
 		this->grid[tileGridPos.x][tileGridPos.y] = cellTile;
@@ -499,12 +477,6 @@ void Chunk::updateTexture()
 
 				if(!gridDrawn[neighbourGridPos.x][neighbourGridPos.y])
 				{
-					//Delete if an object exist in a previous layer
-					if(this->grid[neighbourGridPos.x][neighbourGridPos.y] != nullptr)
-					{
-						delete this->grid[neighbourGridPos.x][neighbourGridPos.y];
-					}
-
 					this->grid[neighbourGridPos.x][neighbourGridPos.y] = this->getTileData(tileGridPos.x, tileGridPos.y).first;
 
 					//Get the draw position of the neighbour
@@ -539,11 +511,13 @@ void Chunk::updateTexture()
 
 void Chunk::drawTiles(RenderTarget *window)
 {
-	window->draw(*this->sprite);
+	window->draw(this->sprite);
 }
 
 void Chunk::setTexture()
 {
 	this->renderTexture->display();
-	this->sprite->setTexture(this->renderTexture->getTexture());
+	this->texture = this->renderTexture->getTexture();
+	this->sprite.setTexture(this->texture);
+	delete this->renderTexture;
 }
