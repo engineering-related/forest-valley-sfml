@@ -20,7 +20,7 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(50, 50); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
+	this->chunkAmount = Vector2i(10, 10); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = std::make_shared<WorldGenerator>(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -285,7 +285,6 @@ void World::update(const float& dt, const float& multiplier)
 	}
 
 	this->sortZindex();
-
 	//Update objects
 	for(auto& object: this->entites)
 	{

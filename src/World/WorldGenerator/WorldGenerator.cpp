@@ -30,7 +30,7 @@ WorldGenerator::~WorldGenerator()
 void WorldGenerator::initTextures()
 {
 	this->texture.clear();
-	this->texture.create(WINDOW_WIDTH/4, WINDOW_HEIGHT/4);
+	this->texture.create(WINDOW_HEIGHT/4, WINDOW_HEIGHT/4);
 	this->setDisplaySize(Vector2f(this->texture.getSize().x, this->texture.getSize().y));
 
 	//Create segment drawing-texture
