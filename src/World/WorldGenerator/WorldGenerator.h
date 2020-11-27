@@ -82,7 +82,9 @@ public:						//THE TERRAIN TYPES IN PRIO DRAWING ORDER
 	RenderTexture texture, segmentTexture;
 	Sprite sprite, segmentSprite;
 
-	WorldGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale, int octaves, float persistance, float lacunarity, Vector2f offset, float elevation);
+	WorldGenerator(unsigned int seed, Vector2i mapDimensions, float noiseScale,
+		int octaves, float persistance, float lacunarity,
+		Vector2f offset, float elevation);
 	~WorldGenerator();
 
 	void draw(RenderTarget * window);

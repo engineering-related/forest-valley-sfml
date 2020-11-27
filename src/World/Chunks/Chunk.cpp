@@ -51,7 +51,7 @@ void Chunk::load()
 				Chunk::drawTileExtension.y - 1);
 
 	this->updateTexture();
-	this->buildNature(this->worldGeneratorPtr->seed);
+	this->buildNature(this->worldGeneratorPtr->seed + this->gridPos.x + this->gridPos.y);
 	this->loaded = true;
 }
 

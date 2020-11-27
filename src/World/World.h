@@ -13,7 +13,7 @@ private:
 	void initWorldGenerator();
 	void initPlayer();
 	void initChunks();
-	int initThreads();
+	int startUpdateChunks();
 	bool chunkIsActive(const int& x, const int& y);
 
 	void savePlayerChunks();
@@ -45,6 +45,7 @@ private:
 	//Loading and saving threads
 	pthread_t chunk_thread;
 	pthread_mutex_t mutex;
+	bool updatingChunks = false;
 
 	//World generation
 	std::shared_ptr<WorldGenerator> map;
@@ -53,7 +54,7 @@ private:
 	std::vector<std::shared_ptr<Object>> entites, entitiesUpdated;
 	bool entitiesSwap = false;
 
-	//Chunks & threads
+	//Chunks
 	Vector2i renderDistance; // Render-radius from players current chunk (exclusive)
 							// Amount of chunks rendered: (renderdistance x 2) + 1
 	inline size_t chunkPosKey(int i,int j) {return (size_t) i << 32 | (unsigned int) j;}

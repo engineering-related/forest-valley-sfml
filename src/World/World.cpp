@@ -16,12 +16,12 @@ void World::init()
 	this->initWorldGenerator();
 	this->initPlayer();
 	this->initChunks();
-	this->initThreads();
+	this->startUpdateChunks();
 }
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(30, 30); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
+	this->chunkAmount = Vector2i(50, 50); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = std::make_shared<WorldGenerator>(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -40,22 +40,31 @@ void World::initChunks()
 	this->renderDistance = Vector2i(2, 2);
 }
 
-int World::initThreads()
+int World::startUpdateChunks()
 {
-	//Create thread
-	if (pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this) != 0)
+	if(this->updatingChunks)
 	{
-		printf("\nReceive-Thread can't be created :[%s]",
-			strerror(pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this)));
 		return EXIT_FAILURE;
 	}
+	else
+	{
+		//Create thread
+		if (pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this) != 0)
+		{
+			printf("\nReceive-Thread can't be created :[%s]",
+				strerror(pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this)));
+			return EXIT_FAILURE;
+		}
 
-	//Create mutex
-	if (pthread_mutex_init(&this->mutex, NULL) != 0) {
-    	fprintf(stderr, "\n mutex init has failed\n");
-    	return EXIT_FAILURE;
-    }
-	return EXIT_SUCCESS;
+		//Create mutex
+		if (pthread_mutex_init(&this->mutex, NULL) != 0) {
+			fprintf(stderr, "\n mutex init has failed\n");
+			return EXIT_FAILURE;
+		}
+
+		this->updatingChunks = true;
+		return EXIT_SUCCESS;
+	}
 }
 
 bool World::chunkIsActive(const int& x, const int &y)
@@ -113,7 +122,7 @@ void World::loadPlayerChunks()
 
 void* World::updatePlayerChunks()
 {
-	while(true)
+	while(this->updatingChunks)
 	{
 		//Get current chunks pos of player
 		this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
