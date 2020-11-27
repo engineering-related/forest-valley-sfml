@@ -249,7 +249,7 @@ void WorldGenerator::updateTexture(const Vector2i &gridPos,
 	this->segmentTexture.display();
 
 	this->segmentSprite.setTexture(segmentTexture.getTexture());
-	this->segmentSprite.setPosition(gridPos.x * scale.y, gridPos.y * scale.y);
+	this->segmentSprite.setPosition(gridPos.x * scale.x, gridPos.y * scale.y);
 	this->segmentSprite.setScale(scale);
 
 	this->texture.draw(this->segmentSprite);

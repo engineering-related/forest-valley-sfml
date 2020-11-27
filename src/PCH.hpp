@@ -89,13 +89,13 @@
 #define PI 3.14159265359
 
 //Game
-#define WINDOW_WIDTH 1600
+#define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 #define MULTIPLIER 60
 #define FRAMERATELIMIT 10000
 #define CAP 30
 #define SCALE sf::Vector2f(1.f, 1.f)
 #define TILE_SIZE sf::Vector2f(32, 32)
-#define CHUNK_SIZE sf::Vector2i(28, 28)
+#define CHUNK_SIZE sf::Vector2i(16, 16)
 
 #endif // PRECOMPILED_HEADER_HPP

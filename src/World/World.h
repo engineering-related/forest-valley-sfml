@@ -12,6 +12,7 @@ private:
 	void init();
 	void initWorldGenerator();
 	void initPlayer();
+	void initChunks();
 	int initThreads();
 
 	void savePlayerChunks();
@@ -52,6 +53,7 @@ private:
 	bool entitiesSwap = false;
 
 	//Chunks & threads
+	Vector2i renderDistance;
 	inline size_t chunkPosKey(int i,int j) {return (size_t) i << 32 | (unsigned int) j;}
 	std::unordered_map<size_t /*chunkPosKey*/, std::shared_ptr<Chunk> /*Chunk obj.*/> chunks;
 

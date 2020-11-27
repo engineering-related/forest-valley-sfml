@@ -15,12 +15,13 @@ void World::init()
 {
 	this->initWorldGenerator();
 	this->initPlayer();
+	this->initChunks();
 	this->initThreads();
 }
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(10, 10); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
+	this->chunkAmount = Vector2i(20, 20); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = std::make_shared<WorldGenerator>(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -32,6 +33,11 @@ void World::initPlayer()
 {
 	this->player = std::make_shared<Player>(Vector2f(this->pixelSize/2));
 	this->entites.push_back(this->player);
+}
+
+void World::initChunks()
+{
+	this->renderDistance = Vector2i(2, 2);
 }
 
 int World::initThreads()
@@ -56,9 +62,9 @@ int World::initThreads()
 void World::savePlayerChunks()
 {
 	//Save old chunks
-	for(int x = this->oldPlayerChunkPos.x - 1; x <=  this->oldPlayerChunkPos.x + 1; x++)
+	for(int x = this->oldPlayerChunkPos.x - this->renderDistance.x; x <=  this->oldPlayerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->oldPlayerChunkPos.y - 1; y <=  this->oldPlayerChunkPos.y + 1; y++)
+		for(int y = this->oldPlayerChunkPos.y - this->renderDistance.y; y <=  this->oldPlayerChunkPos.y + this->renderDistance.y; y++)
 		{
 			//Check if the chunk exists
 			if(chunks.find(chunkPosKey(x, y)) != chunks.end())
@@ -66,10 +72,10 @@ void World::savePlayerChunks()
 				if(x >= 0 && x < this->chunkAmount.x &&
 				   y >= 0 && y < this->chunkAmount.y)
 				{
-					if((x < this->playerChunkPos.x - 1 ||
-						x > this->playerChunkPos.x + 1 ||
-						y < this->playerChunkPos.y - 1 ||
-						y > this->playerChunkPos.y + 1))
+					if((x < this->playerChunkPos.x - this->renderDistance.x ||
+						x > this->playerChunkPos.x + this->renderDistance.x ||
+						y < this->playerChunkPos.y - this->renderDistance.y ||
+						y > this->playerChunkPos.y + this->renderDistance.y))
 					{
 						if(this->chunks[chunkPosKey(x, y)]->loaded)
 						{
@@ -85,9 +91,9 @@ void World::savePlayerChunks()
 void World::loadPlayerChunks()
 {
 	this->entitiesUpdated.clear();
-	for(int x = this->playerChunkPos.x - 1; x <=  this->playerChunkPos.x + 1; x++)
+	for(int x = this->playerChunkPos.x -this->renderDistance.x; x <=  this->playerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->playerChunkPos.y - 1; y <=  this->playerChunkPos.y + 1; y++)
+		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <=  this->playerChunkPos.y + this->renderDistance.y; y++)
 		{
 			if(x >= 0 && x < this->chunkAmount.x &&
 				y >= 0 && y < this->chunkAmount.y)
@@ -123,9 +129,9 @@ void* World::updatePlayerChunks()
 		//Testing with rendering chunks, should use a threadpool later!
 		if(this->oldPlayerChunkPos != this->playerChunkPos)
 		{
-			this->savePlayerChunks();
 			this->loadPlayerChunks();
 			this->updateMiniMap();
+			this->savePlayerChunks();
 		}
 		this->oldPlayerChunkPos = this->playerChunkPos;
 	}
@@ -134,9 +140,9 @@ void* World::updatePlayerChunks()
 
 void World::drawTilesPlayerChunks(RenderTarget* window)
 {
-	for(int x = this->playerChunkPos.x - 1; x <= this->playerChunkPos.x + 1; x++)
+	for(int x = this->playerChunkPos.x - this->renderDistance.x; x <= this->playerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->playerChunkPos.y - 1; y <= this->playerChunkPos.y + 1; y++)
+		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <= this->playerChunkPos.y + this->renderDistance.y; y++)
 		{
 			if(x >= 0 && x < this->chunkAmount.x &&
 				y >= 0 && y < this->chunkAmount.y)
@@ -153,16 +159,20 @@ void World::drawTilesPlayerChunks(RenderTarget* window)
 
 void World::updateMiniMap()
 {
-	int x = this->playerChunkPos.x, y = this->playerChunkPos.y;
-
-	if(x >= 0 && x < this->chunkAmount.x &&
-		y >= 0 && y < this->chunkAmount.y &&
-		chunks.find(chunkPosKey(x, y)) != chunks.end() &&
-		this->chunks[chunkPosKey(x, y)]->loaded)
+	for(int x = this->playerChunkPos.x - this->renderDistance.x; x <=  this->playerChunkPos.x + this->renderDistance.x; x++)
 	{
-		this->map->updateTexture(
-			this->chunks[chunkPosKey(x, y)]->gridPos,
-			this->chunks[chunkPosKey(x, y)]->terrainVec);
+		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <=  this->playerChunkPos.y + this->renderDistance.y; y++)
+		{
+			if(x >= 0 && x < this->chunkAmount.x &&
+				y >= 0 && y < this->chunkAmount.y &&
+				chunks.find(chunkPosKey(x, y)) != chunks.end() &&
+				this->chunks[chunkPosKey(x, y)]->loaded)
+			{
+				this->map->updateTexture(
+					this->chunks[chunkPosKey(x, y)]->gridPos,
+					this->chunks[chunkPosKey(x, y)]->terrainVec);
+			}
+		}
 	}
 }
 
