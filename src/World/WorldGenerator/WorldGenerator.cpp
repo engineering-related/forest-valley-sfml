@@ -156,7 +156,7 @@ std::vector<std::vector<WorldGenerator::TerrainType>> WorldGenerator::getTerrain
 			float currentHeight = pow(heightMap[x][y], this->elevation);
 			float forestValue = forsetMap[x][y];
 			float wheatValue = fieldMap[x][y];
-			float boundryValue = WorldGenerator::addSquareMask(x + gridPos.x, y + gridPos.y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 3.f, true);
+			float boundryValue = WorldGenerator::addCircleMask(x + gridPos.x, y + gridPos.y, currentHeight, (this->mapDimensions.x + this->mapDimensions.y) / 2.f, 0.3f, 3.f, true);
 
 			//Add diffent height
 			for (auto& heightRegion : this->heightRegions)
