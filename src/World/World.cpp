@@ -21,7 +21,7 @@ void World::init()
 
 void World::initWorldGenerator()
 {
-	this->chunkAmount = Vector2i(20, 20); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
+	this->chunkAmount = Vector2i(30, 30); //THE MAPS SIZE ARE ONLY LIMITED BY INTEGER SIZE, "INFINITE" MAPS!
 	this->tileAmount = Vector2i(CHUNK_SIZE.x * this->chunkAmount.x, CHUNK_SIZE.y * this->chunkAmount.y);
 	this->pixelSize = Vector2i(this->tileAmount.x * TILE_SIZE.x, this->tileAmount.y * TILE_SIZE.y);
 	this->map = std::make_shared<WorldGenerator>(this->seed, this->tileAmount, 40, 5, 0.5, 2, Vector2f(0, 0), 1);
@@ -42,7 +42,6 @@ void World::initChunks()
 
 int World::initThreads()
 {
-
 	//Create thread
 	if (pthread_create(&this->chunk_thread, NULL, &updatePlayerChunksHelper, this) != 0)
 	{
@@ -59,29 +58,29 @@ int World::initThreads()
 	return EXIT_SUCCESS;
 }
 
+bool World::chunkIsActive(const int& x, const int &y)
+{
+	return (x >= 0 && x < this->chunkAmount.x &&
+			y >= 0 && y < this->chunkAmount.y &&
+			chunks.find(chunkPosKey(x, y)) != chunks.end() &&
+			chunks[chunkPosKey(x, y)]->loaded);
+}
+
 void World::savePlayerChunks()
 {
 	//Save old chunks
-	for(int x = this->oldPlayerChunkPos.x - this->renderDistance.x; x <=  this->oldPlayerChunkPos.x + this->renderDistance.x; x++)
+	for(int x = this->oldPlayerChunkPos.x - this->renderDistance.x; x <= this->oldPlayerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->oldPlayerChunkPos.y - this->renderDistance.y; y <=  this->oldPlayerChunkPos.y + this->renderDistance.y; y++)
+		for(int y = this->oldPlayerChunkPos.y - this->renderDistance.y; y <= this->oldPlayerChunkPos.y + this->renderDistance.y; y++)
 		{
-			//Check if the chunk exists
-			if(chunks.find(chunkPosKey(x, y)) != chunks.end())
+			if(this->chunkIsActive(x, y))
 			{
-				if(x >= 0 && x < this->chunkAmount.x &&
-				   y >= 0 && y < this->chunkAmount.y)
+				if((x < this->playerChunkPos.x - this->renderDistance.x ||
+					x > this->playerChunkPos.x + this->renderDistance.x ||
+					y < this->playerChunkPos.y - this->renderDistance.y ||
+					y > this->playerChunkPos.y + this->renderDistance.y))
 				{
-					if((x < this->playerChunkPos.x - this->renderDistance.x ||
-						x > this->playerChunkPos.x + this->renderDistance.x ||
-						y < this->playerChunkPos.y - this->renderDistance.y ||
-						y > this->playerChunkPos.y + this->renderDistance.y))
-					{
-						if(this->chunks[chunkPosKey(x, y)]->loaded)
-						{
-							this->chunks.erase(chunkPosKey(x, y));
-						}
-					}
+					this->chunks.erase(chunkPosKey(x, y));
 				}
 			}
 		}
@@ -91,30 +90,21 @@ void World::savePlayerChunks()
 void World::loadPlayerChunks()
 {
 	this->entitiesUpdated.clear();
-	for(int x = this->playerChunkPos.x -this->renderDistance.x; x <=  this->playerChunkPos.x + this->renderDistance.x; x++)
+	for(int x = this->playerChunkPos.x - this->renderDistance.x; x <= this->playerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <=  this->playerChunkPos.y + this->renderDistance.y; y++)
+		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <= this->playerChunkPos.y + this->renderDistance.y; y++)
 		{
-			if(x >= 0 && x < this->chunkAmount.x &&
-				y >= 0 && y < this->chunkAmount.y)
+			//Check if to create a new chunk
+			if(!this->chunkIsActive(x, y))
 			{
-				//key is not present!
-				if(chunks.find(chunkPosKey(x, y)) == chunks.end())
-					chunks[chunkPosKey(x, y)] = std::make_shared<Chunk>(Vector2i(x, y), this->map.get());
-
-				//Load the current chunk if it haven't been
-				if(!this->chunks[chunkPosKey(x, y)]->loaded)
-				{
-					this->chunks[chunkPosKey(x, y)]->load();
-				}
-
-				if(this->chunks[chunkPosKey(x, y)]->loaded)
-				{
-					this->entitiesUpdated.insert(this->entitiesUpdated.end(),
-					this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
-					this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
-				}
+				chunks[chunkPosKey(x, y)] = std::make_shared<Chunk>(Vector2i(x, y), this->map.get());
+				this->chunks[chunkPosKey(x, y)]->load();
 			}
+
+			//Add chunk entities
+			this->entitiesUpdated.insert(this->entitiesUpdated.end(),
+			this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
+			this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
 		}
 	}
 	this->entitiesUpdated.push_back(this->player);
@@ -125,8 +115,9 @@ void* World::updatePlayerChunks()
 {
 	while(true)
 	{
+		//Get current chunks pos of player
 		this->playerChunkPos = player->getComponent<PositionComponent>().getChunkPos();
-		//Testing with rendering chunks, should use a threadpool later!
+
 		if(this->oldPlayerChunkPos != this->playerChunkPos)
 		{
 			this->loadPlayerChunks();
@@ -144,14 +135,9 @@ void World::drawTilesPlayerChunks(RenderTarget* window)
 	{
 		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <= this->playerChunkPos.y + this->renderDistance.y; y++)
 		{
-			if(x >= 0 && x < this->chunkAmount.x &&
-				y >= 0 && y < this->chunkAmount.y)
+			if(this->chunkIsActive(x, y))
 			{
-				if(chunks.find(chunkPosKey(x, y)) != chunks.end() &&
-					this->chunks[chunkPosKey(x, y)]->loaded)
-				{
-					this->chunks[chunkPosKey(x, y)]->drawTiles(window);
-				}
+				this->chunks[chunkPosKey(x, y)]->drawTiles(window);
 			}
 		}
 	}
@@ -159,20 +145,27 @@ void World::drawTilesPlayerChunks(RenderTarget* window)
 
 void World::updateMiniMap()
 {
-	for(int x = this->playerChunkPos.x - this->renderDistance.x; x <=  this->playerChunkPos.x + this->renderDistance.x; x++)
+	for(int x = this->playerChunkPos.x - this->renderDistance.x; x <= this->playerChunkPos.x + this->renderDistance.x; x++)
 	{
-		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <=  this->playerChunkPos.y + this->renderDistance.y; y++)
+		for(int y = this->playerChunkPos.y - this->renderDistance.y; y <= this->playerChunkPos.y + this->renderDistance.y; y++)
 		{
-			if(x >= 0 && x < this->chunkAmount.x &&
-				y >= 0 && y < this->chunkAmount.y &&
-				chunks.find(chunkPosKey(x, y)) != chunks.end() &&
-				this->chunks[chunkPosKey(x, y)]->loaded)
+			if(this->chunkIsActive(x, y))
 			{
 				this->map->updateTexture(
 					this->chunks[chunkPosKey(x, y)]->gridPos,
 					this->chunks[chunkPosKey(x, y)]->terrainVec);
 			}
 		}
+	}
+
+	//Fixes wierd bug where the chunk in right bottom corner wont draw to map...
+	int x = this->playerChunkPos.x + this->renderDistance.x, y = this->playerChunkPos.y + this->renderDistance.y;
+
+	if(this->chunkIsActive(x, y))
+	{
+		this->map->updateTexture(
+			this->chunks[chunkPosKey(x, y)]->gridPos,
+			this->chunks[chunkPosKey(x, y)]->terrainVec);
 	}
 }
 
