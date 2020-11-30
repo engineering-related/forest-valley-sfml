@@ -2,6 +2,7 @@
 
 Object::Object(Vector2f pos, Texture* texture)
 {
+	this->ID = Object::ID_counter++;
 	this->sprite.setPosition(pos);
 	this->texture = texture;
 	this->sprite.setTexture(*this->texture);

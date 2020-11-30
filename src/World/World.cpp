@@ -32,7 +32,7 @@ void World::initWorldGenerator()
 void World::initPlayer()
 {
 	this->player = std::make_shared<Player>(Vector2f(this->pixelSize/2));
-	this->entites.push_back(this->player);
+	this->entities[this->player->getID()] = this->player;
 }
 
 void World::initChunks()
@@ -111,12 +111,12 @@ void World::loadPlayerChunks()
 			}
 
 			//Add chunk entities
-			this->entitiesUpdated.insert(this->entitiesUpdated.end(),
-			this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
-			this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
+			this->entitiesUpdated.insert(
+				this->chunks[chunkPosKey(x, y)]->dynamicEntities.begin(),
+				this->chunks[chunkPosKey(x, y)]->dynamicEntities.end());
 		}
 	}
-	this->entitiesUpdated.push_back(this->player);
+	this->entitiesUpdated[this->player->getID()] = this->player;
 	this->entitiesSwap = true;
 }
 
@@ -180,7 +180,11 @@ void World::updateMiniMap()
 
 void World::sortZindex()
 {
-	std::sort(this->entites.begin(), this->entites.end(), [](std::shared_ptr<Object> obj1, std::shared_ptr<Object> obj2) -> bool {
+	std::sort(this->entitiesVec.begin(), this->entitiesVec.end(), [](std::pair<sf::Uint16, std::shared_ptr<Object>> a, std::pair<sf::Uint16, std::shared_ptr<Object>> b) -> bool {
+
+		std::shared_ptr<Object> obj1 = a.second;
+		std::shared_ptr<Object> obj2 = b.second;
+
 		if (obj1->getComponent<PositionComponent>().getZIndex() == obj2->getComponent<PositionComponent>().getZIndex())
 		{
 			if (obj1->getComponent<PositionComponent>().getCenterPosition().x == obj2->getComponent<PositionComponent>().getCenterPosition().x)
@@ -282,9 +286,9 @@ void World::draw(RenderTarget * window)
 	this->drawTilesPlayerChunks(window);
 
 	//Draw Objects
-	for(auto& object: this->entites)
+	for(auto& pair: this->entitiesVec)
 	{
-		object->draw(window);
+		pair.second->draw(window);
 	}
 }
 
@@ -292,15 +296,16 @@ void World::update(const float& dt, const float& multiplier)
 {
 	if(this->entitiesSwap)
 	{
-		this->entites = this->entitiesUpdated;
+		this->entities = this->entitiesUpdated;
+		this->entitiesVec = std::vector<std::pair<sf::Uint16, std::shared_ptr<Object>>>(entities.begin(), entities.end());
 		this->entitiesSwap = false;
 	}
 
 	this->sortZindex();
 	//Update objects
-	for(auto& object: this->entites)
+	for(auto& pair: this->entitiesVec)
 	{
-		object->update(dt, multiplier);
+		pair.second->update(dt, multiplier);
 		//this->checkTileColision(object, this->map->chunks[playerChunkPos.x][playerChunkPos.y]);
 		//object->getComponent<HitboxComponent>().draw(this->window);
 	}

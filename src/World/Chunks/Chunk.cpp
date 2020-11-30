@@ -21,17 +21,6 @@ void Chunk::init()
 	this->sprite.setPosition(this->drawPos);
 }
 
-void Chunk::clearVectors()
-{
-	//Free up memory from vectors
-	this->terrainVec.clear(), this->terrainVec.shrink_to_fit();
-	this->drawVector.clear(), this->drawVector.shrink_to_fit();
-
-	this->grid.clear(), this->grid.shrink_to_fit();
-	this->interactableGrid.clear(), this->interactableGrid.shrink_to_fit();
-	this->dynamicEntities.clear(), this->dynamicEntities.shrink_to_fit();
-}
-
 void Chunk::load()
 {
 	this->init();
@@ -105,7 +94,7 @@ void Chunk::spawnNatureObj(const IntRect& type, const int& x, const int& y)
 	if (safeSpawn)
 	{
 		this->interactableGrid[x][y] = natureObj;
-		this->dynamicEntities.push_back(natureObj);
+		this->dynamicEntities[natureObj->getID()] = natureObj;
 	}
 }
 

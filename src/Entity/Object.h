@@ -8,6 +8,9 @@ using namespace sf;
 class Object
 {
 private:
+	sf::Uint16 ID;
+	inline static sf::Uint16 ID_counter = 0;
+
 	void initComponents();
 
 protected:
@@ -50,6 +53,7 @@ public:
 		return *static_cast<T*>(ptr);
 	}
 	//Accessors
+	inline const sf::Uint16& getID() const {return this->ID; }
 
 	//Modifiers
 

@@ -51,7 +51,9 @@ private:
 	std::shared_ptr<WorldGenerator> map;
 
 	//ALL Entities
-	std::vector<std::shared_ptr<Object>> entites, entitiesUpdated;
+	std::unordered_map<sf::Uint16, std::shared_ptr<Object>> entities, entitiesUpdated;
+	std::vector<std::pair<sf::Uint16, std::shared_ptr<Object>>> entitiesVec;
+
 	bool entitiesSwap = false;
 
 	//Chunks
@@ -61,15 +63,25 @@ private:
 	std::unordered_map<size_t /*chunkPosKey*/, std::shared_ptr<Chunk> /*Chunk obj.*/> chunks;
 
 public:
+	//Players
+	std::unordered_map<sf::Uint16 /*ENetID*/, std::shared_ptr<Player> /*Players*/> players;
+
 	//Accessors
 	inline std::shared_ptr<Player> getPlayer(){return this->player; }
 	inline std::shared_ptr<WorldGenerator> getMap(){return this->map; }
 
 	//Modifiers
 
-	//Fucntions
+	//Functions
 	World(const unsigned int seed);
 	~World();
+
+	void initTestPlayer(const sf::Uint16 *ENetID);
+	void updatePlayers(const float &dt);
+	void drawPlayers(sf::RenderTarget* target);
+	void addPlayer(sf::Uint16 pENetID, std::shared_ptr<Player> player);
+	void removePlayer(const sf::Uint16  &pENetID);
+	void changePlayerID(const sf::Uint16 &old_p_ENetID, const sf::Uint16 &new_p_ENetID);
 
 	void draw(RenderTarget* window);
 	void update(const float& dt, const float& multiplier);

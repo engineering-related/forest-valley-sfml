@@ -26,7 +26,6 @@ private:
 	Vector2i natureSpawnMinPos;
 
 	void init();
-	void clearVectors();
 
 public:
 	Vector2i chunkGridPos;
@@ -44,7 +43,7 @@ public:
 
 	tile_vec_2D grid;
 	nature_vec_2D interactableGrid;
-	std::vector<std::shared_ptr<Object>> dynamicEntities;
+	std::unordered_map<sf::Uint16, std::shared_ptr<Object>> dynamicEntities;
 
 	//std::vector<std::vector<DynamicTile*> dynamicTiles;
 	//Dynamic tiles goes on three different textures depending on their frame
