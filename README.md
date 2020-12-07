@@ -1,4 +1,11 @@
-# sfml-vscode-boilerplate
+# forest-valley-sfml
+
+## Future of forest-valley
+
+We have chosen to move over to GODOT, due to devlopment time. 
+But we still whanted to share what we were able to do with SFML. 
+
+## sfml-vscode-boilerplate
 A cross-platform [SFML](https://www.sfml-dev.org) 2.5.1 & C++17 build environment for [Visual Studio Code](https://code.visualstudio.com/)
 
 ---
